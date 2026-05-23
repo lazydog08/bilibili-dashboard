@@ -240,9 +240,32 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px 20px;
-      max-height: 372px;
-      overflow: hidden;
-      padding-top: 22px;
+      max-height: min(58vh, 620px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+      padding: 22px 8px 6px 0;
+      scrollbar-color: rgba(245, 245, 245, .34) rgba(255, 255, 255, .06);
+      scrollbar-width: thin;
+    }
+
+    .thumbnail-grid::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .thumbnail-grid::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, .06);
+      border-radius: 999px;
+    }
+
+    .thumbnail-grid::-webkit-scrollbar-thumb {
+      background: rgba(245, 245, 245, .34);
+      border-radius: 999px;
+    }
+
+    .thumbnail-grid::-webkit-scrollbar-thumb:hover {
+      background: rgba(245, 245, 245, .52);
     }
 
     .video-card {
@@ -325,17 +348,30 @@
       }
 
       .thumbnail-grid {
-        max-height: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-height: 70vh;
       }
     }
 
     @media (max-width: 680px) {
+      .page {
+        padding: 16px 12px 26px;
+      }
+
       .brand {
-        font-size: 20px;
+        font-size: 18px;
+        align-items: flex-start;
       }
 
       .center-title {
-        font-size: 22px;
+        font-size: 20px;
+      }
+
+      .warning {
+        font-size: 12px;
+        line-height: 1.55;
+        max-height: 156px;
+        overflow-y: auto;
       }
 
       .kpi-grid,
@@ -343,8 +379,19 @@
         grid-template-columns: 1fr;
       }
 
+      .thumbnail-grid {
+        max-height: 72vh;
+        padding-right: 6px;
+      }
+
       .kpi-card {
         grid-template-columns: minmax(0, 1fr) 94px;
+        min-height: 148px;
+        padding: 18px 16px;
+      }
+
+      .kpi-value {
+        font-size: 34px;
       }
 
       .sparkline {
