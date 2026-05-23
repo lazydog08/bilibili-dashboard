@@ -27,6 +27,8 @@ OVERVIEW_URL = "https://member.bilibili.com/x/h5/data/overview?period=7&s_locale
 VIDEO_LIST_URL = "https://member.bilibili.com/x/h5/data/article?pn=1&ps=30&ctype=0&sort=publish_time&order=desc"
 VIDEO_DETAIL_URL = "https://member.bilibili.com/x/h5/data/article/detail?bvid={bvid}&period=7"
 FAN_DETAIL_URL = "https://member.bilibili.com/x/h5/data/fan/detail?period=7"
+VIDEO_LIST_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/article"
+FAN_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/fan"
 
 
 class BilibiliAPIError(RuntimeError):
@@ -187,6 +189,17 @@ class BilibiliClient:
             params.setdefault("mid", self._mid)
         return _with_query_params(url, params)
 
+    async def _request_first_json(self, client: httpx.AsyncClient, urls: list[str], label: str) -> Any:
+        last_error: Exception | None = None
+        for url in urls:
+            try:
+                return await self._request_json(client, url)
+            except BilibiliAuthOrRiskError:
+                raise
+            except BilibiliAPIError as exc:
+                last_error = exc
+        raise BilibiliAPIError(f"{label} failed: {last_error}")
+
     async def fetch_overview(self) -> Any:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
@@ -198,7 +211,15 @@ class BilibiliClient:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            payload = await self._request_json(client, self._creator_url(VIDEO_LIST_URL))
+            payload = await self._request_first_json(
+                client,
+                [
+                    self._creator_url(VIDEO_LIST_URL),
+                    self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
+                    self._creator_url(VIDEO_LIST_SIMPLE_URL),
+                ],
+                "video list",
+            )
         return _find_video_items(payload)[:30]
 
     async def fetch_video_detail(self, bvid: str) -> Any:
@@ -211,7 +232,11 @@ class BilibiliClient:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            return await self._request_json(client, self._creator_url(FAN_DETAIL_URL))
+            return await self._request_first_json(
+                client,
+                [self._creator_url(FAN_DETAIL_URL), self._creator_url(FAN_SIMPLE_URL)],
+                "fan detail",
+            )
 
     def _parse_channel(self, overview: Any, fan_detail: Any) -> dict[str, int]:
         return {
@@ -264,11 +289,35 @@ class BilibiliClient:
 
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
             timestamp = int(time.time() * 1000)
-            overview = await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
+            try:
+                overview = await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
+            except BilibiliAuthOrRiskError:
+                raise
+            except BilibiliAPIError as exc:
+                self.warnings.append(f"总览数据获取失败，已使用视频列表推导：{exc}")
+                overview = {}
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            video_payload = await self._request_json(client, self._creator_url(VIDEO_LIST_URL))
+            video_payload = await self._request_first_json(
+                client,
+                [
+                    self._creator_url(VIDEO_LIST_URL),
+                    self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
+                    self._creator_url(VIDEO_LIST_SIMPLE_URL),
+                ],
+                "video list",
+            )
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            fan_detail = await self._request_json(client, self._creator_url(FAN_DETAIL_URL))
+            try:
+                fan_detail = await self._request_first_json(
+                    client,
+                    [self._creator_url(FAN_DETAIL_URL), self._creator_url(FAN_SIMPLE_URL)],
+                    "fan detail",
+                )
+            except BilibiliAuthOrRiskError:
+                raise
+            except BilibiliAPIError as exc:
+                self.warnings.append(f"粉丝明细获取失败，已使用 0 回退：{exc}")
+                fan_detail = {}
             videos = _find_video_items(video_payload)[:30]
 
             details: dict[str, Any] = {}
@@ -306,7 +355,24 @@ class BilibiliClient:
         return {
             "date": now.date().isoformat(),
             "updated_at": now.isoformat(timespec="seconds"),
-            "channel": self._parse_channel(overview, fan_detail),
+            "channel": self._parse_channel_with_video_fallback(overview, fan_detail, parsed_videos),
             "videos": parsed_videos,
             "warnings": sorted(set(self.warnings)),
         }
+
+    def _parse_channel_with_video_fallback(
+        self,
+        overview: Any,
+        fan_detail: Any,
+        videos: list[dict[str, Any]],
+    ) -> dict[str, int]:
+        channel = self._parse_channel(overview, fan_detail)
+        if not channel["total_views"]:
+            channel["total_views"] = sum(safe_int(video.get("views"), 0) for video in videos)
+        if not channel["total_likes"]:
+            channel["total_likes"] = sum(safe_int(video.get("likes"), 0) for video in videos)
+        if not channel["total_coins"]:
+            channel["total_coins"] = sum(safe_int(video.get("coins"), 0) for video in videos)
+        if not channel["total_favorites"]:
+            channel["total_favorites"] = sum(safe_int(video.get("favorites"), 0) for video in videos)
+        return channel
