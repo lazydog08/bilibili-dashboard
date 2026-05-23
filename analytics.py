@@ -248,6 +248,32 @@ def _unique_strings(values: list[Any]) -> list[str]:
     return result
 
 
+def _display_warnings(values: list[Any], max_items: int = 5) -> list[str]:
+    raw = _unique_strings(values)
+    detail_failure_count = 0
+    cleaned: list[str] = []
+    for value in raw:
+        text = str(value).replace("\r", " ").strip()
+        if not text:
+            continue
+        if "明细获取失败" in text and "已使用列表数据回退" in text:
+            detail_failure_count += 1
+            continue
+        if "\nFor more information check:" in text:
+            text = text.split("\nFor more information check:", 1)[0].strip()
+        text = re.sub(r"\s+", " ", text)
+        cleaned.append(text)
+
+    if detail_failure_count:
+        cleaned.append(f"{detail_failure_count} 个视频明细接口不可用，已使用列表数据回退。")
+
+    cleaned = _unique_strings(cleaned)
+    if len(cleaned) <= max_items:
+        return cleaned
+    hidden_count = len(cleaned) - max_items
+    return [*cleaned[:max_items], f"还有 {hidden_count} 条警告已折叠，详见 data/history.json。"]
+
+
 def _short_title(title: Any, limit: int = 18) -> str:
     text = str(title or "未命名视频").replace("\n", " ").strip()
     if len(text) <= limit:
@@ -426,7 +452,8 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         for video in latest_videos
         if (latest_date - _parse_date(video.get("publish_time"))).days <= 30
     ]
-    if not recent_videos:
+    minimum_grid_count = min(9, len(latest_videos))
+    if len(recent_videos) < minimum_grid_count:
         recent_videos = latest_videos
     recent_videos.sort(key=lambda item: item["publish_time"], reverse=True)
 
@@ -434,7 +461,7 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
     views_videos = sorted(recent_videos, key=lambda item: item["publish_time"])[-18:]
     avd_videos = views_videos
 
-    warnings = _unique_strings([*history.get("warnings", []), *latest.get("warnings", [])])
+    warnings = _display_warnings([*history.get("warnings", []), *latest.get("warnings", [])])
     feishu_enabled = bool(getattr(config, "feishu_enabled", False))
     source = str(history.get("source") or "fixture")
     if feishu_enabled:
