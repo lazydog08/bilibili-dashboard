@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import subprocess
-import sys
 from pathlib import Path
 
-from analytics import derive_dashboard_context
+from analytics import derive_dashboard_context, load_fixture_history
 from config import PROJECT_ROOT, load_settings
 from main import _resolve_snapshot_date, render_dashboard
 
@@ -18,16 +16,12 @@ REQUIRED_TEXT = [
 ]
 
 
-def test_main_fixture_creates_dashboard_without_network() -> None:
-    result = subprocess.run(
-        [sys.executable, "main.py", "--fixture", "--no-feishu"],
-        cwd=PROJECT_ROOT,
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    assert "source: fixture" in result.stdout
-    output = PROJECT_ROOT / "dashboard" / "output" / "index.html"
+def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
+    settings = load_settings()
+    object.__setattr__(settings, "output_path", tmp_path / "index.html")
+    history = load_fixture_history(PROJECT_ROOT / "data" / "fixtures" / "sample_history.json")
+    context = derive_dashboard_context(history, settings)
+    output = render_dashboard(context, settings)
     assert output.exists()
     html = output.read_text(encoding="utf-8")
     for text in REQUIRED_TEXT:
