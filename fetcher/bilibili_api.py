@@ -6,6 +6,7 @@ import random
 import time
 from datetime import datetime
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -114,6 +115,24 @@ def _find_video_items(payload: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _cookie_value(cookie: str, name: str) -> str:
+    for part in cookie.split(";"):
+        key, _, value = part.strip().partition("=")
+        if key == name:
+            return value.strip()
+    return ""
+
+
+def _with_query_params(url: str, params: dict[str, Any]) -> str:
+    clean_params = {key: str(value) for key, value in params.items() if value not in (None, "")}
+    if not clean_params:
+        return url
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    query.update(clean_params)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+
+
 class BilibiliClient:
     def __init__(
         self,
@@ -125,6 +144,7 @@ class BilibiliClient:
         self.timeout = timeout
         self.max_retries = max_retries
         self.warnings: list[str] = []
+        self._mid = _cookie_value(self._cookie, "DedeUserID")
 
     @property
     def headers(self) -> dict[str, str]:
@@ -162,31 +182,36 @@ class BilibiliClient:
                 await asyncio.sleep((2**attempt) + random.uniform(0.4, 1.2))
         raise BilibiliAPIError(f"Bilibili request failed: {last_error}")
 
+    def _creator_url(self, url: str, **params: Any) -> str:
+        if self._mid:
+            params.setdefault("mid", self._mid)
+        return _with_query_params(url, params)
+
     async def fetch_overview(self) -> Any:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
             timestamp = int(time.time() * 1000)
-            return await self._request_json(client, OVERVIEW_URL.format(timestamp=timestamp))
+            return await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
 
     async def fetch_video_list(self) -> list[dict[str, Any]]:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            payload = await self._request_json(client, VIDEO_LIST_URL)
+            payload = await self._request_json(client, self._creator_url(VIDEO_LIST_URL))
         return _find_video_items(payload)[:30]
 
     async def fetch_video_detail(self, bvid: str) -> Any:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            return await self._request_json(client, VIDEO_DETAIL_URL.format(bvid=bvid))
+            return await self._request_json(client, self._creator_url(VIDEO_DETAIL_URL.format(bvid=bvid)))
 
     async def fetch_fan_detail(self) -> Any:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            return await self._request_json(client, FAN_DETAIL_URL)
+            return await self._request_json(client, self._creator_url(FAN_DETAIL_URL))
 
     def _parse_channel(self, overview: Any, fan_detail: Any) -> dict[str, int]:
         return {
@@ -239,11 +264,11 @@ class BilibiliClient:
 
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
             timestamp = int(time.time() * 1000)
-            overview = await self._request_json(client, OVERVIEW_URL.format(timestamp=timestamp))
+            overview = await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            video_payload = await self._request_json(client, VIDEO_LIST_URL)
+            video_payload = await self._request_json(client, self._creator_url(VIDEO_LIST_URL))
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            fan_detail = await self._request_json(client, FAN_DETAIL_URL)
+            fan_detail = await self._request_json(client, self._creator_url(FAN_DETAIL_URL))
             videos = _find_video_items(video_payload)[:30]
 
             details: dict[str, Any] = {}
@@ -255,7 +280,10 @@ class BilibiliClient:
                     if not bvid:
                         return "", None
                     try:
-                        detail = await self._request_json(client, VIDEO_DETAIL_URL.format(bvid=bvid))
+                        detail = await self._request_json(
+                            client,
+                            self._creator_url(VIDEO_DETAIL_URL.format(bvid=bvid)),
+                        )
                     except BilibiliAuthOrRiskError:
                         raise
                     except Exception as exc:  # noqa: BLE001 - keep one failed detail from breaking rendering.
