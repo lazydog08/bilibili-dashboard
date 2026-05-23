@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>【影视飓风同款】频道数据看板</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #202020;
+      --panel: #3f3f3f;
+      --panel-soft: #2b2b2b;
+      --panel-line: rgba(255, 255, 255, .08);
+      --text: #f5f5f5;
+      --muted: #b8b8b8;
+      --accent: #e45532;
+      --accent-soft: #c96339;
+      --white-bar: #f0f0f0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      letter-spacing: 0;
+    }
+
+    .page {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 26px 36px 42px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: start;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .rocket {
+      font-size: 25px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .35));
+    }
+
+    .center-title {
+      align-self: end;
+      padding-top: 54px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .right-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      background: rgba(32, 32, 32, .42);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+      white-space: nowrap;
+    }
+
+    .badge-mark {
+      width: 15px;
+      height: 15px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, #7c5cff 0%, #ba65ff 45%, #e45532 100%);
+      box-shadow: 0 0 14px rgba(124, 92, 255, .45);
+      flex: 0 0 auto;
+    }
+
+    .updated {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .warning {
+      margin: -10px 0 22px;
+      padding: 12px 14px;
+      border: 1px solid rgba(228, 85, 50, .42);
+      border-radius: 8px;
+      background: rgba(228, 85, 50, .12);
+      color: #ffd9cf;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    }
+
+    .kpi-card {
+      min-height: 168px;
+      padding: 22px 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 112px;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .kpi-label {
+      color: #d6d6d6;
+      font-size: 14px;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-value {
+      font-size: clamp(30px, 3.05vw, 44px);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .kpi-sub {
+      margin-top: 20px;
+      color: #d0d0d0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .kpi-change {
+      color: var(--accent);
+      font-weight: 800;
+      display: block;
+    }
+
+    .sparkline {
+      width: 112px;
+      height: 42px;
+      align-self: end;
+      opacity: .72;
+    }
+
+    .sparkline polyline {
+      fill: none;
+      stroke: rgba(245, 245, 245, .62);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .middle-grid {
+      display: grid;
+      grid-template-columns: .9fr 1.85fr;
+      gap: 22px;
+      margin-bottom: 16px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .panel {
+      padding: 16px 20px 20px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .panel-subtle {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .chart {
+      width: 100%;
+      height: 360px;
+    }
+
+    .ctr-chart {
+      height: 360px;
+    }
+
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px 20px;
+      max-height: 372px;
+      overflow: hidden;
+      padding-top: 22px;
+    }
+
+    .video-card {
+      min-width: 0;
+    }
+
+    .thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      object-fit: cover;
+      border-radius: 6px;
+      background: var(--panel-soft);
+      box-shadow: 0 7px 18px rgba(0, 0, 0, .28);
+    }
+
+    .video-title {
+      margin: 12px 0 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 760;
+      line-height: 1.45;
+      min-height: 43px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-meta {
+      display: grid;
+      gap: 8px;
+      color: #dedede;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .video-meta span {
+      display: block;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-meta b {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
+      .page {
+        padding: 22px 18px 32px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .center-title {
+        padding-top: 0;
+        text-align: left;
+      }
+
+      .right-meta {
+        align-items: flex-start;
+      }
+
+      .updated {
+        text-align: left;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .middle-grid,
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .thumbnail-grid {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .brand {
+        font-size: 20px;
+      }
+
+      .center-title {
+        font-size: 22px;
+      }
+
+      .kpi-grid,
+      .thumbnail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-card {
+        grid-template-columns: minmax(0, 1fr) 94px;
+      }
+
+      .sparkline {
+        width: 94px;
+      }
+
+      .chart,
+      .ctr-chart {
+        height: 330px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="rocket" aria-hidden="true">🚀</span>
+        <span>【影视飓风同款】频道数据看板</span>
+      </div>
+      <div class="center-title">频道数据情况</div>
+      <div class="right-meta">
+        <div class="badge"><span class="badge-mark" aria-hidden="true"></span>本地数据模板</div>
+        <div class="updated">最后更新：2026-05-23T12:07:00+08:00</div>
+      </div>
+    </header>
+
+    
+
+    <section class="kpi-grid" aria-label="频道核心指标">
+      
+      <article class="kpi-card">
+        <div>
+          <div class="kpi-label">风暴传媒粉丝数</div>
+          <div class="kpi-value">3,400,000</div>
+          <div class="kpi-sub">
+            <span>较上一周期</span>
+            <span class="kpi-change">▲+0.03%</span>
+          </div>
+        </div>
+        <svg class="sparkline" viewBox="0 0 112 42" role="img" aria-label="风暴传媒粉丝数趋势">
+          <polyline points="0.0,38.0 6.6,35.1 13.2,32.2 19.8,29.3 26.4,26.5 32.9,23.6 39.5,20.8 46.1,18.0 52.7,15.2 59.3,12.4 65.9,9.7 72.5,7.8 79.1,6.8 85.6,6.0 92.2,5.3 98.8,4.7 105.4,4.3 112.0,4.0"></polyline>
+        </svg>
+      </article>
+      
+      <article class="kpi-card">
+        <div>
+          <div class="kpi-label">科普分析粉丝数</div>
+          <div class="kpi-value">30,300,000</div>
+          <div class="kpi-sub">
+            <span>较上一周期</span>
+            <span class="kpi-change">▲+0.08%</span>
+          </div>
+        </div>
+        <svg class="sparkline" viewBox="0 0 112 42" role="img" aria-label="科普分析粉丝数趋势">
+          <polyline points="0.0,38.0 6.6,35.1 13.2,32.2 19.8,29.3 26.4,26.4 32.9,23.5 39.5,20.6 46.1,17.8 52.7,15.1 59.3,12.4 65.9,9.9 72.5,8.5 79.1,7.5 85.6,6.5 92.2,5.7 98.8,5.0 105.4,4.6 112.0,4.0"></polyline>
+        </svg>
+      </article>
+      
+      <article class="kpi-card">
+        <div>
+          <div class="kpi-label">趣味困难粉丝数</div>
+          <div class="kpi-value">7,500,000</div>
+          <div class="kpi-sub">
+            <span>较上一周期</span>
+            <span class="kpi-change">▲+0.11%</span>
+          </div>
+        </div>
+        <svg class="sparkline" viewBox="0 0 112 42" role="img" aria-label="趣味困难粉丝数趋势">
+          <polyline points="0.0,38.0 6.6,35.4 13.2,32.8 19.8,30.2 26.4,27.6 32.9,25.0 39.5,22.3 46.1,19.7 52.7,17.0 59.3,14.2 65.9,12.1 72.5,10.6 79.1,9.6 85.6,8.6 92.2,7.5 98.8,6.3 105.4,5.2 112.0,4.0"></polyline>
+        </svg>
+      </article>
+      
+      <article class="kpi-card">
+        <div>
+          <div class="kpi-label">纪录短片粉丝数</div>
+          <div class="kpi-value">1,660,000</div>
+          <div class="kpi-sub">
+            <span>较上一周期</span>
+            <span class="kpi-change">▲+0.17%</span>
+          </div>
+        </div>
+        <svg class="sparkline" viewBox="0 0 112 42" role="img" aria-label="纪录短片粉丝数趋势">
+          <polyline points="0.0,38.0 6.6,34.9 13.2,31.9 19.8,29.0 26.4,26.0 32.9,23.1 39.5,20.2 46.1,17.4 52.7,14.7 59.3,12.0 65.9,9.5 72.5,8.3 79.1,7.4 85.6,6.6 92.2,5.9 98.8,5.3 105.4,4.8 112.0,4.0"></polyline>
+        </svg>
+      </article>
+      
+    </section>
+
+    <section class="middle-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">CTR（展示点击率）</h2>
+          <span class="panel-subtle">Top 20</span>
+        </div>
+        <div id="ctrChart" class="chart ctr-chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">近三十天上线节目封面总览</h2>
+        </div>
+        <div class="thumbnail-grid">
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-01/640/360" alt="发明“社恐救星”设备，结果被社恐本人吐槽了" loading="lazy">
+            <div class="video-title" title="发明“社恐救星”设备，结果被社恐本人吐槽了">发明“社恐救星”设备，结果被社恐本人吐…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-23</span>
+              <span><b># CTR（展示点击率）：</b>9.20%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.1</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>28.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-02/640/360" alt="把梦境做成盲盒贩卖，买家的反馈让我沉默" loading="lazy">
+            <div class="video-title" title="把梦境做成盲盒贩卖，买家的反馈让我沉默">把梦境做成盲盒贩卖，买家的反馈让我沉默</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-22</span>
+              <span><b># CTR（展示点击率）：</b>8.70%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>3.0</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>32.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-03/640/360" alt="在写字楼里养蜜蜂，同事们都成了“甜品评审”" loading="lazy">
+            <div class="video-title" title="在写字楼里养蜜蜂，同事们都成了“甜品评审”">在写字楼里养蜜蜂，同事们都成了“甜品评…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-21</span>
+              <span><b># CTR（展示点击率）：</b>7.40%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>5.5</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>26.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-04/640/360" alt="00后整顿职场新招：用一张表格让老板沉思" loading="lazy">
+            <div class="video-title" title="00后整顿职场新招：用一张表格让老板沉思">00后整顿职场新招：用一张表格让老板沉思</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-20</span>
+              <span><b># CTR（展示点击率）：</b>6.80%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>1.6</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>21.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-05/640/360" alt="AI投喂养老院？一场关于陪伴的温柔实验" loading="lazy">
+            <div class="video-title" title="AI投喂养老院？一场关于陪伴的温柔实验">AI投喂养老院？一场关于陪伴的温柔实验</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-19</span>
+              <span><b># CTR（展示点击率）：</b>8.10%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>3.8</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>36.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-06/640/360" alt="当古人穿越进现代厨房：火锅、咖啡与冰箱的误会" loading="lazy">
+            <div class="video-title" title="当古人穿越进现代厨房：火锅、咖啡与冰箱的误会">当古人穿越进现代厨房：火锅、咖啡与冰箱…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-18</span>
+              <span><b># CTR（展示点击率）：</b>6.10%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.4</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>24.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-07/640/360" alt="沙漠办茶话会：我们真的能在旱地种出浪漫吗" loading="lazy">
+            <div class="video-title" title="沙漠办茶话会：我们真的能在旱地种出浪漫吗">沙漠办茶话会：我们真的能在旱地种出浪漫吗</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-17</span>
+              <span><b># CTR（展示点击率）：</b>5.80%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>4.4</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>30.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-08/640/360" alt="3D打印拆家机器人，差点把客厅变成施工现场" loading="lazy">
+            <div class="video-title" title="3D打印拆家机器人，差点把客厅变成施工现场">3D打印拆家机器人，差点把客厅变成施工…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-16</span>
+              <span><b># CTR（展示点击率）：</b>10.10%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.8</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>34.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-09/640/360" alt="流入社区超市的神秘订单，竟然改写了一条街" loading="lazy">
+            <div class="video-title" title="流入社区超市的神秘订单，竟然改写了一条街">流入社区超市的神秘订单，竟然改写了一条街</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-15</span>
+              <span><b># CTR（展示点击率）：</b>4.90%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>1.2</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>18.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-10/640/360" alt="方言说服系统挑战：一句“你听我讲”能走多远" loading="lazy">
+            <div class="video-title" title="方言说服系统挑战：一句“你听我讲”能走多远">方言说服系统挑战：一句“你听我讲”能走…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-14</span>
+              <span><b># CTR（展示点击率）：</b>6.30%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.7</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>27.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-11/640/360" alt="大空种菜舱年：我们把青菜送上模拟轨道" loading="lazy">
+            <div class="video-title" title="大空种菜舱年：我们把青菜送上模拟轨道">大空种菜舱年：我们把青菜送上模拟轨道</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-13</span>
+              <span><b># CTR（展示点击率）：</b>9.60%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>8.9</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>41.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-12/640/360" alt="穷物送语言学校学业：“外星语”第一课" loading="lazy">
+            <div class="video-title" title="穷物送语言学校学业：“外星语”第一课">穷物送语言学校学业：“外星语”第一课</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-12</span>
+              <span><b># CTR（展示点击率）：</b>4.10%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>1.4</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>16.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-13/640/360" alt="等古发现古人“朋友圈”：竹简里藏着哪些吐槽？" loading="lazy">
+            <div class="video-title" title="等古发现古人“朋友圈”：竹简里藏着哪些吐槽？">等古发现古人“朋友圈”：竹简里藏着哪些…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-11</span>
+              <span><b># CTR（展示点击率）：</b>5.50%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.2</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>23.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-14/640/360" alt="冒险没戴帽花到离职：安全课为什么总迟到" loading="lazy">
+            <div class="video-title" title="冒险没戴帽花到离职：安全课为什么总迟到">冒险没戴帽花到离职：安全课为什么总迟到</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-10</span>
+              <span><b># CTR（展示点击率）：</b>7.10%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>3.1</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>29.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-15/640/360" alt="轨道变身雕术杂技：城市交通的新想象" loading="lazy">
+            <div class="video-title" title="轨道变身雕术杂技：城市交通的新想象">轨道变身雕术杂技：城市交通的新想象</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-09</span>
+              <span><b># CTR（展示点击率）：</b>4.40%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>1.8</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>20.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-16/640/360" alt="航天不手制电量：自制小卫星电源挑战" loading="lazy">
+            <div class="video-title" title="航天不手制电量：自制小卫星电源挑战">航天不手制电量：自制小卫星电源挑战</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-08</span>
+              <span><b># CTR（展示点击率）：</b>5.70%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.6</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>25.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-17/640/360" alt="探访反向卷小镇：大家都在努力早点下班" loading="lazy">
+            <div class="video-title" title="探访反向卷小镇：大家都在努力早点下班">探访反向卷小镇：大家都在努力早点下班</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-07</span>
+              <span><b># CTR（展示点击率）：</b>8.90%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>4.9</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>38.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-18/640/360" alt="人生写成游戏代码：选择题真的能通关吗？" loading="lazy">
+            <div class="video-title" title="人生写成游戏代码：选择题真的能通关吗？">人生写成游戏代码：选择题真的能通关吗？</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-06</span>
+              <span><b># CTR（展示点击率）：</b>5.30%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.0</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>22.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-19/640/360" alt="AI翻译火星文趣谈：古早网络语言还能被理解吗" loading="lazy">
+            <div class="video-title" title="AI翻译火星文趣谈：古早网络语言还能被理解吗">AI翻译火星文趣谈：古早网络语言还能被…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-05</span>
+              <span><b># CTR（展示点击率）：</b>6.60%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.9</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>28.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-20/640/360" alt="零秒钟做节目？直播间里的“即时剪辑”实验" loading="lazy">
+            <div class="video-title" title="零秒钟做节目？直播间里的“即时剪辑”实验">零秒钟做节目？直播间里的“即时剪辑”实验</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-04</span>
+              <span><b># CTR（展示点击率）：</b>11.50%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>27.0</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>72.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-21/640/360" alt="发表AI恐龙最后家财，博物馆夜巡记" loading="lazy">
+            <div class="video-title" title="发表AI恐龙最后家财，博物馆夜巡记">发表AI恐龙最后家财，博物馆夜巡记</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-03</span>
+              <span><b># CTR（展示点击率）：</b>4.80%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>1.9</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>19.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-22/640/360" alt="步进盲盒反馈精彩：用户越困惑我们越开心？" loading="lazy">
+            <div class="video-title" title="步进盲盒反馈精彩：用户越困惑我们越开心？">步进盲盒反馈精彩：用户越困惑我们越开心？</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-02</span>
+              <span><b># CTR（展示点击率）：</b>6.00%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.5</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>24.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-23/640/360" alt="“一镜到底”拍摄失败合集：导演说这次真的不剪" loading="lazy">
+            <div class="video-title" title="“一镜到底”拍摄失败合集：导演说这次真的不剪">“一镜到底”拍摄失败合集：导演说这次真…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-05-01</span>
+              <span><b># CTR（展示点击率）：</b>9.80%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>5.2</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>39.0%</span>
+            </div>
+          </article>
+          
+          <article class="video-card">
+            <img class="thumb" src="https://picsum.photos/seed/bilibili-24/640/360" alt="采访一位不爱说话的发明家：他说&#34;安静也有声音&#34; 😄
+A creator&#39;s note" loading="lazy">
+            <div class="video-title" title="采访一位不爱说话的发明家：他说&#34;安静也有声音&#34; 😄
+A creator&#39;s note">采访一位不爱说话的发明家：他说&#34;安静也…</div>
+            <div class="video-meta">
+              <span><b>▦ B站上线时间：</b>2026-04-30</span>
+              <span><b># CTR（展示点击率）：</b>5.60%</span>
+              <span><b>ƒx AVD（平均播放时长/min）：</b>2.3</span>
+              <span><b>ƒx AVP（平均播放百分比）：</b>25.0%</span>
+            </div>
+          </article>
+          
+        </div>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">视频播放量与粉丝增量</h2>
+        </div>
+        <div id="viewsFollowersChart" class="chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">平均播放时长与完播率</h2>
+        </div>
+        <div id="avdAvpChart" class="chart"></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const ctrChartData = {"full_titles": ["\u96f6\u79d2\u949f\u505a\u8282\u76ee\uff1f\u76f4\u64ad\u95f4\u91cc\u7684\u201c\u5373\u65f6\u526a\u8f91\u201d\u5b9e\u9a8c", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u70b9\u628a\u5ba2\u5385\u53d8\u6210\u65bd\u5de5\u73b0\u573a", "\u201c\u4e00\u955c\u5230\u5e95\u201d\u62cd\u6444\u5931\u8d25\u5408\u96c6\uff1a\u5bfc\u6f14\u8bf4\u8fd9\u6b21\u771f\u7684\u4e0d\u526a", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u83dc\u9001\u4e0a\u6a21\u62df\u8f68\u9053", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u7ed3\u679c\u88ab\u793e\u6050\u672c\u4eba\u5410\u69fd\u4e86", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u5728\u52aa\u529b\u65e9\u70b9\u4e0b\u73ed", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u5bb6\u7684\u53cd\u9988\u8ba9\u6211\u6c89\u9ed8", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u4e8e\u966a\u4f34\u7684\u6e29\u67d4\u5b9e\u9a8c", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u4eec\u90fd\u6210\u4e86\u201c\u751c\u54c1\u8bc4\u5ba1\u201d", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u5168\u8bfe\u4e3a\u4ec0\u4e48\u603b\u8fdf\u5230", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u4e00\u5f20\u8868\u683c\u8ba9\u8001\u677f\u6c89\u601d", "AI\u7ffb\u8bd1\u706b\u661f\u6587\u8da3\u8c08\uff1a\u53e4\u65e9\u7f51\u7edc\u8bed\u8a00\u8fd8\u80fd\u88ab\u7406\u89e3\u5417", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u201c\u4f60\u542c\u6211\u8bb2\u201d\u80fd\u8d70\u591a\u8fdc", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u706b\u9505\u3001\u5496\u5561\u4e0e\u51b0\u7bb1\u7684\u8bef\u4f1a", "\u6b65\u8fdb\u76f2\u76d2\u53cd\u9988\u7cbe\u5f69\uff1a\u7528\u6237\u8d8a\u56f0\u60d1\u6211\u4eec\u8d8a\u5f00\u5fc3\uff1f", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u80fd\u5728\u65f1\u5730\u79cd\u51fa\u6d6a\u6f2b\u5417", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u536b\u661f\u7535\u6e90\u6311\u6218", "\u91c7\u8bbf\u4e00\u4f4d\u4e0d\u7231\u8bf4\u8bdd\u7684\u53d1\u660e\u5bb6\uff1a\u4ed6\u8bf4\"\u5b89\u9759\u4e5f\u6709\u58f0\u97f3\" \ud83d\ude04\nA creator\u0027s note", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\uff1a\u7af9\u7b80\u91cc\u85cf\u7740\u54ea\u4e9b\u5410\u69fd\uff1f", "\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u9898\u771f\u7684\u80fd\u901a\u5173\u5417\uff1f"], "labels": ["\u96f6\u79d2\u949f\u505a\u8282\u76ee\uff1f\u76f4\u64ad\u95f4\u91cc\u2026", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u2026", "\u201c\u4e00\u955c\u5230\u5e95\u201d\u62cd\u6444\u5931\u8d25\u5408\u2026", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u2026", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u2026", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u2026", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u2026", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u2026", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u2026", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u2026", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u2026", "AI\u7ffb\u8bd1\u706b\u661f\u6587\u8da3\u8c08\uff1a\u53e4\u2026", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u2026", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u2026", "\u6b65\u8fdb\u76f2\u76d2\u53cd\u9988\u7cbe\u5f69\uff1a\u7528\u6237\u2026", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u2026", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u2026", "\u91c7\u8bbf\u4e00\u4f4d\u4e0d\u7231\u8bf4\u8bdd\u7684\u53d1\u660e\u2026", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\u2026", "\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u2026"], "values": [11.5, 10.1, 9.8, 9.6, 9.2, 8.9, 8.7, 8.1, 7.4, 7.1, 6.8, 6.6, 6.3, 6.1, 6.0, 5.8, 5.7, 5.6, 5.5, 5.3]};
+    const viewsFollowersChartData = {"follower_gain": [1200, 6800, 1800, 710, 3100, 1450, 520, 10500, 2300, 900, 8200, 1600, 1700, 5700, 1300, 2200, 3600, 4200], "full_titles": ["\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u9898\u771f\u7684\u80fd\u901a\u5173\u5417\uff1f", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u5728\u52aa\u529b\u65e9\u70b9\u4e0b\u73ed", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u536b\u661f\u7535\u6e90\u6311\u6218", "\u8f68\u9053\u53d8\u8eab\u96d5\u672f\u6742\u6280\uff1a\u57ce\u5e02\u4ea4\u901a\u7684\u65b0\u60f3\u8c61", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u5168\u8bfe\u4e3a\u4ec0\u4e48\u603b\u8fdf\u5230", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\uff1a\u7af9\u7b80\u91cc\u85cf\u7740\u54ea\u4e9b\u5410\u69fd\uff1f", "\u7a77\u7269\u9001\u8bed\u8a00\u5b66\u6821\u5b66\u4e1a\uff1a\u201c\u5916\u661f\u8bed\u201d\u7b2c\u4e00\u8bfe", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u83dc\u9001\u4e0a\u6a21\u62df\u8f68\u9053", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u201c\u4f60\u542c\u6211\u8bb2\u201d\u80fd\u8d70\u591a\u8fdc", "\u6d41\u5165\u793e\u533a\u8d85\u5e02\u7684\u795e\u79d8\u8ba2\u5355\uff0c\u7adf\u7136\u6539\u5199\u4e86\u4e00\u6761\u8857", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u70b9\u628a\u5ba2\u5385\u53d8\u6210\u65bd\u5de5\u73b0\u573a", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u80fd\u5728\u65f1\u5730\u79cd\u51fa\u6d6a\u6f2b\u5417", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u706b\u9505\u3001\u5496\u5561\u4e0e\u51b0\u7bb1\u7684\u8bef\u4f1a", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u4e8e\u966a\u4f34\u7684\u6e29\u67d4\u5b9e\u9a8c", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u4e00\u5f20\u8868\u683c\u8ba9\u8001\u677f\u6c89\u601d", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u4eec\u90fd\u6210\u4e86\u201c\u751c\u54c1\u8bc4\u5ba1\u201d", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u5bb6\u7684\u53cd\u9988\u8ba9\u6211\u6c89\u9ed8", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u7ed3\u679c\u88ab\u793e\u6050\u672c\u4eba\u5410\u69fd\u4e86"], "labels": ["\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u2026", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u2026", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u2026", "\u8f68\u9053\u53d8\u8eab\u96d5\u672f\u6742\u6280\uff1a\u57ce\u5e02\u2026", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u2026", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\u2026", "\u7a77\u7269\u9001\u8bed\u8a00\u5b66\u6821\u5b66\u4e1a\uff1a\u201c\u2026", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u2026", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u2026", "\u6d41\u5165\u793e\u533a\u8d85\u5e02\u7684\u795e\u79d8\u8ba2\u5355\u2026", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u2026", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u2026", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u2026", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u2026", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u2026", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u2026", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u2026", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u2026"], "views": [1120000, 2450000, 1320000, 820000, 1860000, 1090000, 740000, 2720000, 1540000, 920000, 3380000, 1260000, 1410000, 2210000, 965000, 1835000, 2460000, 3120000]};
+    const avdAvpChartData = {"avd": [2.0, 4.9, 2.6, 1.8, 3.1, 2.2, 1.4, 8.9, 2.7, 1.2, 2.8, 4.4, 2.4, 3.8, 1.6, 5.5, 3.0, 2.1], "avp": [22.0, 38.0, 25.0, 20.0, 29.0, 23.0, 16.0, 41.0, 27.0, 18.0, 34.0, 30.0, 24.0, 36.0, 21.0, 26.0, 32.0, 28.0], "full_titles": ["\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u9898\u771f\u7684\u80fd\u901a\u5173\u5417\uff1f", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u5728\u52aa\u529b\u65e9\u70b9\u4e0b\u73ed", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u536b\u661f\u7535\u6e90\u6311\u6218", "\u8f68\u9053\u53d8\u8eab\u96d5\u672f\u6742\u6280\uff1a\u57ce\u5e02\u4ea4\u901a\u7684\u65b0\u60f3\u8c61", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u5168\u8bfe\u4e3a\u4ec0\u4e48\u603b\u8fdf\u5230", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\uff1a\u7af9\u7b80\u91cc\u85cf\u7740\u54ea\u4e9b\u5410\u69fd\uff1f", "\u7a77\u7269\u9001\u8bed\u8a00\u5b66\u6821\u5b66\u4e1a\uff1a\u201c\u5916\u661f\u8bed\u201d\u7b2c\u4e00\u8bfe", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u83dc\u9001\u4e0a\u6a21\u62df\u8f68\u9053", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u201c\u4f60\u542c\u6211\u8bb2\u201d\u80fd\u8d70\u591a\u8fdc", "\u6d41\u5165\u793e\u533a\u8d85\u5e02\u7684\u795e\u79d8\u8ba2\u5355\uff0c\u7adf\u7136\u6539\u5199\u4e86\u4e00\u6761\u8857", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u70b9\u628a\u5ba2\u5385\u53d8\u6210\u65bd\u5de5\u73b0\u573a", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u80fd\u5728\u65f1\u5730\u79cd\u51fa\u6d6a\u6f2b\u5417", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u706b\u9505\u3001\u5496\u5561\u4e0e\u51b0\u7bb1\u7684\u8bef\u4f1a", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u4e8e\u966a\u4f34\u7684\u6e29\u67d4\u5b9e\u9a8c", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u4e00\u5f20\u8868\u683c\u8ba9\u8001\u677f\u6c89\u601d", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u4eec\u90fd\u6210\u4e86\u201c\u751c\u54c1\u8bc4\u5ba1\u201d", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u5bb6\u7684\u53cd\u9988\u8ba9\u6211\u6c89\u9ed8", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u7ed3\u679c\u88ab\u793e\u6050\u672c\u4eba\u5410\u69fd\u4e86"], "labels": ["\u4eba\u751f\u5199\u6210\u6e38\u620f\u4ee3\u7801\uff1a\u9009\u62e9\u2026", "\u63a2\u8bbf\u53cd\u5411\u5377\u5c0f\u9547\uff1a\u5927\u5bb6\u90fd\u2026", "\u822a\u5929\u4e0d\u624b\u5236\u7535\u91cf\uff1a\u81ea\u5236\u5c0f\u2026", "\u8f68\u9053\u53d8\u8eab\u96d5\u672f\u6742\u6280\uff1a\u57ce\u5e02\u2026", "\u5192\u9669\u6ca1\u6234\u5e3d\u82b1\u5230\u79bb\u804c\uff1a\u5b89\u2026", "\u7b49\u53e4\u53d1\u73b0\u53e4\u4eba\u201c\u670b\u53cb\u5708\u201d\u2026", "\u7a77\u7269\u9001\u8bed\u8a00\u5b66\u6821\u5b66\u4e1a\uff1a\u201c\u2026", "\u5927\u7a7a\u79cd\u83dc\u8231\u5e74\uff1a\u6211\u4eec\u628a\u9752\u2026", "\u65b9\u8a00\u8bf4\u670d\u7cfb\u7edf\u6311\u6218\uff1a\u4e00\u53e5\u2026", "\u6d41\u5165\u793e\u533a\u8d85\u5e02\u7684\u795e\u79d8\u8ba2\u5355\u2026", "3D\u6253\u5370\u62c6\u5bb6\u673a\u5668\u4eba\uff0c\u5dee\u2026", "\u6c99\u6f20\u529e\u8336\u8bdd\u4f1a\uff1a\u6211\u4eec\u771f\u7684\u2026", "\u5f53\u53e4\u4eba\u7a7f\u8d8a\u8fdb\u73b0\u4ee3\u53a8\u623f\uff1a\u2026", "AI\u6295\u5582\u517b\u8001\u9662\uff1f\u4e00\u573a\u5173\u2026", "00\u540e\u6574\u987f\u804c\u573a\u65b0\u62db\uff1a\u7528\u2026", "\u5728\u5199\u5b57\u697c\u91cc\u517b\u871c\u8702\uff0c\u540c\u4e8b\u2026", "\u628a\u68a6\u5883\u505a\u6210\u76f2\u76d2\u8d29\u5356\uff0c\u4e70\u2026", "\u53d1\u660e\u201c\u793e\u6050\u6551\u661f\u201d\u8bbe\u5907\uff0c\u2026"]};
+    const TEXT = '#cccccc';
+    const GRID = 'rgba(255,255,255,.08)';
+    const ACCENT = '#e45532';
+    const BAR = '#f0f0f0';
+
+    function truncateLabel(value, length = 9) {
+      if (!value) return '';
+      return value.length > length ? `${value.slice(0, length)}…` : value;
+    }
+
+    const ctrChart = echarts.init(document.getElementById('ctrChart'));
+    ctrChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter(params) {
+          const item = params[0];
+          return `${ctrChartData.full_titles[item.dataIndex]}<br>CTR：${item.value.toFixed(2)}%`;
+        }
+      },
+      grid: { left: 112, right: 18, top: 12, bottom: 12 },
+      xAxis: {
+        type: 'value',
+        axisLabel: { color: TEXT, formatter: '{value}%' },
+        splitLine: { lineStyle: { color: GRID } }
+      },
+      yAxis: {
+        type: 'category',
+        inverse: true,
+        data: ctrChartData.labels,
+        axisLabel: { color: TEXT, fontSize: 11, formatter: value => truncateLabel(value, 10) },
+        axisTick: { show: false },
+        axisLine: { show: false }
+      },
+      series: [{
+        type: 'bar',
+        data: ctrChartData.values.map((value, index) => ({
+          value,
+          itemStyle: { color: index === 0 ? ACCENT : BAR }
+        })),
+        barWidth: 8,
+        borderRadius: [0, 6, 6, 0]
+      }]
+    });
+
+    const viewsFollowersChart = echarts.init(document.getElementById('viewsFollowersChart'));
+    viewsFollowersChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        formatter(params) {
+          const index = params[0].dataIndex;
+          const title = viewsFollowersChartData.full_titles[index];
+          const lines = params.map(item => `${item.marker}${item.seriesName}：${item.value.toLocaleString()}`);
+          return `${title}<br>${lines.join('<br>')}`;
+        }
+      },
+      legend: {
+        top: 0,
+        left: 0,
+        textStyle: { color: TEXT },
+        itemWidth: 8,
+        itemHeight: 8
+      },
+      grid: { left: 58, right: 68, top: 48, bottom: 86 },
+      xAxis: {
+        type: 'category',
+        data: viewsFollowersChartData.labels,
+        axisLabel: { color: TEXT, rotate: 45, interval: 0, formatter: value => truncateLabel(value, 8) },
+        axisLine: { lineStyle: { color: GRID } },
+        axisTick: { show: false }
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '粉丝增量',
+          nameTextStyle: { color: TEXT },
+          axisLabel: { color: TEXT },
+          splitLine: { lineStyle: { color: GRID } }
+        },
+        {
+          type: 'value',
+          name: '视频播放量',
+          nameTextStyle: { color: TEXT },
+          axisLabel: { color: TEXT },
+          splitLine: { show: false }
+        }
+      ],
+      series: [
+        {
+          name: '视频播放量',
+          type: 'bar',
+          yAxisIndex: 1,
+          data: viewsFollowersChartData.views,
+          itemStyle: { color: BAR, borderRadius: [5, 5, 0, 0] },
+          barWidth: 11
+        },
+        {
+          name: '粉丝增量',
+          type: 'line',
+          data: viewsFollowersChartData.follower_gain,
+          smooth: true,
+          symbolSize: 5,
+          itemStyle: { color: ACCENT },
+          lineStyle: { color: ACCENT, width: 2.2 }
+        }
+      ]
+    });
+
+    const avdAvpChart = echarts.init(document.getElementById('avdAvpChart'));
+    avdAvpChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        formatter(params) {
+          const index = params[0].dataIndex;
+          const title = avdAvpChartData.full_titles[index];
+          const lines = params.map(item => {
+            const suffix = item.seriesName.includes('AVP') ? '%' : ' min';
+            return `${item.marker}${item.seriesName}：${Number(item.value).toFixed(1)}${suffix}`;
+          });
+          return `${title}<br>${lines.join('<br>')}`;
+        }
+      },
+      legend: {
+        top: 0,
+        left: 0,
+        textStyle: { color: TEXT },
+        itemWidth: 8,
+        itemHeight: 8
+      },
+      grid: { left: 58, right: 58, top: 48, bottom: 86 },
+      xAxis: {
+        type: 'category',
+        data: avdAvpChartData.labels,
+        axisLabel: { color: TEXT, rotate: 45, interval: 0, formatter: value => truncateLabel(value, 8) },
+        axisLine: { lineStyle: { color: GRID } },
+        axisTick: { show: false }
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: 'AVD',
+          nameTextStyle: { color: TEXT },
+          axisLabel: { color: TEXT },
+          splitLine: { lineStyle: { color: GRID } }
+        },
+        {
+          type: 'value',
+          name: 'AVP',
+          nameTextStyle: { color: TEXT },
+          axisLabel: { color: TEXT, formatter: '{value}%' },
+          splitLine: { show: false }
+        }
+      ],
+      series: [
+        {
+          name: 'AVD（平均播放时长/min）',
+          type: 'bar',
+          data: avdAvpChartData.avd,
+          itemStyle: { color: BAR, borderRadius: [5, 5, 0, 0] },
+          barWidth: 11
+        },
+        {
+          name: 'AVP（平均播放百分比）',
+          type: 'line',
+          yAxisIndex: 1,
+          data: avdAvpChartData.avp,
+          smooth: true,
+          symbolSize: 5,
+          itemStyle: { color: ACCENT },
+          lineStyle: { color: ACCENT, width: 2.2 }
+        }
+      ]
+    });
+
+    [ctrChart, viewsFollowersChart, avdAvpChart].forEach(chart => {
+      window.addEventListener('resize', () => chart.resize());
+    });
+  </script>
+</body>
+</html>
