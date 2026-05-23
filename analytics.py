@@ -386,8 +386,18 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         snapshot for snapshot in history.get("snapshots", []) if isinstance(snapshot, dict)
     ]
     snapshots.sort(key=lambda item: str(item.get("date", "")))
-    latest = snapshots[-1] if snapshots else {"date": now_shanghai().date().isoformat(), "channel": {}, "videos": []}
-    previous = snapshots[-2] if len(snapshots) >= 2 else None
+
+    display_snapshots = snapshots
+    live_snapshots = [snapshot for snapshot in snapshots if snapshot.get("source") == "live"]
+    if live_snapshots:
+        display_snapshots = live_snapshots
+
+    latest = (
+        display_snapshots[-1]
+        if display_snapshots
+        else {"date": now_shanghai().date().isoformat(), "channel": {}, "videos": []}
+    )
+    previous = display_snapshots[-2] if len(display_snapshots) >= 2 else None
     latest_videos = [_prepare_video(video) for video in _videos(latest)]
     latest_date = _parse_date(latest.get("date"))
 
@@ -414,7 +424,7 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         "source": str(history.get("source") or "fixture"),
         "warnings": warnings,
         "badge_text": "飞书多维表格 提供技术支持" if feishu_enabled else "本地数据模板",
-        "kpis": _derive_kpis(snapshots, latest, previous, config),
+        "kpis": _derive_kpis(display_snapshots, latest, previous, config),
         "ctr_chart": {
             "labels": [video["axis_title"] for video in ctr_videos],
             "values": [video["ctr_percent"] for video in ctr_videos],
