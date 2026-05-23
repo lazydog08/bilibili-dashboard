@@ -29,6 +29,8 @@ VIDEO_DETAIL_URL = "https://member.bilibili.com/x/h5/data/article/detail?bvid={b
 FAN_DETAIL_URL = "https://member.bilibili.com/x/h5/data/fan/detail?period=7"
 VIDEO_LIST_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/article"
 FAN_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/fan"
+WEB_INDEX_STAT_URL = "https://member.bilibili.com/x/web/index/stat"
+WEB_ARCHIVE_COMPARE_URL = "https://member.bilibili.com/x/web/data/archive_diagnose/compare?size=30"
 
 
 class BilibiliAPIError(RuntimeError):
@@ -94,6 +96,17 @@ def pick_ratio(obj: Any, keys: list[str], default: float = 0.0) -> float:
 
 def pick_minutes(obj: Any, keys: list[str], default: float = 0.0) -> float:
     return safe_minutes(pick_value(obj, keys, default), default)
+
+
+def pick_bilibili_percent(obj: Any, keys: list[str], default: float = 0.0) -> float:
+    value = pick_value(obj, keys, default)
+    if isinstance(value, str) and value.strip().endswith("%"):
+        return safe_ratio(value, default)
+    number = safe_int(value, 0)
+    if number:
+        # Creator Center compare fields use 100 == 1%, 10000 == 100%.
+        return number / 10000.0
+    return safe_ratio(value, default)
 
 
 def _find_video_items(payload: Any) -> list[dict[str, Any]]:
@@ -205,7 +218,14 @@ class BilibiliClient:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
             timestamp = int(time.time() * 1000)
-            return await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
+            return await self._request_first_json(
+                client,
+                [
+                    self._creator_url(WEB_INDEX_STAT_URL),
+                    self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)),
+                ],
+                "overview",
+            )
 
     async def fetch_video_list(self) -> list[dict[str, Any]]:
         if not self._cookie:
@@ -214,6 +234,7 @@ class BilibiliClient:
             payload = await self._request_first_json(
                 client,
                 [
+                    self._creator_url(WEB_ARCHIVE_COMPARE_URL, t=int(time.time() * 1000)),
                     self._creator_url(VIDEO_LIST_URL),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL),
@@ -240,12 +261,27 @@ class BilibiliClient:
 
     def _parse_channel(self, overview: Any, fan_detail: Any) -> dict[str, int]:
         return {
-            "total_followers": pick_number(overview, ["fans", "fan", "follower", "followers", "total_followers"], 0),
-            "follower_delta_7d": pick_number(fan_detail, ["follower_delta_7d", "increase", "incr", "fan_add", "fans_add"], 0),
-            "total_views": pick_number(overview, ["view", "views", "play", "total_view", "total_views"], 0),
-            "total_likes": pick_number(overview, ["like", "likes", "total_like", "total_likes"], 0),
-            "total_coins": pick_number(overview, ["coin", "coins", "total_coin", "total_coins"], 0),
-            "total_favorites": pick_number(overview, ["favorite", "favorites", "fav", "total_favorite"], 0),
+            "total_followers": pick_number(
+                overview,
+                ["total_fans", "fans", "fan", "follower", "followers", "total_followers"],
+                0,
+            ),
+            "follower_delta_7d": pick_number(
+                overview,
+                ["incr_fans", "follower_delta_7d", "increase", "incr", "fan_add", "fans_add"],
+                0,
+            ) or pick_number(
+                fan_detail,
+                ["follower_delta_7d", "increase", "incr", "fan_add", "fans_add"],
+                0,
+            ),
+            "total_views": pick_number(overview, ["total_click", "view", "views", "play", "total_view", "total_views"], 0),
+            "total_likes": pick_number(overview, ["total_like", "like", "likes", "total_likes"], 0),
+            "total_coins": pick_number(overview, ["total_coin", "coin", "coins", "total_coins"], 0),
+            "total_favorites": pick_number(overview, ["total_fav", "favorite", "favorites", "fav", "total_favorite"], 0),
+            "total_replies": pick_number(overview, ["total_reply", "reply", "replies", "comment", "comments"], 0),
+            "total_danmaku": pick_number(overview, ["total_dm", "danmaku", "dm"], 0),
+            "total_shares": pick_number(overview, ["total_share", "share", "shares"], 0),
         }
 
     def _parse_video(self, item: dict[str, Any], detail: Any | None = None) -> dict[str, Any]:
@@ -253,11 +289,24 @@ class BilibiliClient:
         bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
         title = str(pick_value(item, ["title", "name"], "未命名视频") or "未命名视频")
         publish_time = parse_publish_time(
-            pick_value(item, ["publish_time", "pubtime", "ctime", "created_at", "created"], None)
+            pick_value(item, ["publish_time", "pubtime", "pub_time", "ctime", "created_at", "created"], None)
         )
-        ctr = pick_ratio(detail, ["ctr", "click_rate", "show_click_rate", "impression_ctr"], 0.0)
-        avd = pick_minutes(detail, ["avd", "avg_view_duration", "avg_play_duration", "avg_play_time"], 0.0)
-        avp = pick_ratio(detail, ["avp", "completion_rate", "avg_view_percent", "avg_play_percent"], 0.0)
+        detail_or_item = detail or item
+        ctr = pick_bilibili_percent(
+            detail_or_item,
+            ["tm_rate", "ctr", "click_rate", "show_click_rate", "impression_ctr"],
+            0.0,
+        )
+        avp = pick_bilibili_percent(
+            detail_or_item,
+            ["full_play_ratio", "avp", "completion_rate", "avg_view_percent", "avg_play_percent"],
+            0.0,
+        )
+        avd = pick_minutes(detail_or_item, ["avg_play_time", "avd", "avg_view_duration", "avg_play_duration"], 0.0)
+        if not avd:
+            duration_minutes = safe_minutes(pick_value(item, ["duration"], 0), 0.0)
+            if duration_minutes and avp:
+                avd = duration_minutes * avp
         if not ctr:
             self.warnings.append(f"视频 {bvid or title[:12]} 缺少 CTR 字段，已使用 0。")
         if not avd:
@@ -279,7 +328,7 @@ class BilibiliClient:
             "ctr": ctr,
             "avd_minutes": avd,
             "avp_percent": avp,
-            "follower_gain": pick_number(detail, ["follower_gain", "fans_gain", "fan_gain"], 0),
+            "follower_gain": pick_number(detail_or_item, ["total_new_attention_cnt", "follower_gain", "fans_gain", "fan_gain"], 0),
             "impressions": pick_number(detail, ["impression", "impressions", "show", "shows"], 0),
         }
 
@@ -290,7 +339,14 @@ class BilibiliClient:
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
             timestamp = int(time.time() * 1000)
             try:
-                overview = await self._request_json(client, self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)))
+                overview = await self._request_first_json(
+                    client,
+                    [
+                        self._creator_url(WEB_INDEX_STAT_URL),
+                        self._creator_url(OVERVIEW_URL.format(timestamp=timestamp)),
+                    ],
+                    "overview",
+                )
             except BilibiliAuthOrRiskError:
                 raise
             except BilibiliAPIError as exc:
@@ -300,6 +356,7 @@ class BilibiliClient:
             video_payload = await self._request_first_json(
                 client,
                 [
+                    self._creator_url(WEB_ARCHIVE_COMPARE_URL, t=timestamp),
                     self._creator_url(VIDEO_LIST_URL),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL),
