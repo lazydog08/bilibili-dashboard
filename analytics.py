@@ -476,7 +476,7 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         badge_text = "B站创作中心数据"
 
     return {
-        "page_title": "【影视飓风同款】频道数据看板",
+        "page_title": "【懒狗小黑】频道数据看板",
         "section_title": "频道数据情况",
         "last_updated": str(history.get("last_updated") or latest.get("updated_at") or ""),
         "source": source,
