@@ -1,0 +1,67 @@
+name: Daily Bilibili Dashboard Update
+
+on:
+  schedule:
+    - cron: '30 12 * * *'
+      timezone: 'Asia/Shanghai'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: bilibili-dashboard
+  cancel-in-progress: false
+
+jobs:
+  fetch-build-test-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build dashboard
+        env:
+          ENABLE_BILIBILI_FETCH: "1"
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_BASE_APP_TOKEN: ${{ secrets.FEISHU_BASE_APP_TOKEN }}
+          FEISHU_TABLE_ID: ${{ secrets.FEISHU_TABLE_ID }}
+          FEISHU_DATE_FORMAT: ${{ vars.FEISHU_DATE_FORMAT }}
+        run: python main.py --live --snapshot-date yesterday
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Commit updated data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/history.json dashboard/output/index.html
+          git diff --staged --quiet || git commit -m "chore: update dashboard $(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M CST')"
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/output
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
