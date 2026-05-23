@@ -414,7 +414,15 @@
         <div class="thumbnail-grid">
           {% for video in recent_videos %}
           <article class="video-card">
-            <img class="thumb" src="{{ video.thumbnail }}" alt="{{ video.title }}" loading="lazy">
+            <img
+              class="thumb"
+              src="{{ video.thumbnail }}"
+              alt="{{ video.title }}"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              data-fallback-seed="{{ video.bvid or loop.index }}"
+              onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+            >
             <div class="video-title" title="{{ video.title }}">{{ video.short_title }}</div>
             <div class="video-meta">
               <span><b>▦ B站上线时间：</b>{{ video.publish_time }}</span>
