@@ -291,6 +291,14 @@ def _videos(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     return [video for video in videos if isinstance(video, dict)] if isinstance(videos, list) else []
 
 
+def _has_video_data(snapshot: dict[str, Any]) -> bool:
+    return bool(_videos(snapshot))
+
+
+def _is_fixture_snapshot(snapshot: dict[str, Any]) -> bool:
+    return isinstance(_channel(snapshot).get("category_totals"), dict)
+
+
 def _derive_kpis(
     snapshots: list[dict[str, Any]],
     latest: dict[str, Any],
@@ -388,9 +396,21 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
     snapshots.sort(key=lambda item: str(item.get("date", "")))
 
     display_snapshots = snapshots
-    live_snapshots = [snapshot for snapshot in snapshots if snapshot.get("source") == "live"]
+    live_snapshots = [
+        snapshot
+        for snapshot in snapshots
+        if snapshot.get("source") == "live" and _has_video_data(snapshot)
+    ]
     if live_snapshots:
         display_snapshots = live_snapshots
+    elif str(history.get("source") or "") in {"live", "cache"}:
+        live_like_snapshots = [
+            snapshot
+            for snapshot in snapshots
+            if _has_video_data(snapshot) and not _is_fixture_snapshot(snapshot)
+        ]
+        if live_like_snapshots:
+            display_snapshots = live_like_snapshots
 
     latest = (
         display_snapshots[-1]

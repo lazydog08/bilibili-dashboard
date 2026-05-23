@@ -62,6 +62,11 @@ def _apply_snapshot_date(snapshot: dict[str, Any], snapshot_date: str | None) ->
     return snapshot
 
 
+def _snapshot_has_videos(snapshot: dict[str, Any]) -> bool:
+    videos = snapshot.get("videos", [])
+    return isinstance(videos, list) and bool(videos)
+
+
 async def _try_live_snapshot(settings: Settings) -> tuple[dict[str, Any] | None, list[str]]:
     if not settings.enable_bilibili_fetch:
         return None, ["未设置 ENABLE_BILIBILI_FETCH=1，已跳过实时获取。"]
@@ -107,9 +112,20 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         if snapshot:
             snapshot = _apply_snapshot_date(snapshot, snapshot_date)
             snapshot["source"] = "live"
-            history = load_history(settings.history_path)
-            history = merge_today_snapshot(history, snapshot)
-            history["source"] = "live"
+            if _snapshot_has_videos(snapshot):
+                history = load_history(settings.history_path)
+                history = merge_today_snapshot(history, snapshot)
+                history["source"] = "live"
+            else:
+                snapshot_warnings = snapshot.get("warnings", [])
+                if not isinstance(snapshot_warnings, list):
+                    snapshot_warnings = []
+                warnings = [
+                    *warnings,
+                    *snapshot_warnings,
+                    "实时视频列表为空，已使用缓存或示例数据。",
+                ]
+                history, _ = _load_cache_or_fixture(settings, warnings)
         else:
             history, _ = _load_cache_or_fixture(settings, warnings)
 
