@@ -106,6 +106,7 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
 
         if snapshot:
             snapshot = _apply_snapshot_date(snapshot, snapshot_date)
+            snapshot["source"] = "live"
             history = load_history(settings.history_path)
             history = merge_today_snapshot(history, snapshot)
             history["source"] = "live"
