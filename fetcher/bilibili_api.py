@@ -160,6 +160,7 @@ class BilibiliClient:
         self.max_retries = max_retries
         self.warnings: list[str] = []
         self._mid = _cookie_value(self._cookie, "DedeUserID")
+        self._detail_failure_count = 0
 
     @property
     def headers(self) -> dict[str, str]:
@@ -393,7 +394,7 @@ class BilibiliClient:
                     except BilibiliAuthOrRiskError:
                         raise
                     except Exception as exc:  # noqa: BLE001 - keep one failed detail from breaking rendering.
-                        self.warnings.append(f"视频 {bvid} 明细获取失败，已使用列表数据回退：{exc}")
+                        self._detail_failure_count += 1
                         return bvid, None
                     return bvid, detail
 
@@ -402,6 +403,10 @@ class BilibiliClient:
                         details[bvid] = detail
                 if index + 2 < len(videos):
                     await asyncio.sleep(random.uniform(0.8, 1.8))
+            if self._detail_failure_count:
+                self.warnings.append(
+                    f"{self._detail_failure_count} 个视频明细接口不可用，已使用列表数据回退。"
+                )
 
         now = datetime.now(ZoneInfo(DEFAULT_TIMEZONE))
         parsed_videos = []
