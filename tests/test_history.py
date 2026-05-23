@@ -107,3 +107,46 @@ def test_live_snapshot_takes_display_priority_over_newer_fixture_date() -> None:
     context = derive_dashboard_context(history, load_settings())
     assert context["kpis"][0]["value"] == 168_707
     assert context["recent_videos"][0]["title"] == "真实视频"
+
+
+def test_empty_live_snapshot_does_not_override_fixture_display() -> None:
+    fixture_snapshot = _snapshot(23)
+    fixture_snapshot["source"] = "fixture"
+    fixture_snapshot["channel"]["category_totals"] = {"风暴传媒粉丝数": 3_400_000}
+    fixture_snapshot["videos"] = [{"title": "样例视频", "publish_time": "2026-05-23", "views": 100}]
+    live_snapshot = _snapshot(22)
+    live_snapshot["source"] = "live"
+    live_snapshot["videos"] = []
+
+    history = {
+        "schema_version": 1,
+        "source": "live",
+        "last_updated": "2026-05-23T15:38:00+08:00",
+        "warnings": [],
+        "snapshots": [live_snapshot, fixture_snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    assert context["recent_videos"][0]["title"] == "样例视频"
+
+
+def test_cached_live_like_snapshot_can_override_newer_fixture_date() -> None:
+    fixture_snapshot = _snapshot(23)
+    fixture_snapshot["source"] = "fixture"
+    fixture_snapshot["channel"]["category_totals"] = {"风暴传媒粉丝数": 3_400_000}
+    fixture_snapshot["videos"] = [{"title": "样例视频", "publish_time": "2026-05-23", "views": 100}]
+    cached_live_snapshot = _snapshot(22)
+    cached_live_snapshot["channel"]["total_followers"] = 168_707
+    cached_live_snapshot["videos"] = [{"title": "缓存真实视频", "publish_time": "2026-05-22", "views": 100}]
+
+    history = {
+        "schema_version": 1,
+        "source": "cache",
+        "last_updated": "2026-05-23T15:38:00+08:00",
+        "warnings": [],
+        "snapshots": [cached_live_snapshot, fixture_snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    assert context["kpis"][0]["value"] == 168_707
+    assert context["recent_videos"][0]["title"] == "缓存真实视频"
