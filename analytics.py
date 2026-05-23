@@ -436,14 +436,25 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
 
     warnings = _unique_strings([*history.get("warnings", []), *latest.get("warnings", [])])
     feishu_enabled = bool(getattr(config, "feishu_enabled", False))
+    source = str(history.get("source") or "fixture")
+    if feishu_enabled:
+        badge_text = "飞书多维表格 提供技术支持"
+    elif source == "fixture":
+        badge_text = "本地示例模板"
+    elif source == "manual":
+        badge_text = "真实数据预填"
+    elif source == "cache":
+        badge_text = "缓存数据"
+    else:
+        badge_text = "B站创作中心数据"
 
     return {
         "page_title": "【影视飓风同款】频道数据看板",
         "section_title": "频道数据情况",
         "last_updated": str(history.get("last_updated") or latest.get("updated_at") or ""),
-        "source": str(history.get("source") or "fixture"),
+        "source": source,
         "warnings": warnings,
-        "badge_text": "飞书多维表格 提供技术支持" if feishu_enabled else "本地数据模板",
+        "badge_text": badge_text,
         "kpis": _derive_kpis(display_snapshots, latest, previous, config),
         "ctr_chart": {
             "labels": [video["axis_title"] for video in ctr_videos],
