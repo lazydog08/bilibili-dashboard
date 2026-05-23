@@ -1,0 +1,987 @@
+{
+  "schema_version": 1,
+  "last_updated": "2026-05-23T12:07:00+08:00",
+  "source": "fixture",
+  "warnings": [],
+  "snapshots": [
+    {
+      "date": "2026-04-24",
+      "updated_at": "2026-04-24T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3200000,
+        "follower_delta_7d": 8600,
+        "total_views": 27500000,
+        "total_likes": 1400000,
+        "total_coins": 420000,
+        "total_favorites": 610000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3200000,
+          "科普分析粉丝数": 27500000,
+          "趣味困难粉丝数": 7050000,
+          "纪录短片粉丝数": 1400000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-25",
+      "updated_at": "2026-04-25T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3208200,
+        "follower_delta_7d": 8750,
+        "total_views": 27612000,
+        "total_likes": 1410500,
+        "total_coins": 423200,
+        "total_favorites": 613800,
+        "category_totals": {
+          "风暴传媒粉丝数": 3208200,
+          "科普分析粉丝数": 27612000,
+          "趣味困难粉丝数": 7066500,
+          "纪录短片粉丝数": 1410500
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-26",
+      "updated_at": "2026-04-26T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3216400,
+        "follower_delta_7d": 8920,
+        "total_views": 27726000,
+        "total_likes": 1422000,
+        "total_coins": 426600,
+        "total_favorites": 617600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3216400,
+          "科普分析粉丝数": 27726000,
+          "趣味困难粉丝数": 7083000,
+          "纪录短片粉丝数": 1422000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-27",
+      "updated_at": "2026-04-27T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3224800,
+        "follower_delta_7d": 9100,
+        "total_views": 27848000,
+        "total_likes": 1433800,
+        "total_coins": 430200,
+        "total_favorites": 621500,
+        "category_totals": {
+          "风暴传媒粉丝数": 3224800,
+          "科普分析粉丝数": 27848000,
+          "趣味困难粉丝数": 7100000,
+          "纪录短片粉丝数": 1433800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-28",
+      "updated_at": "2026-04-28T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3233000,
+        "follower_delta_7d": 9240,
+        "total_views": 27960000,
+        "total_likes": 1445000,
+        "total_coins": 433600,
+        "total_favorites": 625400,
+        "category_totals": {
+          "风暴传媒粉丝数": 3233000,
+          "科普分析粉丝数": 27960000,
+          "趣味困难粉丝数": 7118000,
+          "纪录短片粉丝数": 1445000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-29",
+      "updated_at": "2026-04-29T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3240800,
+        "follower_delta_7d": 9400,
+        "total_views": 28070000,
+        "total_likes": 1456200,
+        "total_coins": 437000,
+        "total_favorites": 629200,
+        "category_totals": {
+          "风暴传媒粉丝数": 3240800,
+          "科普分析粉丝数": 28070000,
+          "趣味困难粉丝数": 7136000,
+          "纪录短片粉丝数": 1456200
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-04-30",
+      "updated_at": "2026-04-30T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3249000,
+        "follower_delta_7d": 9580,
+        "total_views": 28192000,
+        "total_likes": 1468000,
+        "total_coins": 440900,
+        "total_favorites": 633000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3249000,
+          "科普分析粉丝数": 28192000,
+          "趣味困难粉丝数": 7154000,
+          "纪录短片粉丝数": 1468000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-01",
+      "updated_at": "2026-05-01T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3257200,
+        "follower_delta_7d": 9720,
+        "total_views": 28315000,
+        "total_likes": 1479500,
+        "total_coins": 444500,
+        "total_favorites": 637200,
+        "category_totals": {
+          "风暴传媒粉丝数": 3257200,
+          "科普分析粉丝数": 28315000,
+          "趣味困难粉丝数": 7172000,
+          "纪录短片粉丝数": 1479500
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-02",
+      "updated_at": "2026-05-02T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3265400,
+        "follower_delta_7d": 9880,
+        "total_views": 28430000,
+        "total_likes": 1490400,
+        "total_coins": 448100,
+        "total_favorites": 641100,
+        "category_totals": {
+          "风暴传媒粉丝数": 3265400,
+          "科普分析粉丝数": 28430000,
+          "趣味困难粉丝数": 7190000,
+          "纪录短片粉丝数": 1490400
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-03",
+      "updated_at": "2026-05-03T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3273600,
+        "follower_delta_7d": 10020,
+        "total_views": 28556000,
+        "total_likes": 1501800,
+        "total_coins": 451900,
+        "total_favorites": 645000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3273600,
+          "科普分析粉丝数": 28556000,
+          "趣味困难粉丝数": 7209000,
+          "纪录短片粉丝数": 1501800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-04",
+      "updated_at": "2026-05-04T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3282100,
+        "follower_delta_7d": 10180,
+        "total_views": 28682000,
+        "total_likes": 1513000,
+        "total_coins": 455400,
+        "total_favorites": 648900,
+        "category_totals": {
+          "风暴传媒粉丝数": 3282100,
+          "科普分析粉丝数": 28682000,
+          "趣味困难粉丝数": 7227000,
+          "纪录短片粉丝数": 1513000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-05",
+      "updated_at": "2026-05-05T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3290500,
+        "follower_delta_7d": 10360,
+        "total_views": 28800000,
+        "total_likes": 1524200,
+        "total_coins": 459200,
+        "total_favorites": 653100,
+        "category_totals": {
+          "风暴传媒粉丝数": 3290500,
+          "科普分析粉丝数": 28800000,
+          "趣味困难粉丝数": 7245000,
+          "纪录短片粉丝数": 1524200
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-06",
+      "updated_at": "2026-05-06T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3299200,
+        "follower_delta_7d": 10520,
+        "total_views": 28925000,
+        "total_likes": 1535600,
+        "total_coins": 462900,
+        "total_favorites": 657400,
+        "category_totals": {
+          "风暴传媒粉丝数": 3299200,
+          "科普分析粉丝数": 28925000,
+          "趣味困难粉丝数": 7264000,
+          "纪录短片粉丝数": 1535600
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-07",
+      "updated_at": "2026-05-07T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3307800,
+        "follower_delta_7d": 10680,
+        "total_views": 29042000,
+        "total_likes": 1546800,
+        "total_coins": 466500,
+        "total_favorites": 661200,
+        "category_totals": {
+          "风暴传媒粉丝数": 3307800,
+          "科普分析粉丝数": 29042000,
+          "趣味困难粉丝数": 7282000,
+          "纪录短片粉丝数": 1546800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-08",
+      "updated_at": "2026-05-08T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3316400,
+        "follower_delta_7d": 10840,
+        "total_views": 29160000,
+        "total_likes": 1557800,
+        "total_coins": 470100,
+        "total_favorites": 665000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3316400,
+          "科普分析粉丝数": 29160000,
+          "趣味困难粉丝数": 7300000,
+          "纪录短片粉丝数": 1557800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-09",
+      "updated_at": "2026-05-09T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3325000,
+        "follower_delta_7d": 10960,
+        "total_views": 29276000,
+        "total_likes": 1568500,
+        "total_coins": 473600,
+        "total_favorites": 668700,
+        "category_totals": {
+          "风暴传媒粉丝数": 3325000,
+          "科普分析粉丝数": 29276000,
+          "趣味困难粉丝数": 7318000,
+          "纪录短片粉丝数": 1568500
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-10",
+      "updated_at": "2026-05-10T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3333400,
+        "follower_delta_7d": 11120,
+        "total_views": 29396000,
+        "total_likes": 1579400,
+        "total_coins": 477200,
+        "total_favorites": 672600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3333400,
+          "科普分析粉丝数": 29396000,
+          "趣味困难粉丝数": 7336000,
+          "纪录短片粉丝数": 1579400
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-11",
+      "updated_at": "2026-05-11T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3341800,
+        "follower_delta_7d": 11240,
+        "total_views": 29512000,
+        "total_likes": 1590000,
+        "total_coins": 480700,
+        "total_favorites": 676300,
+        "category_totals": {
+          "风暴传媒粉丝数": 3341800,
+          "科普分析粉丝数": 29512000,
+          "趣味困难粉丝数": 7354000,
+          "纪录短片粉丝数": 1590000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-12",
+      "updated_at": "2026-05-12T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3350200,
+        "follower_delta_7d": 11380,
+        "total_views": 29630000,
+        "total_likes": 1600600,
+        "total_coins": 484200,
+        "total_favorites": 680200,
+        "category_totals": {
+          "风暴传媒粉丝数": 3350200,
+          "科普分析粉丝数": 29630000,
+          "趣味困难粉丝数": 7373000,
+          "纪录短片粉丝数": 1600600
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-13",
+      "updated_at": "2026-05-13T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3358600,
+        "follower_delta_7d": 11520,
+        "total_views": 29742000,
+        "total_likes": 1610800,
+        "total_coins": 487600,
+        "total_favorites": 684000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3358600,
+          "科普分析粉丝数": 29742000,
+          "趣味困难粉丝数": 7391000,
+          "纪录短片粉丝数": 1610800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-14",
+      "updated_at": "2026-05-14T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3366800,
+        "follower_delta_7d": 11660,
+        "total_views": 29852000,
+        "total_likes": 1621000,
+        "total_coins": 491000,
+        "total_favorites": 687800,
+        "category_totals": {
+          "风暴传媒粉丝数": 3366800,
+          "科普分析粉丝数": 29852000,
+          "趣味困难粉丝数": 7410000,
+          "纪录短片粉丝数": 1621000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-15",
+      "updated_at": "2026-05-15T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3375200,
+        "follower_delta_7d": 11820,
+        "total_views": 29962000,
+        "total_likes": 1630800,
+        "total_coins": 494400,
+        "total_favorites": 691600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3375200,
+          "科普分析粉丝数": 29962000,
+          "趣味困难粉丝数": 7429000,
+          "纪录短片粉丝数": 1630800
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-16",
+      "updated_at": "2026-05-16T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3383200,
+        "follower_delta_7d": 11920,
+        "total_views": 30062000,
+        "total_likes": 1640000,
+        "total_coins": 497600,
+        "total_favorites": 695400,
+        "category_totals": {
+          "风暴传媒粉丝数": 3383200,
+          "科普分析粉丝数": 30062000,
+          "趣味困难粉丝数": 7444000,
+          "纪录短片粉丝数": 1640000
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-17",
+      "updated_at": "2026-05-17T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3388800,
+        "follower_delta_7d": 12040,
+        "total_views": 30116000,
+        "total_likes": 1644200,
+        "total_coins": 499400,
+        "total_favorites": 697500,
+        "category_totals": {
+          "风暴传媒粉丝数": 3388800,
+          "科普分析粉丝数": 30116000,
+          "趣味困难粉丝数": 7454000,
+          "纪录短片粉丝数": 1644200
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-18",
+      "updated_at": "2026-05-18T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3391800,
+        "follower_delta_7d": 11880,
+        "total_views": 30158000,
+        "total_likes": 1647600,
+        "total_coins": 501100,
+        "total_favorites": 699600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3391800,
+          "科普分析粉丝数": 30158000,
+          "趣味困难粉丝数": 7461000,
+          "纪录短片粉丝数": 1647600
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-19",
+      "updated_at": "2026-05-19T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3394200,
+        "follower_delta_7d": 11720,
+        "total_views": 30200000,
+        "total_likes": 1650600,
+        "total_coins": 502800,
+        "total_favorites": 701700,
+        "category_totals": {
+          "风暴传媒粉丝数": 3394200,
+          "科普分析粉丝数": 30200000,
+          "趣味困难粉丝数": 7468000,
+          "纪录短片粉丝数": 1650600
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-20",
+      "updated_at": "2026-05-20T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3396200,
+        "follower_delta_7d": 11560,
+        "total_views": 30232000,
+        "total_likes": 1653200,
+        "total_coins": 504400,
+        "total_favorites": 703600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3396200,
+          "科普分析粉丝数": 30232000,
+          "趣味困难粉丝数": 7476000,
+          "纪录短片粉丝数": 1653200
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-21",
+      "updated_at": "2026-05-21T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3397800,
+        "follower_delta_7d": 11420,
+        "total_views": 30258000,
+        "total_likes": 1655400,
+        "total_coins": 505700,
+        "total_favorites": 705200,
+        "category_totals": {
+          "风暴传媒粉丝数": 3397800,
+          "科普分析粉丝数": 30258000,
+          "趣味困难粉丝数": 7484000,
+          "纪录短片粉丝数": 1655400
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-22",
+      "updated_at": "2026-05-22T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3399000,
+        "follower_delta_7d": 11200,
+        "total_views": 30276000,
+        "total_likes": 1657200,
+        "total_coins": 506800,
+        "total_favorites": 706600,
+        "category_totals": {
+          "风暴传媒粉丝数": 3399000,
+          "科普分析粉丝数": 30276000,
+          "趣味困难粉丝数": 7492000,
+          "纪录短片粉丝数": 1657200
+        }
+      },
+      "videos": []
+    },
+    {
+      "date": "2026-05-23",
+      "updated_at": "2026-05-23T12:07:00+08:00",
+      "channel": {
+        "total_followers": 3400000,
+        "follower_delta_7d": 12000,
+        "total_views": 30300000,
+        "total_likes": 1660000,
+        "total_coins": 508000,
+        "total_favorites": 708000,
+        "category_totals": {
+          "风暴传媒粉丝数": 3400000,
+          "科普分析粉丝数": 30300000,
+          "趣味困难粉丝数": 7500000,
+          "纪录短片粉丝数": 1660000
+        }
+      },
+      "videos": [
+        {
+          "bvid": "BV1FX4y1A001",
+          "title": "发明“社恐救星”设备，结果被社恐本人吐槽了",
+          "thumbnail": "https://picsum.photos/seed/bilibili-01/640/360",
+          "publish_time": "2026-05-23",
+          "views": 3120000,
+          "likes": 148000,
+          "coins": 18200,
+          "favorites": 31200,
+          "shares": 6200,
+          "replies": 4200,
+          "ctr": 0.092,
+          "avd_minutes": 2.1,
+          "avp_percent": 0.28,
+          "follower_gain": 4200,
+          "impressions": 33800000
+        },
+        {
+          "bvid": "BV1FX4y1A002",
+          "title": "把梦境做成盲盒贩卖，买家的反馈让我沉默",
+          "thumbnail": "https://picsum.photos/seed/bilibili-02/640/360",
+          "publish_time": "2026-05-22",
+          "views": 2460000,
+          "likes": 122500,
+          "coins": 14600,
+          "favorites": 28000,
+          "shares": 5400,
+          "replies": 3800,
+          "ctr": 0.087,
+          "avd_minutes": 3.0,
+          "avp_percent": 0.32,
+          "follower_gain": 3600,
+          "impressions": 28270000
+        },
+        {
+          "bvid": "BV1FX4y1A003",
+          "title": "在写字楼里养蜜蜂，同事们都成了“甜品评审”",
+          "thumbnail": "https://picsum.photos/seed/bilibili-03/640/360",
+          "publish_time": "2026-05-21",
+          "views": 1835000,
+          "likes": 81000,
+          "coins": 9300,
+          "favorites": 16200,
+          "shares": 3700,
+          "replies": 2400,
+          "ctr": 0.074,
+          "avd_minutes": 5.5,
+          "avp_percent": 0.26,
+          "follower_gain": 2200,
+          "impressions": 24800000
+        },
+        {
+          "bvid": "BV1FX4y1A004",
+          "title": "00后整顿职场新招：用一张表格让老板沉思",
+          "thumbnail": "https://picsum.photos/seed/bilibili-04/640/360",
+          "publish_time": "2026-05-20",
+          "views": 965000,
+          "likes": 50200,
+          "coins": 6100,
+          "favorites": 9900,
+          "shares": 1900,
+          "replies": 1500,
+          "ctr": 0.068,
+          "avd_minutes": 1.6,
+          "avp_percent": 0.21,
+          "follower_gain": 1300,
+          "impressions": 14190000
+        },
+        {
+          "bvid": "BV1FX4y1A005",
+          "title": "AI投喂养老院？一场关于陪伴的温柔实验",
+          "thumbnail": "https://picsum.photos/seed/bilibili-05/640/360",
+          "publish_time": "2026-05-19",
+          "views": 2210000,
+          "likes": 116000,
+          "coins": 17200,
+          "favorites": 25100,
+          "shares": 4900,
+          "replies": 3100,
+          "ctr": 0.081,
+          "avd_minutes": 3.8,
+          "avp_percent": 0.36,
+          "follower_gain": 5700,
+          "impressions": 27280000
+        },
+        {
+          "bvid": "BV1FX4y1A006",
+          "title": "当古人穿越进现代厨房：火锅、咖啡与冰箱的误会",
+          "thumbnail": "https://picsum.photos/seed/bilibili-06/640/360",
+          "publish_time": "2026-05-18",
+          "views": 1410000,
+          "likes": 69000,
+          "coins": 7600,
+          "favorites": 13700,
+          "shares": 2100,
+          "replies": 2100,
+          "ctr": 0.061,
+          "avd_minutes": 2.4,
+          "avp_percent": 0.24,
+          "follower_gain": 1700,
+          "impressions": 23110000
+        },
+        {
+          "bvid": "BV1FX4y1A007",
+          "title": "沙漠办茶话会：我们真的能在旱地种出浪漫吗",
+          "thumbnail": "https://picsum.photos/seed/bilibili-07/640/360",
+          "publish_time": "2026-05-17",
+          "views": 1260000,
+          "likes": 62000,
+          "coins": 8100,
+          "favorites": 15100,
+          "shares": 2700,
+          "replies": 1900,
+          "ctr": 0.058,
+          "avd_minutes": 4.4,
+          "avp_percent": 0.3,
+          "follower_gain": 1600,
+          "impressions": 21720000
+        },
+        {
+          "bvid": "BV1FX4y1A008",
+          "title": "3D打印拆家机器人，差点把客厅变成施工现场",
+          "thumbnail": "https://picsum.photos/seed/bilibili-08/640/360",
+          "publish_time": "2026-05-16",
+          "views": 3380000,
+          "likes": 173000,
+          "coins": 24100,
+          "favorites": 41100,
+          "shares": 7600,
+          "replies": 6500,
+          "ctr": 0.101,
+          "avd_minutes": 2.8,
+          "avp_percent": 0.34,
+          "follower_gain": 8200,
+          "impressions": 33460000
+        },
+        {
+          "bvid": "BV1FX4y1A009",
+          "title": "流入社区超市的神秘订单，竟然改写了一条街",
+          "thumbnail": "https://picsum.photos/seed/bilibili-09/640/360",
+          "publish_time": "2026-05-15",
+          "views": 920000,
+          "likes": 40600,
+          "coins": 4600,
+          "favorites": 8800,
+          "shares": 1500,
+          "replies": 1300,
+          "ctr": 0.049,
+          "avd_minutes": 1.2,
+          "avp_percent": 0.18,
+          "follower_gain": 900,
+          "impressions": 18770000
+        },
+        {
+          "bvid": "BV1FX4y1A010",
+          "title": "方言说服系统挑战：一句“你听我讲”能走多远",
+          "thumbnail": "https://picsum.photos/seed/bilibili-10/640/360",
+          "publish_time": "2026-05-14",
+          "views": 1540000,
+          "likes": 75400,
+          "coins": 10100,
+          "favorites": 17800,
+          "shares": 2900,
+          "replies": 2500,
+          "ctr": 0.063,
+          "avd_minutes": 2.7,
+          "avp_percent": 0.27,
+          "follower_gain": 2300,
+          "impressions": 24440000
+        },
+        {
+          "bvid": "BV1FX4y1A011",
+          "title": "大空种菜舱年：我们把青菜送上模拟轨道",
+          "thumbnail": "https://picsum.photos/seed/bilibili-11/640/360",
+          "publish_time": "2026-05-13",
+          "views": 2720000,
+          "likes": 135000,
+          "coins": 19800,
+          "favorites": 33600,
+          "shares": 6100,
+          "replies": 4200,
+          "ctr": 0.096,
+          "avd_minutes": 8.9,
+          "avp_percent": 0.41,
+          "follower_gain": 10500,
+          "impressions": 28330000
+        },
+        {
+          "bvid": "BV1FX4y1A012",
+          "title": "穷物送语言学校学业：“外星语”第一课",
+          "thumbnail": "https://picsum.photos/seed/bilibili-12/640/360",
+          "publish_time": "2026-05-12",
+          "views": 740000,
+          "likes": 32200,
+          "coins": 3500,
+          "favorites": 7100,
+          "shares": 1100,
+          "replies": 920,
+          "ctr": 0.041,
+          "avd_minutes": 1.4,
+          "avp_percent": 0.16,
+          "follower_gain": 520,
+          "impressions": 18040000
+        },
+        {
+          "bvid": "BV1FX4y1A013",
+          "title": "等古发现古人“朋友圈”：竹简里藏着哪些吐槽？",
+          "thumbnail": "https://picsum.photos/seed/bilibili-13/640/360",
+          "publish_time": "2026-05-11",
+          "views": 1090000,
+          "likes": 54200,
+          "coins": 7200,
+          "favorites": 12800,
+          "shares": 2300,
+          "replies": 1700,
+          "ctr": 0.055,
+          "avd_minutes": 2.2,
+          "avp_percent": 0.23,
+          "follower_gain": 1450,
+          "impressions": 19810000
+        },
+        {
+          "bvid": "BV1FX4y1A014",
+          "title": "冒险没戴帽花到离职：安全课为什么总迟到",
+          "thumbnail": "https://picsum.photos/seed/bilibili-14/640/360",
+          "publish_time": "2026-05-10",
+          "views": 1860000,
+          "likes": 87000,
+          "coins": 11200,
+          "favorites": 19100,
+          "shares": 3400,
+          "replies": 2600,
+          "ctr": 0.071,
+          "avd_minutes": 3.1,
+          "avp_percent": 0.29,
+          "follower_gain": 3100,
+          "impressions": 26190000
+        },
+        {
+          "bvid": "BV1FX4y1A015",
+          "title": "轨道变身雕术杂技：城市交通的新想象",
+          "thumbnail": "https://picsum.photos/seed/bilibili-15/640/360",
+          "publish_time": "2026-05-09",
+          "views": 820000,
+          "likes": 36400,
+          "coins": 4200,
+          "favorites": 7900,
+          "shares": 1400,
+          "replies": 1000,
+          "ctr": 0.044,
+          "avd_minutes": 1.8,
+          "avp_percent": 0.2,
+          "follower_gain": 710,
+          "impressions": 18630000
+        },
+        {
+          "bvid": "BV1FX4y1A016",
+          "title": "航天不手制电量：自制小卫星电源挑战",
+          "thumbnail": "https://picsum.photos/seed/bilibili-16/640/360",
+          "publish_time": "2026-05-08",
+          "views": 1320000,
+          "likes": 60800,
+          "coins": 8200,
+          "favorites": 14400,
+          "shares": 2600,
+          "replies": 1900,
+          "ctr": 0.057,
+          "avd_minutes": 2.6,
+          "avp_percent": 0.25,
+          "follower_gain": 1800,
+          "impressions": 23150000
+        },
+        {
+          "bvid": "BV1FX4y1A017",
+          "title": "探访反向卷小镇：大家都在努力早点下班",
+          "thumbnail": "https://picsum.photos/seed/bilibili-17/640/360",
+          "publish_time": "2026-05-07",
+          "views": 2450000,
+          "likes": 128000,
+          "coins": 17600,
+          "favorites": 30800,
+          "shares": 5300,
+          "replies": 3600,
+          "ctr": 0.089,
+          "avd_minutes": 4.9,
+          "avp_percent": 0.38,
+          "follower_gain": 6800,
+          "impressions": 27520000
+        },
+        {
+          "bvid": "BV1FX4y1A018",
+          "title": "人生写成游戏代码：选择题真的能通关吗？",
+          "thumbnail": "https://picsum.photos/seed/bilibili-18/640/360",
+          "publish_time": "2026-05-06",
+          "views": 1120000,
+          "likes": 51200,
+          "coins": 6900,
+          "favorites": 12000,
+          "shares": 2100,
+          "replies": 1500,
+          "ctr": 0.053,
+          "avd_minutes": 2.0,
+          "avp_percent": 0.22,
+          "follower_gain": 1200,
+          "impressions": 21130000
+        },
+        {
+          "bvid": "BV1FX4y1A019",
+          "title": "AI翻译火星文趣谈：古早网络语言还能被理解吗",
+          "thumbnail": "https://picsum.photos/seed/bilibili-19/640/360",
+          "publish_time": "2026-05-05",
+          "views": 1680000,
+          "likes": 79000,
+          "coins": 9700,
+          "favorites": 16600,
+          "shares": 3100,
+          "replies": 2300,
+          "ctr": 0.066,
+          "avd_minutes": 2.9,
+          "avp_percent": 0.28,
+          "follower_gain": 2600,
+          "impressions": 25450000
+        },
+        {
+          "bvid": "BV1FX4y1A020",
+          "title": "零秒钟做节目？直播间里的“即时剪辑”实验",
+          "thumbnail": "https://picsum.photos/seed/bilibili-20/640/360",
+          "publish_time": "2026-05-04",
+          "views": 5700000,
+          "likes": 248000,
+          "coins": 38400,
+          "favorites": 63500,
+          "shares": 11900,
+          "replies": 8300,
+          "ctr": 0.115,
+          "avd_minutes": 27.0,
+          "avp_percent": 0.72,
+          "follower_gain": 21500,
+          "impressions": 49560000
+        },
+        {
+          "bvid": "BV1FX4y1A021",
+          "title": "发表AI恐龙最后家财，博物馆夜巡记",
+          "thumbnail": "https://picsum.photos/seed/bilibili-21/640/360",
+          "publish_time": "2026-05-03",
+          "views": 980000,
+          "likes": 43800,
+          "coins": 5200,
+          "favorites": 9300,
+          "shares": 1600,
+          "replies": 1200,
+          "ctr": 0.048,
+          "avd_minutes": 1.9,
+          "avp_percent": 0.19,
+          "follower_gain": 980,
+          "impressions": 20410000
+        },
+        {
+          "bvid": "BV1FX4y1A022",
+          "title": "步进盲盒反馈精彩：用户越困惑我们越开心？",
+          "thumbnail": "https://picsum.photos/seed/bilibili-22/640/360",
+          "publish_time": "2026-05-02",
+          "views": 1520000,
+          "likes": 70400,
+          "coins": 8500,
+          "favorites": 15800,
+          "shares": 2800,
+          "replies": 2100,
+          "ctr": 0.06,
+          "avd_minutes": 2.5,
+          "avp_percent": 0.24,
+          "follower_gain": 1900,
+          "impressions": 25330000
+        },
+        {
+          "bvid": "BV1FX4y1A023",
+          "title": "“一镜到底”拍摄失败合集：导演说这次真的不剪",
+          "thumbnail": "https://picsum.photos/seed/bilibili-23/640/360",
+          "publish_time": "2026-05-01",
+          "views": 2890000,
+          "likes": 151000,
+          "coins": 22100,
+          "favorites": 37100,
+          "shares": 6500,
+          "replies": 4700,
+          "ctr": 0.098,
+          "avd_minutes": 5.2,
+          "avp_percent": 0.39,
+          "follower_gain": 7600,
+          "impressions": 29490000
+        },
+        {
+          "bvid": "BV1FX4y1A024",
+          "title": "采访一位不爱说话的发明家：他说\"安静也有声音\" 😄\nA creator's note",
+          "thumbnail": "https://picsum.photos/seed/bilibili-24/640/360",
+          "publish_time": "2026-04-30",
+          "views": 1180000,
+          "likes": 59000,
+          "coins": 7400,
+          "favorites": 13600,
+          "shares": 2400,
+          "replies": 1800,
+          "ctr": 0.056,
+          "avd_minutes": 2.3,
+          "avp_percent": 0.25,
+          "follower_gain": 1500,
+          "impressions": 21070000
+        }
+      ]
+    }
+  ]
+}
