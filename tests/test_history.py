@@ -85,3 +85,25 @@ def test_malformed_optional_fields_do_not_crash_context_derivation() -> None:
     context = derive_dashboard_context(history, load_settings())
     assert context["video_count"] == 1
     assert context["warnings"] == ["fixture warning"]
+
+
+def test_live_snapshot_takes_display_priority_over_newer_fixture_date() -> None:
+    fixture_snapshot = _snapshot(23)
+    fixture_snapshot["source"] = "fixture"
+    fixture_snapshot["channel"]["total_followers"] = 3_400_000
+    live_snapshot = _snapshot(22)
+    live_snapshot["source"] = "live"
+    live_snapshot["channel"]["total_followers"] = 168_707
+    live_snapshot["videos"] = [{"title": "真实视频", "publish_time": "2026-05-22", "views": 100}]
+
+    history = {
+        "schema_version": 1,
+        "source": "live",
+        "last_updated": "2026-05-23T15:38:00+08:00",
+        "warnings": [],
+        "snapshots": [live_snapshot, fixture_snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    assert context["kpis"][0]["value"] == 168_707
+    assert context["recent_videos"][0]["title"] == "真实视频"
