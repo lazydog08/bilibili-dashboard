@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 import asyncio
+import json
+from datetime import datetime
 from types import SimpleNamespace
 
 from fetcher.bark_api import format_bark_summary
@@ -13,6 +14,8 @@ from platforms import (
     load_manual_platform_snapshots,
     merge_content_items,
     merge_platform_snapshot,
+    next_update_label,
+    repair_latest_content_thumbnails,
 )
 
 
@@ -50,9 +53,22 @@ def test_platform_growth_deltas_and_insufficient_periods() -> None:
     }
     card = derive_platform_context(history, _settings())["platform_cards"][1]
     assert card["fans"]["label"] == "115"
+    assert card["growth"][0]["title"] == "相比昨日的涨粉"
     assert card["growth"][0]["value"]["label"] == "+15"
     assert card["growth"][1]["value"]["label"] == "--"
     assert card["growth"][2]["value"]["label"] == "--"
+
+
+def test_next_update_label_can_use_interval(monkeypatch) -> None:
+    import platforms
+
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):  # noqa: ANN001
+            return cls(2026, 5, 24, 15, 47, tzinfo=tz)
+
+    monkeypatch.setattr(platforms, "datetime", FixedDateTime)
+    assert next_update_label(["12:30", "20:00"], "Asia/Shanghai", 30) == "下次更新：今天 16:00（约 0小时13分钟）"
 
 
 def test_metric_delta_percent_is_unavailable_when_yesterday_is_zero() -> None:
@@ -222,6 +238,31 @@ def test_merge_platform_snapshot_moves_content_to_latest_cache() -> None:
     assert stored["fans"]["value"] == 100
     assert history["latest_content"]["douyin"]["items"][0]["title"] == "作品 1"
     assert len(history["latest_content"]["douyin"]["items"]) == 1
+
+
+def test_missing_douyin_cover_gets_readable_generated_thumbnail() -> None:
+    history = {
+        "latest_content": {
+            "douyin": {
+                "capturedAt": "2026-05-23T20:00:00+08:00",
+                "items": [
+                    {
+                        "title": "缺少封面的竖版作品",
+                        "publish_time": "2026-05-23",
+                        "views": 100,
+                    }
+                ],
+            }
+        }
+    }
+
+    repaired = repair_latest_content_thumbnails(history, content_limit=10)
+    cached_item = repaired["latest_content"]["douyin"]["items"][0]
+    assert cached_item["thumbnail"].startswith("data:image/svg+xml")
+    assert cached_item["thumbnail_note"] == "自动生成封面占位"
+
+    card = derive_platform_context(repaired, _settings())["platform_cards"][1]
+    assert card["content_items"][0]["thumbnail"].startswith("data:image/svg+xml")
 
 
 def test_merge_content_items_dedupes_similar_titles_and_sorts_by_publish_time() -> None:

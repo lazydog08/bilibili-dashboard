@@ -6,8 +6,10 @@ import re
 from copy import deepcopy
 from datetime import datetime, time, timedelta
 from difflib import SequenceMatcher
+from html import escape as escape_html
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 from analytics import (
@@ -585,6 +587,63 @@ def _matchable_title(value: Any) -> str:
     return text
 
 
+def _is_generated_thumbnail(value: Any) -> bool:
+    return str(value or "").startswith("data:image/svg+xml")
+
+
+def _svg_title_lines(title: str, *, max_lines: int = 6, max_units: float = 15.0) -> list[str]:
+    text = " ".join(str(title or "未命名内容").split())
+    lines: list[str] = []
+    current = ""
+    units = 0.0
+    for char in text:
+        char_units = 1.0 if ord(char) > 127 else 0.58
+        if current and units + char_units > max_units:
+            lines.append(current)
+            current = ""
+            units = 0.0
+            if len(lines) >= max_lines:
+                break
+        current += char
+        units += char_units
+    if current and len(lines) < max_lines:
+        lines.append(current)
+    if len(lines) == max_lines and len("".join(lines)) < len(text):
+        lines[-1] = f"{lines[-1].rstrip('…')}…"
+    return lines or ["未命名内容"]
+
+
+def _generated_content_thumbnail(title: Any, platform: str) -> str:
+    clean_title = _clean_content_title(title)
+    meta = PLATFORM_META.get(platform, {})
+    platform_name = str(meta.get("name") or platform or "内容")
+    accent = str(meta.get("accent") or "#e45532")
+    lines = _svg_title_lines(clean_title)
+    tspans = []
+    for index, line in enumerate(lines):
+        dy = "0" if index == 0 else "1.28em"
+        tspans.append(f'<tspan x="72" dy="{dy}">{escape_html(line)}</tspan>')
+    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f2f2f"/>
+      <stop offset="1" stop-color="#171717"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="24%" cy="18%" r="62%">
+      <stop offset="0" stop-color="{escape_html(accent)}" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="{escape_html(accent)}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="1200" rx="48" fill="url(#bg)"/>
+  <rect width="900" height="1200" rx="48" fill="url(#glow)"/>
+  <rect x="48" y="48" width="804" height="1104" rx="36" fill="none" stroke="{escape_html(accent)}" stroke-opacity="0.35" stroke-width="3"/>
+  <text x="72" y="116" fill="{escape_html(accent)}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="34" font-weight="800">{escape_html(platform_name)}作品封面</text>
+  <text x="72" y="480" fill="#f5f5f5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="58" font-weight="900" line-height="1.28">{''.join(tspans)}</text>
+  <text x="72" y="1092" fill="#b8b8b8" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif" font-size="28">后台未返回封面，已用本地占位保证可读</text>
+</svg>"""
+    return f"data:image/svg+xml;charset=UTF-8,{quote(svg, safe='')}"
+
+
 def _content_identifier(item: dict[str, Any]) -> str:
     for key in ("id", "item_id", "aweme_id", "note_id", "bvid"):
         value = str(item.get(key) or "").strip()
@@ -830,7 +889,7 @@ def _thumbnail_candidates(history: dict[str, Any], current_platform: str) -> lis
     latest_content = history.get("latest_content", {})
     if isinstance(latest_content, dict):
         for platform, cache in latest_content.items():
-            if platform == current_platform or not isinstance(cache, dict):
+            if not isinstance(cache, dict):
                 continue
             items = cache.get("items", [])
             if not isinstance(items, list):
@@ -840,7 +899,7 @@ def _thumbnail_candidates(history: dict[str, Any], current_platform: str) -> lis
                     continue
                 title = _matchable_title(item.get("title"))
                 thumbnail = normalize_thumbnail_url(item.get("thumbnail"))
-                if title and thumbnail:
+                if title and thumbnail and not _is_generated_thumbnail(thumbnail):
                     candidates.append((title, thumbnail))
     snapshots = history.get("snapshots", [])
     if not isinstance(snapshots, list):
@@ -854,7 +913,7 @@ def _thumbnail_candidates(history: dict[str, Any], current_platform: str) -> lis
                 continue
             title = _matchable_title(video.get("title"))
             thumbnail = normalize_thumbnail_url(video.get("thumbnail"))
-            if title and thumbnail:
+            if title and thumbnail and not _is_generated_thumbnail(thumbnail):
                 candidates.append((title, thumbnail))
     return candidates
 
@@ -867,12 +926,11 @@ def _fill_missing_thumbnails_from_related_content(
     if not items:
         return items
     candidates = _thumbnail_candidates(history, platform)
-    if not candidates:
-        return items
     filled: list[dict[str, Any]] = []
     for item in items:
         item_copy = deepcopy(item)
-        if not item_copy.get("thumbnail"):
+        needs_thumbnail = not item_copy.get("thumbnail") or _is_generated_thumbnail(item_copy.get("thumbnail"))
+        if needs_thumbnail and candidates:
             title = _matchable_title(item_copy.get("title"))
             if len(title) >= 8:
                 for candidate_title, thumbnail in candidates:
@@ -892,6 +950,12 @@ def _fill_missing_thumbnails_from_related_content(
                         item_copy["thumbnail"] = thumbnail
                         item_copy["thumbnail_note"] = "同标题内容封面兜底"
                         break
+        if (not item_copy.get("thumbnail") or _is_generated_thumbnail(item_copy.get("thumbnail"))) and platform in {
+            "douyin",
+            "xiaohongshu",
+        }:
+            item_copy["thumbnail"] = _generated_content_thumbnail(item_copy.get("title"), platform)
+            item_copy["thumbnail_note"] = item_copy.get("thumbnail_note") or "自动生成封面占位"
         filled.append(item_copy)
     return filled
 
@@ -1139,7 +1203,8 @@ def _remember_latest_content(
         current_captured = str(current.get("capturedAt") or "")
         if current_captured and current_captured > captured_at:
             return
-    clean_items = merge_content_items(items, content_limit=content_limit)
+    prepared_items = _fill_missing_thumbnails_from_related_content(history, platform, items)
+    clean_items = merge_content_items(prepared_items, content_limit=content_limit)
     latest_content[platform] = {
         "capturedAt": captured_at,
         "timezone": str(snapshot.get("timezone") or DEFAULT_TIMEZONE),
@@ -1179,6 +1244,25 @@ def merge_platform_snapshot(
     filtered.sort(key=lambda item: str(item.get("capturedAt", "")))
     merged["platform_snapshots"] = filtered
     return merged
+
+
+def repair_latest_content_thumbnails(history: dict[str, Any], content_limit: int = 50) -> dict[str, Any]:
+    """Repair cached platform content covers before saving or rendering."""
+    if not isinstance(history, dict):
+        return history
+    latest_content = history.get("latest_content")
+    if not isinstance(latest_content, dict):
+        return history
+    for platform, cache in list(latest_content.items()):
+        if not isinstance(cache, dict):
+            continue
+        items = cache.get("items")
+        if not isinstance(items, list):
+            continue
+        clean_items = [item for item in items if isinstance(item, dict)]
+        repaired = _fill_missing_thumbnails_from_related_content(history, str(platform), clean_items)
+        cache["items"] = merge_content_items(repaired, content_limit=content_limit)
+    return history
 
 
 def append_fetch_log(
@@ -1258,6 +1342,22 @@ def _period_delta(snapshots: list[dict[str, Any]], latest: dict[str, Any], days:
     return latest_fans - baseline_fans
 
 
+def _yesterday_delta(snapshots: list[dict[str, Any]], latest: dict[str, Any]) -> int | None:
+    latest_fans = _optional_int(latest.get("fans"))
+    if latest_fans is None:
+        return None
+    timezone_name = str(latest.get("timezone") or DEFAULT_TIMEZONE)
+    latest_time = _parse_dt(latest.get("capturedAt"), timezone_name)
+    today_start = latest_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    baseline = _latest_before(snapshots, today_start)
+    if not baseline:
+        return None
+    baseline_fans = _optional_int(baseline.get("fans"))
+    if baseline_fans is None:
+        return None
+    return latest_fans - baseline_fans
+
+
 def _manual_growth_value(latest: dict[str, Any] | None, key: str) -> int | None:
     if not latest:
         return None
@@ -1265,16 +1365,6 @@ def _manual_growth_value(latest: dict[str, Any] | None, key: str) -> int | None:
     if not isinstance(growth, dict):
         return None
     return _optional_int(growth.get(key))
-
-
-def _cycle_delta(snapshots: list[dict[str, Any]], latest: dict[str, Any]) -> int | None:
-    if len(snapshots) < 2:
-        return None
-    latest_fans = _optional_int(latest.get("fans"))
-    previous_fans = _optional_int(snapshots[-2].get("fans"))
-    if latest_fans is None or previous_fans is None:
-        return None
-    return latest_fans - previous_fans
 
 
 def _daily_cumulative_delta(
@@ -1460,11 +1550,11 @@ def _build_platform_card(history: dict[str, Any], platform: str, config: Any = N
         ).strip()
     growth = [
         {
-            "title": "周期涨粉",
+            "title": "相比昨日的涨粉",
             "value": _fmt_delta(
                 _manual_growth_value(growth_snapshot, "cycle")
                 if _manual_growth_value(growth_snapshot, "cycle") is not None
-                else (_cycle_delta(comparable_successes, growth_snapshot) if growth_snapshot else None)
+                else (_yesterday_delta(comparable_successes, growth_snapshot) if growth_snapshot else None)
             ),
         },
         {
@@ -1530,8 +1620,24 @@ def _trend_snapshots(history: dict[str, Any], platform: str, config: Any = None)
     return rows[-30:]
 
 
-def next_update_label(update_times: list[str], timezone_name: str = DEFAULT_TIMEZONE) -> str:
+def next_update_label(
+    update_times: list[str],
+    timezone_name: str = DEFAULT_TIMEZONE,
+    update_interval_minutes: int | None = None,
+) -> str:
     now = datetime.now(_tz(timezone_name))
+    if update_interval_minutes:
+        interval = max(1, min(int(update_interval_minutes), 1440))
+        day_start = datetime.combine(now.date(), time(0, 0), tzinfo=now.tzinfo)
+        elapsed_minutes = int((now - day_start).total_seconds() // 60)
+        next_slot_minutes = ((elapsed_minutes // interval) + 1) * interval
+        target = day_start + timedelta(minutes=next_slot_minutes)
+        delta = target - now
+        hours = int(delta.total_seconds() // 3600)
+        minutes = int(delta.total_seconds() % 3600 // 60)
+        day_label = "今天" if target.date() == now.date() else "明天"
+        return f"下次更新：{day_label} {target:%H:%M}（约 {hours}小时{minutes}分钟）"
+
     candidates: list[datetime] = []
     for item in update_times:
         try:
@@ -1601,5 +1707,7 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
         "next_update_label": next_update_label(
             list(getattr(config, "update_times", []) or ["12:30", "20:00"]),
             str(getattr(config, "timezone", DEFAULT_TIMEZONE)),
+            getattr(config, "update_interval_minutes", None),
         ),
+        "page_refresh_seconds": int(getattr(config, "page_refresh_seconds", 0) or 0),
     }

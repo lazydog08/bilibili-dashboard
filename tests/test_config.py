@@ -41,3 +41,16 @@ def test_bilibili_fetch_timeout_setting_is_clamped(monkeypatch) -> None:
 
     monkeypatch.setenv("BILIBILI_FETCH_TIMEOUT_SECONDS", "999")
     assert load_settings().bilibili_fetch_timeout_seconds == 300.0
+
+
+def test_update_interval_setting_is_clamped(monkeypatch) -> None:
+    monkeypatch.setenv("DASHBOARD_UPDATE_INTERVAL_MINUTES", "30")
+    settings = load_settings()
+    assert settings.update_interval_minutes == 30
+    assert settings.page_refresh_seconds == 1800
+
+    monkeypatch.setenv("DASHBOARD_UPDATE_INTERVAL_MINUTES", "0")
+    assert load_settings().update_interval_minutes == 1
+
+    monkeypatch.setenv("DASHBOARD_PAGE_REFRESH_SECONDS", "0")
+    assert load_settings().page_refresh_seconds == 0

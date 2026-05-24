@@ -23,6 +23,7 @@ REQUIRED_TEXT = [
 def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     settings = load_settings()
     object.__setattr__(settings, "output_path", tmp_path / "index.html")
+    object.__setattr__(settings, "page_refresh_seconds", 1800)
     history = load_fixture_history(PROJECT_ROOT / "data" / "fixtures" / "sample_history.json")
     context = derive_dashboard_context(history, settings)
     output = render_dashboard(context, settings)
@@ -32,6 +33,7 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
         assert text in html
     assert "echarts.init" in html
     assert "const ctrChartData =" in html
+    assert '<meta http-equiv="refresh" content="1800">' in html
 
 
 def test_render_escapes_complex_video_titles(tmp_path) -> None:

@@ -16,7 +16,7 @@ BARK_API_BASE = "https://api.day.app"
 
 def _line(card: dict[str, Any]) -> str:
     fans = card.get("fans", {}).get("label", "--")
-    cycle = next((item for item in card.get("growth", []) if item.get("title") == "周期涨粉"), {})
+    cycle = next((item for item in card.get("growth", []) if item.get("title") == "相比昨日的涨粉"), {})
     seven = next((item for item in card.get("growth", []) if item.get("title") == "7日涨粉"), {})
     suffix = ""
     if str(card.get("status_label", "")) not in {"成功", "部分可用"}:

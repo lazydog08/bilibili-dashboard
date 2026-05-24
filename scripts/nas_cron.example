@@ -1,6 +1,9 @@
-# Run every 30 minutes on a Linux/NAS crontab.
+# Run every 30 minutes on a Linux/NAS crontab for local-only dashboard output.
 # Replace /path/to/bilibili-dashboard with the real project directory on the NAS.
-*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh >/dev/null 2>&1
 
 # On iStoreOS/OpenWrt without Python installed, use Docker instead:
 */30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
+
+# Only use this if you intentionally want to push real metrics to GitHub.
+# */30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1

@@ -82,13 +82,16 @@ case "$MODE" in
   live)
     CMD+=("--live")
     ;;
+  bilibili|bilibili-only)
+    CMD+=("--bilibili-only")
+    ;;
   fixture)
     CMD+=("--fixture")
     ;;
   cache|local)
     ;;
   *)
-    log "Unknown DASHBOARD_MODE=$MODE; expected live, cache, or fixture."
+    log "Unknown DASHBOARD_MODE=$MODE; expected live, bilibili-only, cache, or fixture."
     exit 2
     ;;
 esac

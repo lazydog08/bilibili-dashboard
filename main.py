@@ -32,6 +32,7 @@ from platforms import (
     merge_content_items,
     merge_platform_snapshot,
     platform_snapshot_from_bilibili,
+    repair_latest_content_thumbnails,
     unavailable_platform_snapshot,
     write_update_log,
 )
@@ -420,6 +421,7 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         platforms_to_update={"bilibili"} if bilibili_only else None,
         platform_fetch_timeout_seconds=platform_fetch_timeout,
     )
+    history = repair_latest_content_thumbnails(history, settings.platform_content_limit)
     history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
     save_history(history, settings.history_path)
     context = derive_dashboard_context(history, settings, display_warnings=display_warnings)

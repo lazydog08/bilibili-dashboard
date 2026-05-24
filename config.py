@@ -71,6 +71,16 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_optional_int(name: str) -> int | None:
+    value = os.getenv(name)
+    if value is None or not value.strip():
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
 def _env_float(name: str, default: float) -> float:
     value = os.getenv(name)
     if value is None:
@@ -102,6 +112,8 @@ class Settings:
     feishu_enabled: bool = False
     feishu_date_format: str = "iso"
     update_times: list[str] = field(default_factory=list)
+    update_interval_minutes: int | None = None
+    page_refresh_seconds: int = 0
     log_retention_days: int = 30
     platform_content_limit: int = 50
     log_path: Path = PROJECT_ROOT / "data" / "logs" / "update.log"
@@ -134,6 +146,13 @@ class Settings:
 
 def load_settings() -> Settings:
     timezone = os.getenv("DASHBOARD_TIMEZONE", "Asia/Shanghai")
+    update_interval_minutes = _env_optional_int("DASHBOARD_UPDATE_INTERVAL_MINUTES")
+    if update_interval_minutes is not None:
+        update_interval_minutes = max(1, min(update_interval_minutes, 1440))
+    refresh_seconds = _env_optional_int("DASHBOARD_PAGE_REFRESH_SECONDS")
+    if refresh_seconds is None:
+        refresh_seconds = update_interval_minutes * 60 if update_interval_minutes else 0
+    refresh_seconds = max(0, min(refresh_seconds, 86400))
     live_kpi_labels = _split_labels(
         os.getenv("BILIBILI_DASHBOARD_KPI_LABELS"),
         ["总粉丝数", "7日涨粉", "总播放量", "总点赞数"],
@@ -161,6 +180,8 @@ def load_settings() -> Settings:
         feishu_enabled=feishu_enabled,
         feishu_date_format=feishu_date_format,
         update_times=_split_list(os.getenv("DASHBOARD_UPDATE_TIMES"), ["12:30", "20:00"]),
+        update_interval_minutes=update_interval_minutes,
+        page_refresh_seconds=refresh_seconds,
         log_retention_days=_env_int("LOG_RETENTION_DAYS", 30),
         platform_content_limit=max(1, min(_env_int("PLATFORM_CONTENT_LIMIT", 50), 50)),
         log_path=PROJECT_ROOT / "data" / "logs" / "update.log",

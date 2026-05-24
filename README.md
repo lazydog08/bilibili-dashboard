@@ -36,7 +36,7 @@ start dashboard/output/index.html
 
 粉丝涨幅口径：
 
-- `周期涨粉`：当前成功快照减上一次成功快照。
+- `相比昨日的涨粉`：当前成功快照减昨日结束前最近一次可用粉丝快照；历史不足显示 `--`。
 - `7日涨粉`：当前成功快照减 7 日前可用快照；历史不足显示 `--`。
 - `30日涨粉`：当前成功快照减 30 日前可用快照；历史不足显示 `--`。
 
@@ -95,7 +95,7 @@ python main.py --live --no-feishu
 常用字段：
 
 - `fans`：当前粉丝数
-- `growth.cycle`：相较上一次成功更新的净增
+- `growth.cycle`：手动导入时用于覆盖“相比昨日的涨粉”
 - `growth.7d`：7 日涨粉
 - `growth.30d`：30 日涨粉
 - `today`：今日播放/阅读、点赞、收藏、评论、分享
@@ -232,13 +232,12 @@ python main.py --live --no-feishu
 python main.py --no-feishu
 ```
 
-## NAS 半小时刷新
+## NAS 本地看板半小时刷新
 
-项目已提供适合 NAS / Linux 定时任务调用的脚本。只在 NAS 上执行，消耗 NAS 算力，不消耗 Codex。
+项目已提供适合 NAS / Linux 定时任务调用的脚本。推荐把真实账号数据只发布到 NAS 本地 Web 目录，不推送到公开 GitHub Pages。
 
 ```bash
 scripts/nas_update_dashboard.sh
-scripts/nas_update_and_push_cloud.sh
 ```
 
 推荐做法：
@@ -246,26 +245,26 @@ scripts/nas_update_and_push_cloud.sh
 1. 在 NAS 上用 Git 克隆 GitHub 仓库到固定目录，例如 `/volume1/docker/bilibili-dashboard`、`/root/bilibili-dashboard` 或 NAS 实际共享目录。
 2. 复制 `data/secrets/dashboard.env.example` 到 `~/.config/bilibili-dashboard/dashboard.env`。
 3. 只在这个仓库外部的 `dashboard.env` 里填写 Cookie、Bark device key、抖音 / 小红书授权接口等敏感配置。
-4. 给 NAS 配置 GitHub SSH deploy key，允许它把 `data/history.json` 和 `dashboard/output/index.html` 推送到仓库。
-5. 在 GitHub 仓库 Settings → Pages → Source 选择 `GitHub Actions`。
+4. 设置 `DASHBOARD_PUBLISH_DIR` 为 NAS Web 目录，例如 `/volume1/web/bilibili-dashboard`。
+5. 保持 `DASHBOARD_GIT_PUSH=0`，不要把真实账号数据推送到 GitHub。
 6. 在 NAS 的计划任务里每 30 分钟执行一次：
 
 ```bash
-/path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh
+/path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh
 ```
 
 Linux crontab 示例见 `scripts/nas_cron.example`：
 
 ```cron
-*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh >/dev/null 2>&1
 ```
 
-`nas_update_and_push_cloud.sh` 会：
+`nas_update_dashboard.sh` 会：
 
-- 调用 `nas_update_dashboard.sh` 抓取三平台数据并重新生成页面。
-- 只提交 `data/history.json` 和 `dashboard/output/index.html`。
-- 推送到 GitHub 仓库的 `main` 分支。
-- 触发 `.github/workflows/deploy_pages.yml`，由 GitHub Pages 部署静态页面。
+- 按 `DASHBOARD_MODE` 抓取数据并重新生成页面。
+- 把页面写到 `dashboard/output/index.html`。
+- 如果配置了 `DASHBOARD_PUBLISH_DIR`，同步复制到 NAS Web 目录。
+- 写入 `data/logs/nas-update.log`，不输出 Cookie、token 或 Bark key。
 
 如果 NAS 环境是 iStoreOS / OpenWrt，系统里通常没有 Python，但有 Docker。此时可以先用 Docker 包装脚本本地生成页面：
 
@@ -277,12 +276,14 @@ Linux crontab 示例见 `scripts/nas_cron.example`：
 
 脚本行为：
 
-- 默认 `DASHBOARD_MODE=live`，会尝试实时拉取 B 站 / 抖音 / 小红书授权数据。
+- 推荐 `DASHBOARD_MODE=bilibili-only`，会只更新 B 站真实数据，抖音 / 小红书沿用缓存或手动导入数据。
+- 如果确实要拉取三平台实时数据，可改为 `DASHBOARD_MODE=live`。
 - 如果缺少某个平台凭据，会自动降级到缓存、手动数据或 `--`，不会中断整个看板。
 - 默认不跑测试，避免每半小时消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
 - 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
 - Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
-- 日志写入 `data/logs/nas-update.log`，不会输出 Cookie、token 或 Bark key。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按半小时显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
 
 可选项：
 
@@ -291,8 +292,13 @@ Linux crontab 示例见 `scripts/nas_cron.example`：
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
 - `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30`：页面显示下一次半小时刷新时间。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=1800`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
+- `DASHBOARD_MODE=bilibili-only`：只抓取 B 站，适合 NAS 本地看板低风险运行。
 - `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
 - `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。
+
+`scripts/nas_update_and_push_cloud.sh` 仍保留为手动备用。如果你明确要把真实数据推到 GitHub，再单独使用它。默认本地看板不需要这个脚本。
 
 ## Bark 推送
 
