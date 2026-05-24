@@ -1,6 +1,6 @@
 # bilibili-dashboard
 
-这个项目会生成一个暗色 B 站创作者数据看板。它默认使用本地 fixture 数据渲染，不需要账号、不需要 Cookie、不需要网络，适合第一次安全运行。开启实时模式后，它只尝试读取你自己的 Bilibili 创作中心数据，并在失败时回退到缓存或示例数据。
+这个项目会生成一个暗色创作者运营数据看板。当前页面支持 B 站、抖音、小红书三平台统一展示；默认使用本地 fixture / 缓存数据渲染，不需要账号、不需要 Cookie、不需要网络，适合第一次安全运行。开启实时模式后，它只尝试读取你自己的授权数据，并在失败时回退到缓存、手动导入或示例数据。抖音和小红书的数据源优先级是官方 API / OpenAPI、本人账号授权 Cookie、手动导入、不可用占位；未取得的字段显示 `--`，不会臆造接口、估算数据或绕过平台风控。
 
 ## 本地快速开始
 
@@ -25,6 +25,90 @@ start dashboard/output/index.html
 ```
 
 `--fixture` 模式不会读取任何真实凭据，也不会发起网络请求。它会用 `data/fixtures/sample_history.json` 生成 `data/history.json` 和 `dashboard/output/index.html`。
+
+## 三平台统一看板
+
+页面顶部会显示三张平台卡片：
+
+- B 站：沿用现有创作中心 / 缓存数据，可展示粉丝、播放、点赞、收藏、评论、分享、投币、弹幕等字段。
+- 抖音：优先读取官方 API / OpenAPI，其次读取你本人账号授权后台 Cookie 数据源，最后才使用手动导入。
+- 小红书：优先读取官方开放平台、蒲公英、创作者后台授权接口，其次读取你本人账号授权后台 Cookie 数据源，最后才使用手动导入。
+
+粉丝涨幅口径：
+
+- `周期涨粉`：当前成功快照减上一次成功快照。
+- `7日涨粉`：当前成功快照减 7 日前可用快照；历史不足显示 `--`。
+- `30日涨粉`：当前成功快照减 30 日前可用快照；历史不足显示 `--`。
+
+内容指标表按 `今日 / 昨日 / Δ / Δ%` 展示。平台只提供累计值时，项目会用 UTC+8 自然日边界和历史快照差值计算；历史不足、字段不可得或昨日值为 0 时显示 `--`，不会用估算值冒充真实值。
+
+## 抖音 / 小红书数据源
+
+抖音和小红书支持四级数据来源，按顺序自动降级：
+
+1. 官方 API / OpenAPI：配置平台授权令牌和官方数据地址后优先使用。
+2. 授权后台 Cookie：你登录自己的后台后，把可返回 JSON 的汇总或作品列表请求地址配置到 `DOUYIN_DATA_URL` / `XIAOHONGSHU_DATA_URL`，把 Cookie 配置到对应 Secret。
+3. 手动导入：如果官方 API 和后台 Cookie 都不可用，读取 `data/manual_platform_metrics.json`。
+4. 不可用占位：没有可靠数据源时，页面显示 `-- / 暂不可用`。
+
+项目只请求你显式配置的数据源，不自动发现接口、不自动登录、不绕过验证码、不破解签名、不抓取其他账号。如果遇到动态签名、验证码、权限不足或风控响应，会记录脱敏日志并降级。
+
+本地官方 API 示例：
+
+```bash
+export DOUYIN_ACCESS_TOKEN='只放在本机环境变量里'
+export DOUYIN_OPEN_ID='如官方接口需要则填写'
+export DOUYIN_OFFICIAL_DATA_URL='你已获授权的官方 API 数据地址'
+export XIAOHONGSHU_ACCESS_TOKEN='只放在本机环境变量里'
+export XIAOHONGSHU_OPEN_ID='如官方接口需要则填写'
+export XIAOHONGSHU_OFFICIAL_DATA_URL='你已获授权的官方 / 蒲公英 / 创作者接口数据地址'
+python main.py --live --no-feishu
+```
+
+本地授权 Cookie 数据源示例：
+
+```bash
+export DOUYIN_COOKIE='只放在本机环境变量里'
+export DOUYIN_DATA_URL='你自己后台里可返回 JSON 的数据接口地址'
+export XIAOHONGSHU_COOKIE='只放在本机环境变量里'
+export XIAOHONGSHU_DATA_URL='你自己后台里可返回 JSON 的数据接口地址'
+python main.py --live --no-feishu
+```
+
+不要把官方令牌、Cookie、数据 URL 发到公开页面、提交记录、Issue、截图或日志里。
+
+手动导入方式：
+
+`data/manual_platform_metrics.json` 的每个平台至少应包含：
+
+- `source`: 固定为 `manual_import`
+- `accountId`: 平台账号标识
+- `capturedAt`: 这批数据在后台看到或导出的时间
+- `importedAt`: 导入本项目的时间
+- `fans`: 当前粉丝数
+- `metrics`: 累计或当前共有指标
+- `customMetrics`: 平台定制累计或当前指标
+- `sourceStatus`: 手动数据状态说明
+
+页面会显示“数据源：手动导入”和最近手动更新时间，避免把手动数据伪装成实时数据。
+
+常用字段：
+
+- `fans`：当前粉丝数
+- `growth.cycle`：相较上一次成功更新的净增
+- `growth.7d`：7 日涨粉
+- `growth.30d`：30 日涨粉
+- `today`：今日播放/阅读、点赞、收藏、评论、分享
+- `yesterday`：昨日播放/阅读、点赞、收藏、评论、分享
+- `customToday` / `customYesterday`：平台定制指标
+
+填完后运行：
+
+```bash
+python main.py --no-feishu
+```
+
+程序会把汇总快照写进 `data/history.json`，把最近作品明细保存到 `latest_content`，刷新 `dashboard/output/index.html`。不要在这个文件里填写 Cookie、token、手机号、密码或 Bark key。
 
 ## 实时 Bilibili 模式
 
@@ -77,14 +161,32 @@ export FEISHU_DATE_FORMAT='iso'
 在仓库的 Settings → Secrets and variables → Actions 中添加：
 
 - `BILIBILI_COOKIE`
+- `DOUYIN_COOKIE`，可选，抖音本人账号授权后台 Cookie
+- `XIAOHONGSHU_COOKIE`，可选，小红书本人账号授权后台 Cookie
+- `DOUYIN_ACCESS_TOKEN`，可选，抖音官方 API 授权令牌
+- `DOUYIN_OPEN_ID`，可选，抖音官方 API 账号标识
+- `DOUYIN_OFFICIAL_DATA_URL`，可选，抖音官方 API 数据地址
+- `XIAOHONGSHU_ACCESS_TOKEN`，可选，小红书官方 / 蒲公英授权令牌
+- `XIAOHONGSHU_OPEN_ID`，可选，小红书官方接口账号标识
+- `XIAOHONGSHU_OFFICIAL_DATA_URL`，可选，小红书官方 / 蒲公英 / 创作者接口数据地址
+- `DOUYIN_DATA_URL`，可选，抖音后台授权数据源地址
+- `XIAOHONGSHU_DATA_URL`，可选，小红书后台授权数据源地址
+- `BARK_DEVICE_KEY`，可选，用于 iPhone Bark 推送
 - `FEISHU_APP_ID`，可选
 - `FEISHU_APP_SECRET`，可选
 - `FEISHU_BASE_APP_TOKEN`，可选
 - `FEISHU_TABLE_ID`，可选
 
-如果需要设置飞书日期格式，可在 Variables 中添加：
+如果需要设置非敏感配置，可在 Variables 中添加：
 
 - `FEISHU_DATE_FORMAT`
+- `BILIBILI_ACCOUNT_ID`
+- `DOUYIN_ACCOUNT_ID`
+- `XIAOHONGSHU_ACCOUNT_ID`
+- `BARK_GROUP`
+- `BARK_SOUND`
+- `LOG_RETENTION_DAYS`
+- `PLATFORM_CONTENT_LIMIT`
 
 ## GitHub Pages
 
@@ -94,24 +196,117 @@ export FEISHU_DATE_FORMAT='iso'
 
 ## 自动更新工作流
 
-`.github/workflows/daily_fetch.yml` 会：
+`.github/workflows/daily_fetch.yml` 保留为手动备用流程。当前推荐方案是由 NAS 定时抓取和渲染，再推送到 GitHub；GitHub Pages 只负责部署静态页面，不负责定时抓取平台数据。
 
-- 每天北京时间 12:30 运行，也可手动触发。
+手动备用流程会：
+
 - 安装依赖。
-- 运行 `python main.py --live --snapshot-date yesterday`，把当天抓到的可用数据写入前一天日期。
+- 运行 `python main.py --live --snapshot-date yesterday`，把当天抓到的可用数据写入前一天日期，并刷新三平台统一看板。
 - 运行测试。
 - 提交更新后的 `data/history.json` 和 `dashboard/output/index.html`。
 - 上传并部署 GitHub Pages。
 
-如果你的 GitHub Enterprise 环境不支持 schedule 的 `timezone` 字段，把计划任务替换成 UTC cron：
+`.github/workflows/deploy_pages.yml` 会在 NAS 推送 `dashboard/output/index.html` 或 `data/history.json` 后自动部署 GitHub Pages。
+
+如果后续还想把 GitHub Actions 也恢复成每天北京时间 12:30 和 20:00 自动抓取，可以给 `daily_fetch.yml` 加回下面的计划任务。GitHub Actions 的 `schedule` 使用 UTC：
 
 ```yaml
 on:
   schedule:
     - cron: '30 4 * * *'
+    - cron: '0 12 * * *'
+  workflow_dispatch:
 ```
 
-因为北京时间中午 12:30 是 UTC 04:30。
+因为北京时间 12:30 是 UTC 04:30，北京时间 20:00 是 UTC 12:00。
+
+本地手动更新：
+
+```bash
+python main.py --live --no-feishu
+```
+
+如果只是使用缓存刷新页面：
+
+```bash
+python main.py --no-feishu
+```
+
+## NAS 半小时刷新
+
+项目已提供适合 NAS / Linux 定时任务调用的脚本。只在 NAS 上执行，消耗 NAS 算力，不消耗 Codex。
+
+```bash
+scripts/nas_update_dashboard.sh
+scripts/nas_update_and_push_cloud.sh
+```
+
+推荐做法：
+
+1. 在 NAS 上用 Git 克隆 GitHub 仓库到固定目录，例如 `/volume1/docker/bilibili-dashboard`、`/root/bilibili-dashboard` 或 NAS 实际共享目录。
+2. 复制 `data/secrets/dashboard.env.example` 到 `~/.config/bilibili-dashboard/dashboard.env`。
+3. 只在这个仓库外部的 `dashboard.env` 里填写 Cookie、Bark device key、抖音 / 小红书授权接口等敏感配置。
+4. 给 NAS 配置 GitHub SSH deploy key，允许它把 `data/history.json` 和 `dashboard/output/index.html` 推送到仓库。
+5. 在 GitHub 仓库 Settings → Pages → Source 选择 `GitHub Actions`。
+6. 在 NAS 的计划任务里每 30 分钟执行一次：
+
+```bash
+/path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh
+```
+
+Linux crontab 示例见 `scripts/nas_cron.example`：
+
+```cron
+*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+```
+
+`nas_update_and_push_cloud.sh` 会：
+
+- 调用 `nas_update_dashboard.sh` 抓取三平台数据并重新生成页面。
+- 只提交 `data/history.json` 和 `dashboard/output/index.html`。
+- 推送到 GitHub 仓库的 `main` 分支。
+- 触发 `.github/workflows/deploy_pages.yml`，由 GitHub Pages 部署静态页面。
+
+如果 NAS 环境是 iStoreOS / OpenWrt，系统里通常没有 Python，但有 Docker。此时可以先用 Docker 包装脚本本地生成页面：
+
+```cron
+*/30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
+```
+
+`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续半小时更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
+
+脚本行为：
+
+- 默认 `DASHBOARD_MODE=live`，会尝试实时拉取 B 站 / 抖音 / 小红书授权数据。
+- 如果缺少某个平台凭据，会自动降级到缓存、手动数据或 `--`，不会中断整个看板。
+- 默认不跑测试，避免每半小时消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
+- 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
+- Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
+- 日志写入 `data/logs/nas-update.log`，不会输出 Cookie、token 或 Bark key。
+
+可选项：
+
+- `DASHBOARD_PUBLISH_DIR=/volume1/web/bilibili-dashboard`：每次更新后把 `index.html` 复制到 NAS Web 目录，方便手机浏览。
+- `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
+- `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
+- `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
+- `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
+- `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
+- `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。
+
+## Bark 推送
+
+Bark 是可选功能。未配置时更新流程仍会正常完成，并输出“Bark 未配置，跳过推送”。
+
+环境变量：
+
+```bash
+export BARK_DEVICE_KEY='只放在本机或 GitHub Secret'
+export BARK_GROUP='数据看板'
+export BARK_SOUND='minuet'
+```
+
+推送正文会汇总 B 站、抖音、小红书三平台粉丝和涨粉情况。不要把 `BARK_DEVICE_KEY` 写入 README、Issue、提交记录、截图或日志。
 
 ## 常用命令
 
@@ -119,14 +314,18 @@ on:
 python main.py --fixture
 python main.py --live
 python main.py --no-feishu
+python main.py --no-feishu --no-bark
 python -m pytest
 ```
 
 ## 安全说明
 
 - 不要公开 Cookie、飞书密钥或访问令牌。
+- 不要公开 Bark device key。
+- 真实配置文件放在 `~/.config/bilibili-dashboard/dashboard.env`，不要放在项目目录里。
 - 不要提交原始 Bilibili API 响应。
 - 不要使用本项目抓取其他创作者的私有数据。
+- 不要使用本项目绕过抖音、小红书、B 站的验证码、登录、反爬或风控。
 - 如果真实数据不适合公开，不要把生成页面发布到公开 GitHub Pages。
 - 实时获取失败时，页面会继续使用缓存或 fixture，并显示警告。
 
@@ -143,3 +342,7 @@ GitHub Pages 部署失败：确认 Pages Source 是 `GitHub Actions`，并检查
 页面显示 fixture 而不是实时数据：检查 `ENABLE_BILIBILI_FETCH=1`、`BILIBILI_COOKIE` 是否存在，以及工作流 Secrets 是否配置到正确仓库。
 
 GitHub Enterprise 不支持时区计划：使用上面的 UTC cron 方案。
+
+抖音 / 小红书一直显示 `--`：检查官方 API 授权、后台 Cookie 数据源或 `data/manual_platform_metrics.json`。如果接口需要动态签名、验证码或权限未开放，项目会降级显示 `--`，不会用估算值填充。
+
+Bark 未推送：检查 `BARK_DEVICE_KEY` 是否配置到环境变量或 GitHub Actions Secret；不要把 device key 写入仓库。

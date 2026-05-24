@@ -3,4 +3,13 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+*.token
 .DS_Store
+data/logs/
+data/secrets/*
+!data/secrets/.gitkeep
+!data/secrets/*.example

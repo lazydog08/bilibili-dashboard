@@ -87,6 +87,34 @@ def test_malformed_optional_fields_do_not_crash_context_derivation() -> None:
     assert context["warnings"] == ["fixture warning"]
 
 
+def test_display_warning_override_hides_stale_cache_fetch_failures() -> None:
+    history = {
+        "schema_version": 1,
+        "source": "cache",
+        "warnings": [
+            "30 个视频明细接口不可用，已使用列表数据回退。",
+            "粉丝明细获取失败，已使用 0 回退：fan detail failed: Bilibili request failed: Bilibili API returned code -400: 请求错误",
+        ],
+        "snapshots": [
+            {
+                "date": "2026-05-23",
+                "updated_at": "2026-05-23T12:07:00+08:00",
+                "warnings": [
+                    "30 个视频明细接口不可用，已使用列表数据回退。",
+                ],
+                "channel": {"total_followers": 168707},
+                "videos": [{"title": "缓存真实视频", "publish_time": "2026-05-23", "views": 100}],
+            }
+        ],
+    }
+    context = derive_dashboard_context(
+        history,
+        load_settings(),
+        display_warnings=["未启用实时获取，已使用缓存或示例数据。"],
+    )
+    assert context["warnings"] == ["未启用实时获取，已使用缓存或示例数据。"]
+
+
 def test_live_snapshot_takes_display_priority_over_newer_fixture_date() -> None:
     fixture_snapshot = _snapshot(23)
     fixture_snapshot["source"] = "fixture"
@@ -150,3 +178,19 @@ def test_cached_live_like_snapshot_can_override_newer_fixture_date() -> None:
     context = derive_dashboard_context(history, load_settings())
     assert context["kpis"][0]["value"] == 168_707
     assert context["recent_videos"][0]["title"] == "缓存真实视频"
+
+
+def test_live_partial_source_uses_partial_badge() -> None:
+    live_snapshot = _snapshot(23)
+    live_snapshot["videos"] = [{"title": "真实视频", "publish_time": "2026-05-23", "views": 100}]
+    history = {
+        "schema_version": 1,
+        "source": "live_partial",
+        "last_updated": "2026-05-24T14:45:46+08:00",
+        "warnings": ["明细接口降级"],
+        "snapshots": [live_snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    assert context["badge_text"] == "B站创作中心数据（部分明细回退）"
+    assert context["recent_videos"][0]["title"] == "真实视频"

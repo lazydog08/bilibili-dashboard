@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page_title }}</title>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
   <style>
     :root {
       --bg: #202020;
@@ -28,6 +27,7 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       letter-spacing: 0;
+      overflow-x: hidden;
     }
 
     .page {
@@ -118,6 +118,452 @@
       line-height: 1.65;
     }
 
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+
+    .platform-card {
+      min-width: 0;
+      padding: 20px;
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .platform-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .platform-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .platform-logo {
+      width: 30px;
+      height: 30px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #fff;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+
+    .platform-logo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .platform-logo-fallback {
+      display: inline-grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      background: var(--platform-accent, var(--panel-soft));
+    }
+
+    .status-pill {
+      max-width: 160px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .platform-account,
+    .platform-source,
+    .platform-last {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .platform-fans {
+      display: grid;
+      gap: 6px;
+    }
+
+    .platform-fans-label {
+      color: #d4d4d4;
+      font-size: 13px;
+    }
+
+    .platform-fans-value {
+      color: var(--text);
+      font-size: clamp(38px, 4vw, 54px);
+      line-height: 1;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .growth-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .growth-item {
+      min-width: 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(43, 43, 43, .78);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .growth-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .growth-value {
+      font-size: 19px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .metric-block {
+      display: grid;
+      gap: 8px;
+    }
+
+    .metric-title {
+      color: #e8e8e8;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .metric-table {
+      display: grid;
+      grid-template-columns: minmax(86px, 1.1fr) repeat(4, minmax(0, .85fr));
+      gap: 1px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .metric-cell {
+      min-width: 0;
+      padding: 8px 9px;
+      background: rgba(43, 43, 43, .92);
+      color: #e8e8e8;
+      font-size: 12px;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .metric-head {
+      color: var(--muted);
+      font-weight: 800;
+      background: rgba(32, 32, 32, .82);
+    }
+
+    .metric-name {
+      font-weight: 780;
+    }
+
+    .metric-note {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .status-note {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .is-positive {
+      color: #51d88a;
+    }
+
+    .is-negative {
+      color: #ff6048;
+    }
+
+    .is-neutral {
+      color: #d6d6d6;
+    }
+
+    .is-warning {
+      color: #ffc36b;
+    }
+
+    .is-unavailable {
+      color: #9b9b9b;
+    }
+
+    .trend-panel {
+      margin-bottom: 24px;
+    }
+
+    .trend-chart {
+      height: 300px;
+    }
+
+    .section-caption {
+      margin: 4px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .platform-tabs {
+      display: flex;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 6px;
+      border-radius: 10px;
+      background: rgba(43, 43, 43, .86);
+      border: 1px solid var(--panel-line);
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .tab-button {
+      appearance: none;
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 850;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-button.is-active {
+      background: rgba(255, 255, 255, .1);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+    }
+
+    .tab-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .platform-detail {
+      display: none;
+    }
+
+    .platform-detail.is-active {
+      display: block;
+    }
+
+    .content-panel {
+      margin-bottom: 16px;
+    }
+
+    .content-chart-shell {
+      padding: 12px 12px 4px;
+      border-radius: 8px;
+      background: rgba(43, 43, 43, .7);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .content-chart-grid {
+      display: grid;
+      grid-template-columns: 1.18fr .92fr;
+      grid-template-areas:
+        "reach interaction"
+        "depth interaction";
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .content-chart-shell.is-reach {
+      grid-area: reach;
+    }
+
+    .content-chart-shell.is-interaction {
+      grid-area: interaction;
+    }
+
+    .content-chart-shell.is-depth {
+      grid-area: depth;
+    }
+
+    .mini-chart-title {
+      margin: 0 0 6px;
+      color: #eaeaea;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .platform-content-chart {
+      height: 260px;
+    }
+
+    .platform-content-chart.is-tall {
+      height: 536px;
+    }
+
+    .content-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      max-height: min(72vh, 760px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 8px;
+      scrollbar-color: rgba(245, 245, 245, .34) rgba(255, 255, 255, .06);
+      scrollbar-width: thin;
+    }
+
+    .content-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .content-list::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, .06);
+      border-radius: 999px;
+    }
+
+    .content-list::-webkit-scrollbar-thumb {
+      background: rgba(245, 245, 245, .34);
+      border-radius: 999px;
+    }
+
+    .content-row {
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(48, 48, 48, .96), rgba(37, 37, 37, .92));
+      border: 1px solid rgba(255, 255, 255, .06);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .18);
+    }
+
+    .content-row::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, var(--platform-accent, var(--accent)), transparent 72%);
+      opacity: .8;
+    }
+
+    .content-row > * {
+      position: relative;
+    }
+
+    .content-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--panel-soft);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .26);
+    }
+
+    .content-thumb-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background:
+        radial-gradient(circle at 28% 22%, color-mix(in srgb, var(--platform-accent, var(--accent)) 30%, transparent), transparent 32%),
+        linear-gradient(135deg, rgba(32, 32, 32, .96), rgba(63, 63, 63, .88));
+      color: #e8e8e8;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .content-title {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 820;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .content-time {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .content-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .content-metric {
+      min-width: 0;
+      padding: 7px 8px;
+      border-radius: 6px;
+      background: rgba(32, 32, 32, .72);
+      color: #e8e8e8;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .content-metric span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .empty-state {
+      padding: 24px;
+      border-radius: 8px;
+      background: rgba(43, 43, 43, .72);
+      border: 1px dashed rgba(255, 255, 255, .14);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -200,6 +646,10 @@
       gap: 22px;
     }
 
+    .bottom-grid .chart {
+      height: 400px;
+    }
+
     .panel {
       padding: 16px 20px 20px;
       min-width: 0;
@@ -233,7 +683,29 @@
     }
 
     .ctr-chart {
-      height: 360px;
+      height: 560px;
+    }
+
+    .ctr-scroll {
+      min-height: 560px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: rgba(43, 43, 43, .38);
+      border: 1px solid rgba(255, 255, 255, .04);
+    }
+
+    .ctr-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .ctr-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, .06);
+      border-radius: 999px;
+    }
+
+    .ctr-scroll::-webkit-scrollbar-thumb {
+      background: rgba(245, 245, 245, .34);
+      border-radius: 999px;
     }
 
     .thumbnail-grid {
@@ -342,9 +814,29 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .platform-grid {
+        grid-template-columns: 1fr;
+      }
+
       .middle-grid,
       .bottom-grid {
         grid-template-columns: 1fr;
+      }
+
+      .content-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .content-chart-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "reach"
+          "interaction"
+          "depth";
+      }
+
+      .platform-content-chart.is-tall {
+        height: 330px;
       }
 
       .thumbnail-grid {
@@ -379,9 +871,60 @@
         grid-template-columns: 1fr;
       }
 
+      .platform-card {
+        padding: 16px;
+      }
+
+      .platform-head {
+        flex-direction: column;
+      }
+
+      .status-pill {
+        max-width: 100%;
+      }
+
+      .platform-fans-value {
+        font-size: 38px;
+      }
+
+      .growth-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .platform-tabs {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .tab-button {
+        flex: 1 1 30%;
+        justify-content: center;
+      }
+
+      .metric-table {
+        grid-template-columns: minmax(70px, 1.1fr) repeat(4, minmax(0, .9fr));
+      }
+
+      .metric-cell {
+        padding: 7px 6px;
+        font-size: 11px;
+      }
+
       .thumbnail-grid {
         max-height: 72vh;
         padding-right: 6px;
+      }
+
+      .content-row {
+        grid-template-columns: 1fr;
+      }
+
+      .content-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .content-list {
+        grid-template-columns: 1fr;
       }
 
       .kpi-card {
@@ -400,7 +943,7 @@
 
       .chart,
       .ctr-chart {
-        height: 330px;
+        height: 390px;
       }
     }
   </style>
@@ -416,6 +959,7 @@
       <div class="right-meta">
         <div class="badge"><span class="badge-mark" aria-hidden="true"></span>{{ badge_text }}</div>
         <div class="updated">最后更新：{{ last_updated }}</div>
+        <div class="updated">{{ next_update_label }}</div>
       </div>
     </header>
 
@@ -427,94 +971,294 @@
     </section>
     {% endif %}
 
-    <section class="kpi-grid" aria-label="频道核心指标">
-      {% for kpi in kpis %}
-      <article class="kpi-card">
-        <div>
-          <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value">{{ kpi.formatted_value }}</div>
-          <div class="kpi-sub">
-            <span>较上一周期</span>
-            <span class="kpi-change">{{ kpi.change_icon }}{{ kpi.change_label }}</span>
+    <section class="platform-grid" aria-label="三平台运营指标">
+      {% for platform in platform_cards %}
+      <article class="platform-card" style="--platform-accent: {{ platform.accent }}">
+        <header class="platform-head">
+          <div>
+            <div class="platform-name">
+              <span class="platform-logo" style="--platform-accent: {{ platform.accent }}">
+                {% if platform.icon %}
+                  <img src="{{ platform.icon }}" alt="{{ platform.name }}图标" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-grid';">
+                  <span class="platform-logo-fallback" style="display: none;">{{ platform.logo }}</span>
+                {% else %}
+                  <span class="platform-logo-fallback">{{ platform.logo }}</span>
+                {% endif %}
+              </span>
+              <span>{{ platform.name }}</span>
+            </div>
+            <div class="platform-account">账号：{{ platform.account_id or "--" }}</div>
+            <div class="platform-source">数据源：{{ platform.source_label or "--" }}</div>
           </div>
-        </div>
-        <svg class="sparkline" viewBox="0 0 112 42" role="img" aria-label="{{ kpi.label }}趋势">
-          <polyline points="{{ kpi.sparkline_points }}"></polyline>
-        </svg>
+          <div class="status-pill {{ platform.status_class }}">{{ platform.status_label }}</div>
+        </header>
+
+        <section class="platform-fans">
+          <div class="platform-fans-label">当前粉丝量</div>
+          <div class="platform-fans-value {{ platform.fans.class }}">{{ platform.fans.label }}</div>
+          <div class="platform-last">最近成功：{{ platform.last_success_label }}</div>
+        </section>
+
+        <section class="growth-grid" aria-label="{{ platform.name }}涨粉">
+          {% for item in platform.growth %}
+          <div class="growth-item">
+            <div class="growth-label">{{ item.title }}</div>
+            <div class="growth-value {{ item.value.class }}">{{ item.value.label }}</div>
+          </div>
+          {% endfor %}
+        </section>
+
+        <section class="metric-block">
+          <div class="metric-title">共有指标</div>
+          <div class="metric-table" role="table" aria-label="{{ platform.name }}共有指标">
+            <div class="metric-cell metric-head">指标</div>
+            <div class="metric-cell metric-head">{{ platform.metric_columns.current }}</div>
+            <div class="metric-cell metric-head">{{ platform.metric_columns.previous }}</div>
+            <div class="metric-cell metric-head">增减量</div>
+            <div class="metric-cell metric-head">变化幅度</div>
+            {% for metric in platform.common_metrics %}
+              <div class="metric-cell metric-name">{{ metric.label }}{% if metric.note %}<div class="metric-note">{{ metric.note }}</div>{% endif %}</div>
+              <div class="metric-cell {{ metric.today.class }}">{{ metric.today.label }}</div>
+              <div class="metric-cell {{ metric.yesterday.class }}">{{ metric.yesterday.label }}</div>
+              <div class="metric-cell {{ metric.delta.class }}">{{ metric.delta.label }}</div>
+              <div class="metric-cell {{ metric.delta_percent.class }}">{{ metric.delta_percent.label }}</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="metric-block">
+          <div class="metric-title">平台定制指标</div>
+          <div class="metric-table" role="table" aria-label="{{ platform.name }}定制指标">
+            <div class="metric-cell metric-head">指标</div>
+            <div class="metric-cell metric-head">{{ platform.metric_columns.current }}</div>
+            <div class="metric-cell metric-head">{{ platform.metric_columns.previous }}</div>
+            <div class="metric-cell metric-head">增减量</div>
+            <div class="metric-cell metric-head">变化幅度</div>
+            {% for metric in platform.custom_metrics %}
+              <div class="metric-cell metric-name">{{ metric.label }}{% if metric.note %}<div class="metric-note">{{ metric.note }}</div>{% endif %}</div>
+              <div class="metric-cell {{ metric.today.class }}">{{ metric.today.label }}</div>
+              <div class="metric-cell {{ metric.yesterday.class }}">{{ metric.yesterday.label }}</div>
+              <div class="metric-cell {{ metric.delta.class }}">{{ metric.delta.label }}</div>
+              <div class="metric-cell {{ metric.delta_percent.class }}">{{ metric.delta_percent.label }}</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <div class="status-note">{{ platform.status_message or "数据源正常。" }}</div>
       </article>
       {% endfor %}
     </section>
 
-    <section class="middle-grid">
-      <article class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">CTR（展示点击率）</h2>
-          <span class="panel-subtle">Top 20</span>
-        </div>
-        <div id="ctrChart" class="chart ctr-chart"></div>
-      </article>
-
-      <article class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">近三十天上线节目封面总览</h2>
-        </div>
-        <div class="thumbnail-grid">
-          {% for video in recent_videos %}
-          <article class="video-card">
-            <img
-              class="thumb"
-              src="{{ video.thumbnail }}"
-              alt="{{ video.title }}"
-              loading="lazy"
-              referrerpolicy="no-referrer"
-              data-fallback-seed="{{ video.bvid or loop.index }}"
-              onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-            >
-            <div class="video-title" title="{{ video.title }}">{{ video.short_title }}</div>
-            <div class="video-meta">
-              <span><b>▦ B站上线时间：</b>{{ video.publish_time }}</span>
-              <span><b># CTR（展示点击率）：</b>{{ video.ctr_label }}</span>
-              <span><b>ƒx AVD（平均播放时长/min）：</b>{{ video.avd_label }}</span>
-              <span><b>ƒx AVP（平均播放百分比）：</b>{{ video.avp_label }}</span>
-            </div>
-          </article>
-          {% endfor %}
-        </div>
-      </article>
+    <section class="panel trend-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">近 30 日三平台粉丝趋势</h2>
+        <span class="panel-subtle">UTC+8</span>
+      </div>
+      <div id="followerTrendChart" class="chart trend-chart"></div>
     </section>
 
-    <section class="bottom-grid">
-      <article class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">视频播放量与粉丝增量</h2>
-        </div>
-        <div id="viewsFollowersChart" class="chart"></div>
-      </article>
+    <nav class="platform-tabs" aria-label="平台内容明细切换">
+      {% for platform in platform_cards %}
+      <button class="tab-button{% if loop.first %} is-active{% endif %}" type="button" data-tab-target="{{ platform.key }}">
+        {% if platform.icon %}
+          <img class="tab-icon" src="{{ platform.icon }}" alt="" loading="lazy" referrerpolicy="no-referrer">
+        {% endif %}
+        <span>{{ platform.name }}</span>
+      </button>
+      {% endfor %}
+    </nav>
 
-      <article class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">平均播放时长与完播率</h2>
-        </div>
-        <div id="avdAvpChart" class="chart"></div>
-      </article>
+    <section class="platform-detail is-active" data-platform-detail="bilibili">
+      <p class="section-caption">B 站内容明细</p>
+
+      <section class="middle-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">CTR（展示点击率）</h2>
+            <span class="panel-subtle">Top {{ ctr_chart.labels|length }}</span>
+          </div>
+          <div class="ctr-scroll">
+            <div id="ctrChart" class="chart ctr-chart"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">近三十天上线节目封面总览</h2>
+          </div>
+          <div class="thumbnail-grid">
+            {% for video in recent_videos %}
+            <article class="video-card">
+              <img
+                class="thumb"
+                src="{{ video.thumbnail }}"
+                alt="{{ video.title }}"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                data-fallback-seed="{{ video.bvid or loop.index }}"
+                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+              >
+              <div class="video-title" title="{{ video.title }}">{{ video.short_title }}</div>
+              <div class="video-meta">
+                <span><b>上线时间：</b>{{ video.publish_time }}</span>
+                <span><b>点击率：</b>{{ video.ctr_label }}</span>
+                <span><b>平均播放时长：</b>{{ video.avd_label }}</span>
+                <span><b>平均播放占比：</b>{{ video.avp_label }}</span>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">视频播放量与粉丝增量</h2>
+          </div>
+          <div id="viewsFollowersChart" class="chart"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">平均播放时长与完播率</h2>
+          </div>
+          <div id="avdAvpChart" class="chart"></div>
+        </article>
+      </section>
     </section>
+
+    {% for platform in platform_cards %}
+      {% if platform.key != "bilibili" %}
+      <section class="platform-detail" data-platform-detail="{{ platform.key }}" style="--platform-accent: {{ platform.accent }}">
+        <p class="section-caption">{{ platform.name }}内容明细</p>
+        <article class="panel content-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">{{ platform.name }}作品表现</h2>
+            <span class="panel-subtle">{{ platform.content_items|length }} 条</span>
+          </div>
+          {% if platform.content_items %}
+          <div class="content-chart-grid">
+            <section class="content-chart-shell is-reach">
+              <h3 class="mini-chart-title">{{ platform.name }}播放 / 阅读表现</h3>
+              <div id="{{ platform.key }}ReachChart" class="chart platform-content-chart"></div>
+            </section>
+            <section class="content-chart-shell is-interaction">
+              <h3 class="mini-chart-title">{{ platform.name }}互动结构</h3>
+              <div id="{{ platform.key }}InteractionChart" class="chart platform-content-chart is-tall"></div>
+            </section>
+            <section class="content-chart-shell is-depth">
+              <h3 class="mini-chart-title">{{ platform.name }}{{ platform.content_chart.depth_title or "点击率 / 平均播放" }}</h3>
+              <div id="{{ platform.key }}DepthChart" class="chart platform-content-chart"></div>
+            </section>
+          </div>
+          <div class="content-list">
+            {% for item in platform.content_items %}
+            <article class="content-row">
+              {% if item.thumbnail %}
+              <img
+                class="content-thumb"
+                src="{{ item.thumbnail }}"
+                alt="{{ item.title }}"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
+              >
+              <div class="content-thumb-placeholder" style="display: none;">{{ item.short_title }}</div>
+              {% else %}
+              <div class="content-thumb-placeholder">{{ item.short_title }}</div>
+              {% endif %}
+              {% if item.thumbnail_note %}
+              <div class="content-time">{{ item.thumbnail_note }}</div>
+              {% endif %}
+              <div>
+                <h3 class="content-title" title="{{ item.title }}">{{ item.short_title }}</h3>
+                <div class="content-time">发布时间：{{ item.publish_time }}</div>
+                <div class="content-metrics">
+                  {% for metric in item.metrics %}
+                  <div class="content-metric"><span>{{ metric.label }}</span>{{ metric.value }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            当前后台页面没有提供可读取的作品明细，已保留汇总指标。后续只要拿到平台导出表或可授权 JSON 数据源，这里会直接展示明细，不会用估算数据填充。
+          </div>
+          {% endif %}
+        </article>
+      </section>
+      {% endif %}
+    {% endfor %}
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
   <script>
     const ctrChartData = {{ ctr_chart|tojson }};
     const viewsFollowersChartData = {{ views_followers_chart|tojson }};
     const avdAvpChartData = {{ avd_avp_chart|tojson }};
+    const followerTrendChartData = {{ follower_trend_chart|tojson }};
+    const platformContentCharts = {{ platform_content_charts|tojson }};
     const TEXT = '#cccccc';
     const GRID = 'rgba(255,255,255,.08)';
     const ACCENT = '#e45532';
     const BAR = '#f0f0f0';
+    const createChart = id => {
+      const element = document.getElementById(id);
+      return window.echarts && element
+        ? echarts.init(element)
+        : { setOption() {}, resize() {} };
+    };
 
     function truncateLabel(value, length = 9) {
       if (!value) return '';
       return value.length > length ? `${value.slice(0, length)}…` : value;
     }
 
-    const ctrChart = echarts.init(document.getElementById('ctrChart'));
+    const followerTrendChart = createChart('followerTrendChart');
+    followerTrendChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        valueFormatter(value) {
+          return value == null ? '--' : Number(value).toLocaleString();
+        }
+      },
+      legend: {
+        top: 0,
+        left: 0,
+        textStyle: { color: TEXT },
+        itemWidth: 12,
+        itemHeight: 8
+      },
+      grid: { left: 58, right: 26, top: 48, bottom: 40 },
+      xAxis: {
+        type: 'category',
+        data: followerTrendChartData.labels,
+        axisLabel: { color: TEXT },
+        axisLine: { lineStyle: { color: GRID } },
+        axisTick: { show: false }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: { color: TEXT },
+        splitLine: { lineStyle: { color: GRID } }
+      },
+      series: followerTrendChartData.series.map((item, index) => ({
+        name: item.name,
+        type: 'line',
+        smooth: true,
+        connectNulls: false,
+        symbolSize: 5,
+        data: item.data,
+        lineStyle: { width: 2.4 },
+        emphasis: { focus: 'series' }
+      }))
+    });
+
+    const ctrChart = createChart('ctrChart');
     ctrChart.setOption({
       backgroundColor: 'transparent',
       tooltip: {
@@ -525,32 +1269,74 @@
           return `${ctrChartData.full_titles[item.dataIndex]}<br>CTR：${item.value.toFixed(2)}%`;
         }
       },
-      grid: { left: 112, right: 18, top: 12, bottom: 12 },
+      grid: { left: 164, right: 66, top: 12, bottom: 48 },
       xAxis: {
         type: 'value',
-        axisLabel: { color: TEXT, formatter: '{value}%' },
-        splitLine: { lineStyle: { color: GRID } }
+        min: 0,
+        axisLabel: { color: TEXT, formatter: '{value}%', margin: 12, fontSize: 12 },
+        axisTick: { show: true, lineStyle: { color: GRID } },
+        axisLine: { show: true, lineStyle: { color: GRID } },
+        splitLine: { lineStyle: { color: GRID } },
+        splitNumber: 5
       },
       yAxis: {
         type: 'category',
         inverse: true,
         data: ctrChartData.labels,
-        axisLabel: { color: TEXT, fontSize: 11, formatter: value => truncateLabel(value, 10) },
+        axisLabel: {
+          color: TEXT,
+          fontSize: 12,
+          lineHeight: 16,
+          width: 150,
+          overflow: 'truncate',
+          formatter: value => truncateLabel(value, 18)
+        },
         axisTick: { show: false },
         axisLine: { show: false }
       },
+      dataZoom: [
+        {
+          type: 'slider',
+          yAxisIndex: 0,
+          right: 4,
+          top: 26,
+          bottom: 50,
+          width: 10,
+          start: 0,
+          end: Math.min(100, 18 / Math.max(ctrChartData.labels.length, 1) * 100),
+          borderColor: 'rgba(255,255,255,.12)',
+          fillerColor: 'rgba(228,85,50,.22)',
+          handleStyle: { color: ACCENT },
+          textStyle: { color: TEXT },
+          brushSelect: false
+        },
+        {
+          type: 'inside',
+          yAxisIndex: 0,
+          zoomOnMouseWheel: false,
+          moveOnMouseWheel: true,
+          moveOnMouseMove: true
+        }
+      ],
       series: [{
         type: 'bar',
         data: ctrChartData.values.map((value, index) => ({
           value,
           itemStyle: { color: index === 0 ? ACCENT : BAR }
         })),
-        barWidth: 8,
+        barWidth: 11,
+        label: {
+          show: true,
+          position: 'right',
+          color: TEXT,
+          fontSize: 11,
+          formatter: item => `${Number(item.value || 0).toFixed(1)}%`
+        },
         borderRadius: [0, 6, 6, 0]
       }]
     });
 
-    const viewsFollowersChart = echarts.init(document.getElementById('viewsFollowersChart'));
+    const viewsFollowersChart = createChart('viewsFollowersChart');
     viewsFollowersChart.setOption({
       backgroundColor: 'transparent',
       tooltip: {
@@ -563,33 +1349,29 @@
         }
       },
       legend: {
-        top: 0,
+        top: 4,
         left: 0,
         textStyle: { color: TEXT },
         itemWidth: 8,
         itemHeight: 8
       },
-      grid: { left: 58, right: 68, top: 48, bottom: 86 },
+      grid: { left: 82, right: 92, top: 58, bottom: 122 },
       xAxis: {
         type: 'category',
         data: viewsFollowersChartData.labels,
-        axisLabel: { color: TEXT, rotate: 45, interval: 0, formatter: value => truncateLabel(value, 8) },
+        axisLabel: { color: TEXT, rotate: 36, interval: 0, margin: 18, formatter: value => truncateLabel(value, 7) },
         axisLine: { lineStyle: { color: GRID } },
         axisTick: { show: false }
       },
       yAxis: [
         {
           type: 'value',
-          name: '粉丝增量',
-          nameTextStyle: { color: TEXT },
           axisLabel: { color: TEXT },
           splitLine: { lineStyle: { color: GRID } }
         },
         {
           type: 'value',
-          name: '视频播放量',
-          nameTextStyle: { color: TEXT },
-          axisLabel: { color: TEXT },
+          axisLabel: { color: TEXT, formatter: value => Number(value).toLocaleString() },
           splitLine: { show: false }
         }
       ],
@@ -614,7 +1396,7 @@
       ]
     });
 
-    const avdAvpChart = echarts.init(document.getElementById('avdAvpChart'));
+    const avdAvpChart = createChart('avdAvpChart');
     avdAvpChart.setOption({
       backgroundColor: 'transparent',
       tooltip: {
@@ -630,32 +1412,28 @@
         }
       },
       legend: {
-        top: 0,
+        top: 4,
         left: 0,
         textStyle: { color: TEXT },
         itemWidth: 8,
         itemHeight: 8
       },
-      grid: { left: 58, right: 58, top: 48, bottom: 86 },
+      grid: { left: 78, right: 84, top: 58, bottom: 122 },
       xAxis: {
         type: 'category',
         data: avdAvpChartData.labels,
-        axisLabel: { color: TEXT, rotate: 45, interval: 0, formatter: value => truncateLabel(value, 8) },
+        axisLabel: { color: TEXT, rotate: 36, interval: 0, margin: 18, formatter: value => truncateLabel(value, 7) },
         axisLine: { lineStyle: { color: GRID } },
         axisTick: { show: false }
       },
       yAxis: [
         {
           type: 'value',
-          name: 'AVD',
-          nameTextStyle: { color: TEXT },
           axisLabel: { color: TEXT },
           splitLine: { lineStyle: { color: GRID } }
         },
         {
           type: 'value',
-          name: 'AVP',
-          nameTextStyle: { color: TEXT },
           axisLabel: { color: TEXT, formatter: '{value}%' },
           splitLine: { show: false }
         }
@@ -681,7 +1459,239 @@
       ]
     });
 
-    [ctrChart, viewsFollowersChart, avdAvpChart].forEach(chart => {
+    function chartEmptyGraphic(hasData, text) {
+      return hasData ? [] : [{
+        type: 'text',
+        left: 'center',
+        top: 'middle',
+        style: { text, fill: TEXT, fontSize: 14 }
+      }];
+    }
+
+    function platformTooltip(params, data, suffixMap = {}) {
+      if (!params.length) return '暂无作品数据';
+      const index = params[0].dataIndex;
+      const title = data.full_titles[index] || data.labels[index] || '';
+      const lines = params
+        .filter(item => item.value !== null && item.value !== undefined)
+        .map(item => {
+          const suffix = suffixMap[item.seriesName] || '';
+          const value = Number(item.value || 0).toLocaleString();
+          return `${item.marker}${item.seriesName}：${value}${suffix}`;
+        });
+      return `${title}<br>${lines.join('<br>')}`;
+    }
+
+    function logVisible(values) {
+      return (values || []).map(value => Number(value) > 0 ? value : null);
+    }
+
+    const platformContentChartInstances = Object.entries(platformContentCharts).flatMap(([key, data]) => {
+      const hasData = data && Array.isArray(data.labels) && data.labels.length > 0;
+      const hasDepth = hasData && (
+        (data.ctr || []).some(value => value !== null && value !== undefined) ||
+        (data.avd_seconds || []).some(value => value !== null && value !== undefined) ||
+        (data.engagement_rate || []).some(value => value !== null && value !== undefined)
+      );
+      const showRetention = hasData && (
+        (data.ctr || []).some(value => value !== null && value !== undefined) ||
+        (data.avd_seconds || []).some(value => value !== null && value !== undefined)
+      );
+      const reachChart = createChart(`${key}ReachChart`);
+      const interactionChart = createChart(`${key}InteractionChart`);
+      const depthChart = createChart(`${key}DepthChart`);
+
+      reachChart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' },
+          formatter: params => platformTooltip(params, data)
+        },
+        grid: { left: 86, right: 18, top: 18, bottom: 76 },
+        xAxis: {
+          type: 'category',
+          data: hasData ? data.labels : [],
+          axisLabel: { color: TEXT, rotate: 38, interval: 0, formatter: value => truncateLabel(value, 8) },
+          axisLine: { lineStyle: { color: GRID } },
+          axisTick: { show: false }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: data.metric_label || '播放量',
+            nameTextStyle: { color: TEXT },
+            axisLabel: { color: TEXT },
+            splitLine: { lineStyle: { color: GRID } }
+          }
+        ],
+        graphic: chartEmptyGraphic(hasData, '暂无播放 / 阅读数据'),
+        series: [
+          {
+            name: data.metric_label || '播放量',
+            type: 'bar',
+            data: hasData ? data.views : [],
+            itemStyle: { color: BAR, borderRadius: [5, 5, 0, 0] },
+            barWidth: 14
+          }
+        ]
+      });
+
+      interactionChart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' },
+          formatter: params => platformTooltip(params, data)
+        },
+        legend: {
+          top: 0,
+          left: 0,
+          textStyle: { color: TEXT },
+          itemWidth: 8,
+          itemHeight: 8
+        },
+        grid: { left: 72, right: 18, top: 50, bottom: 92 },
+        xAxis: {
+          type: 'category',
+          data: hasData ? data.labels : [],
+          axisLabel: { color: TEXT, rotate: 38, interval: 0, formatter: value => truncateLabel(value, 8) },
+          axisLine: { lineStyle: { color: GRID } },
+          axisTick: { show: false }
+        },
+        yAxis: {
+          type: 'log',
+          min: 1,
+          logBase: 10,
+          axisLabel: { color: TEXT },
+          splitLine: { lineStyle: { color: GRID } }
+        },
+        graphic: chartEmptyGraphic(hasData, '暂无互动数据'),
+        series: [
+          {
+            name: '点赞',
+            type: 'bar',
+            data: hasData ? logVisible(data.likes) : [],
+            itemStyle: { color: data.accent || ACCENT },
+            barMaxWidth: 13
+          },
+          {
+            name: '收藏',
+            type: 'bar',
+            data: hasData ? logVisible(data.favorites) : [],
+            itemStyle: { color: '#f4d35e' },
+            barMaxWidth: 13
+          },
+          {
+            name: '分享',
+            type: 'bar',
+            data: hasData ? logVisible(data.shares) : [],
+            itemStyle: { color: '#65d6ad' },
+            barMaxWidth: 13
+          },
+          {
+            name: '评论',
+            type: 'bar',
+            data: hasData ? logVisible(data.comments) : [],
+            itemStyle: { color: '#ffb15c' },
+            barMaxWidth: 13
+          }
+        ]
+      });
+
+      depthChart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'axis',
+          formatter: params => platformTooltip(params, data, { '平均播放时长': ' 秒', '点击率': '%', '互动率': '%' })
+        },
+        legend: {
+          top: 0,
+          left: 0,
+          textStyle: { color: TEXT },
+          itemWidth: 8,
+          itemHeight: 8
+        },
+        grid: { left: 72, right: 58, top: 50, bottom: 76 },
+        xAxis: {
+          type: 'category',
+          data: hasData ? data.labels : [],
+          axisLabel: { color: TEXT, rotate: 38, interval: 0, formatter: value => truncateLabel(value, 8) },
+          axisLine: { lineStyle: { color: GRID } },
+          axisTick: { show: false }
+        },
+        yAxis: showRetention ? [
+          {
+            type: 'value',
+            name: '秒',
+            nameTextStyle: { color: TEXT },
+            axisLabel: { color: TEXT },
+            splitLine: { lineStyle: { color: GRID } }
+          },
+          {
+            type: 'value',
+            name: '点击率',
+            nameTextStyle: { color: TEXT },
+            axisLabel: { color: TEXT, formatter: '{value}%' },
+            splitLine: { show: false }
+          }
+        ] : [
+          {
+            type: 'value',
+            name: '互动率',
+            nameTextStyle: { color: TEXT },
+            axisLabel: { color: TEXT, formatter: '{value}%' },
+            splitLine: { lineStyle: { color: GRID } }
+          }
+        ],
+        graphic: chartEmptyGraphic(hasDepth, '暂无效率指标数据'),
+        series: showRetention ? [
+          {
+            name: '平均播放时长',
+            type: 'bar',
+            data: hasData ? data.avd_seconds : [],
+            itemStyle: { color: BAR, borderRadius: [5, 5, 0, 0] },
+            barWidth: 13
+          },
+          {
+            name: '点击率',
+            type: 'line',
+            yAxisIndex: 1,
+            data: hasData ? data.ctr : [],
+            smooth: true,
+            symbolSize: 5,
+            itemStyle: { color: data.accent || ACCENT },
+            lineStyle: { color: data.accent || ACCENT, width: 2.2 }
+          }
+        ] : [
+          {
+            name: '互动率',
+            type: 'bar',
+            data: hasData ? data.engagement_rate : [],
+            itemStyle: { color: data.accent || ACCENT, borderRadius: [5, 5, 0, 0] },
+            barWidth: 14
+          }
+        ]
+      });
+      return [reachChart, interactionChart, depthChart];
+    });
+
+    const charts = [followerTrendChart, ctrChart, viewsFollowersChart, avdAvpChart, ...platformContentChartInstances];
+
+    document.querySelectorAll('[data-tab-target]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.tabTarget;
+        document.querySelectorAll('[data-tab-target]').forEach(item => {
+          item.classList.toggle('is-active', item === button);
+        });
+        document.querySelectorAll('[data-platform-detail]').forEach(panel => {
+          panel.classList.toggle('is-active', panel.dataset.platformDetail === target);
+        });
+        charts.forEach(chart => chart.resize());
+      });
+    });
+
+    charts.forEach(chart => {
       window.addEventListener('resize', () => chart.resize());
     });
   </script>

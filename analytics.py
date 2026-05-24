@@ -83,6 +83,9 @@ def safe_minutes(value: Any, default: float = 0.0) -> float:
         text = value.strip()
         if not text:
             return default
+        if "秒" in text:
+            text = re.sub(r"[^\d.\-]", "", text)
+            return safe_float(text, default) / 60.0
         if ":" in text:
             parts = [safe_float(part, 0.0) for part in text.split(":")]
             if len(parts) == 2:
@@ -180,6 +183,7 @@ def load_history(path: str | Path) -> dict[str, Any]:
     data.setdefault("last_updated", now_shanghai().isoformat(timespec="seconds"))
     data.setdefault("source", "cache")
     data.setdefault("warnings", [])
+    data["warnings"] = _unique_strings(data.get("warnings", []))
     if not isinstance(data.get("snapshots"), list):
         data["snapshots"] = []
     return data
@@ -413,7 +417,11 @@ def _prepare_video(video: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dict[str, Any]:
+def derive_dashboard_context(
+    history: dict[str, Any],
+    config: Any = None,
+    display_warnings: list[Any] | None = None,
+) -> dict[str, Any]:
     if not isinstance(history, dict):
         history = empty_history("fixture")
     snapshots = [
@@ -429,7 +437,7 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
     ]
     if live_snapshots:
         display_snapshots = live_snapshots
-    elif str(history.get("source") or "") in {"live", "cache"}:
+    elif str(history.get("source") or "") in {"live", "live_partial", "cache"}:
         live_like_snapshots = [
             snapshot
             for snapshot in snapshots
@@ -457,11 +465,16 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         recent_videos = latest_videos
     recent_videos.sort(key=lambda item: item["publish_time"], reverse=True)
 
-    ctr_videos = sorted(latest_videos, key=lambda item: item["ctr_percent"], reverse=True)[:20]
+    ctr_videos = sorted(latest_videos, key=lambda item: item["ctr_percent"], reverse=True)[:30]
     views_videos = sorted(recent_videos, key=lambda item: item["publish_time"])[-18:]
     avd_videos = views_videos
 
-    warnings = _display_warnings([*history.get("warnings", []), *latest.get("warnings", [])])
+    warning_values = (
+        display_warnings
+        if display_warnings is not None
+        else [*history.get("warnings", []), *latest.get("warnings", [])]
+    )
+    warnings = _display_warnings(warning_values)
     feishu_enabled = bool(getattr(config, "feishu_enabled", False))
     source = str(history.get("source") or "fixture")
     if feishu_enabled:
@@ -472,10 +485,12 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         badge_text = "真实数据预填"
     elif source == "cache":
         badge_text = "缓存数据"
+    elif source == "live_partial":
+        badge_text = "B站创作中心数据（部分明细回退）"
     else:
         badge_text = "B站创作中心数据"
 
-    return {
+    context = {
         "page_title": "【懒狗小黑】频道数据看板",
         "section_title": "频道数据情况",
         "last_updated": str(history.get("last_updated") or latest.get("updated_at") or ""),
@@ -504,3 +519,7 @@ def derive_dashboard_context(history: dict[str, Any], config: Any = None) -> dic
         "snapshot_count": len(snapshots),
         "video_count": len(latest_videos),
     }
+    from platforms import derive_platform_context
+
+    context.update(derive_platform_context(history, config))
+    return context

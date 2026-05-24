@@ -9,6 +9,10 @@ from main import _resolve_snapshot_date, render_dashboard
 
 REQUIRED_TEXT = [
     "频道数据情况",
+    "B 站",
+    "抖音",
+    "小红书",
+    "近 30 日三平台粉丝趋势",
     "CTR（展示点击率）",
     "近三十天上线节目封面总览",
     "视频播放量与粉丝增量",

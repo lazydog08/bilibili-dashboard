@@ -1,0 +1,359 @@
+{
+  "_说明": "这里用于手动导入抖音/小红书后台真实数据，作为官方 API 和授权 Cookie 均不可用时的兜底。不要填 Cookie、token、手机号、密码。没有真实数值就保持 null，程序会显示 --。",
+  "capturedAt": "2026-05-23T20:11:00+08:00",
+  "importedAt": "2026-05-23T20:11:00+08:00",
+  "platforms": {
+    "douyin": {
+      "source": "manual_import",
+      "accountId": "30688625993",
+      "fans": 91700,
+      "metricColumns": {
+        "current": "近7日",
+        "previous": "前7日"
+      },
+      "growth": {
+        "cycle": null,
+        "7d": 36,
+        "30d": null
+      },
+      "today": {
+        "views": 79700,
+        "likes": 2407,
+        "favorites": null,
+        "comments": 9,
+        "shares": 363
+      },
+      "yesterday": {
+        "views": 82242,
+        "likes": 2121,
+        "favorites": null,
+        "comments": null,
+        "shares": 400
+      },
+      "customToday": {
+        "profile_visits": 1895,
+        "completion_rate": null
+      },
+      "customYesterday": {
+        "profile_visits": 1835,
+        "completion_rate": null
+      },
+      "sourceStatus": {
+        "status": "manual",
+        "source": "manual_import",
+        "message": "抖音后台手动导入真实数据，作为自动数据源不可用时的兜底。"
+      },
+      "contentItems": [
+        {
+          "title": "“豆包，你们 AI 未来会统治人类吗？” #豆包 #豆包ai #豆包ai手机 #努比亚m153 #人工智能",
+          "publish_time": "2025年12月08日 20:15",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg",
+          "views": 28476000,
+          "likes": 807000,
+          "favorites": 80000,
+          "comments": 55000,
+          "shares": 1241000,
+          "ctr": "7.94%",
+          "avd": "51秒",
+          "danmaku": 4462
+        },
+        {
+          "title": "200块手搓一个18级台风，它能顶起小米YU7？ #整活 #暴力风扇 #MakerWorld #3D打印 #拓竹P2S",
+          "publish_time": "2025年11月13日 15:53",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg",
+          "views": 3887000,
+          "likes": 182000,
+          "favorites": 52000,
+          "comments": 2615,
+          "shares": 24000,
+          "ctr": "9.79%",
+          "avd": "55秒",
+          "danmaku": 474
+        },
+        {
+          "title": "500天，我让这台小米手机走遍了中国！ #小米 #小米手机 #影像 #风景",
+          "publish_time": "2025年03月01日 13:36",
+          "thumbnail": "https://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg",
+          "views": 328000,
+          "likes": 13000,
+          "favorites": 1319,
+          "comments": 840,
+          "shares": 3080,
+          "ctr": "12.06%",
+          "avd": "46秒",
+          "danmaku": 46
+        },
+        {
+          "title": "战争制裁下的俄罗斯，老百姓过着怎样的生活？",
+          "publish_time": "2026年04月22日 22:49",
+          "thumbnail": "",
+          "views": 27000,
+          "likes": 1769,
+          "favorites": 57,
+          "comments": 53,
+          "shares": 68,
+          "ctr": "4.71%",
+          "avd": "29秒",
+          "danmaku": 5
+        },
+        {
+          "title": "我做了个离谱的充电器... #充电器 #DIY #桌搭 #3D打印 #硬核玩家计划",
+          "publish_time": "2026年03月27日 22:28",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg",
+          "views": 1222000,
+          "likes": 46000,
+          "favorites": 13000,
+          "comments": 1034,
+          "shares": 5083,
+          "ctr": "10.27%",
+          "avd": "34秒",
+          "danmaku": 143
+        },
+        {
+          "title": "68倍差价？！人体工学椅实测差别有多大？ #人体工学椅 #保友 #办公椅 #椅子推荐",
+          "publish_time": "2025年11月06日 19:32",
+          "thumbnail": "",
+          "views": 82000,
+          "likes": 1455,
+          "favorites": 266,
+          "comments": 50,
+          "shares": 106,
+          "ctr": "21.3%",
+          "avd": "32秒",
+          "danmaku": 3
+        },
+        {
+          "title": "【收藏】两台手机同时登陆一个微信！5分钟包教包会，仅供学习使用，使用有风险，请谨慎。",
+          "publish_time": "2025年10月25日 12:00",
+          "thumbnail": "https://i1.hdslb.com/bfs/archive/35caa5b2a6e0d9a1d0197f13d8636c25cf3ab453.jpg",
+          "views": 205000,
+          "likes": 4919,
+          "favorites": 3121,
+          "comments": 187,
+          "shares": 663,
+          "ctr": "11.36%",
+          "avd": "28秒",
+          "danmaku": 2
+        },
+        {
+          "title": "26岁，头上竟然长出了摄像头! #拍摄眼镜 #智能眼镜 #眼镜 #Rokid #RokidGlasses",
+          "publish_time": "2025年10月17日 20:01",
+          "thumbnail": "",
+          "views": 36000,
+          "likes": 549,
+          "favorites": 124,
+          "comments": 34,
+          "shares": 68,
+          "ctr": "15.71%",
+          "avd": "43秒",
+          "danmaku": 4
+        },
+        {
+          "title": "为什么有人宁愿买安卓平板也不买 iPad？ #OPPO #iPad #iPadPro #OPPOPad5 #平板电脑",
+          "publish_time": "2025年10月15日 22:35",
+          "thumbnail": "https://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg",
+          "views": 385000,
+          "likes": 5057,
+          "favorites": 831,
+          "comments": 653,
+          "shares": 458,
+          "ctr": "8.13%",
+          "avd": "28秒",
+          "danmaku": 12
+        },
+        {
+          "title": "给你一个不买 iPhone 的理由？ #vivoX300Pro #vivoX300 #影像 #旅拍 #iPhone17",
+          "publish_time": "2025年10月13日 21:32",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/9e231622bc46e119a79c9d468db9b376a55fcfab.jpg",
+          "views": 138000,
+          "likes": 1884,
+          "favorites": 308,
+          "comments": 265,
+          "shares": 157,
+          "ctr": "6.64%",
+          "avd": "29秒",
+          "danmaku": 7
+        },
+        {
+          "title": "为了实现躺着赚钱，我竟然用上了它！ #清闲 #清闲动态人体工学椅 #工学椅 #人体工学椅 #提升幸福感好物",
+          "publish_time": "2025年10月12日 17:00",
+          "thumbnail": "",
+          "views": 18000,
+          "likes": 4426,
+          "favorites": null,
+          "comments": 19,
+          "shares": 18,
+          "ctr": null,
+          "avd": null,
+          "danmaku": null
+        },
+        {
+          "title": "iPhone 17买前必看：等等党还是直接上？ #iPhone17 #iphone17promax #iPhone17air #iphone17pro #苹果发布会",
+          "publish_time": "2025年09月10日 09:39",
+          "thumbnail": "https://i2.hdslb.com/bfs/archive/0391b6f26e76d37752f327ab8929dc002fd6a214.jpg",
+          "views": 359000,
+          "likes": 5013,
+          "favorites": 470,
+          "comments": 399,
+          "shares": 1028,
+          "ctr": "6.47%",
+          "avd": "43秒",
+          "danmaku": 31
+        }
+      ]
+    },
+    "xiaohongshu": {
+      "source": "manual_import",
+      "accountId": "409476273",
+      "fans": 39501,
+      "metricColumns": {
+        "current": "近7日",
+        "previous": "前7日"
+      },
+      "growth": {
+        "cycle": null,
+        "7d": -2,
+        "30d": null
+      },
+      "today": {
+        "views": 2099,
+        "likes": 47,
+        "favorites": 19,
+        "comments": 0,
+        "shares": 22
+      },
+      "yesterday": {
+        "views": null,
+        "likes": null,
+        "favorites": null,
+        "comments": null,
+        "shares": null
+      },
+      "customToday": {
+        "note_impressions": 5765,
+        "search_entries": null
+      },
+      "customYesterday": {
+        "note_impressions": null,
+        "search_entries": null
+      },
+      "sourceStatus": {
+        "status": "manual",
+        "source": "manual_import",
+        "message": "小红书后台可见汇总和笔记管理首页明细。"
+      },
+      "contentItems": [
+        {
+          "title": "500天，我让这台小米手机走遍了中国！",
+          "publish_time": "2025年03月01日 13:34",
+          "thumbnail": "https://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg",
+          "views": 46624,
+          "likes": 1321,
+          "favorites": 321,
+          "comments": 110,
+          "shares": 204
+        },
+        {
+          "title": "200块手搓一个18级台风，它能顶起小米YU7？",
+          "publish_time": "2025年11月11日 20:40",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg",
+          "views": 403917,
+          "likes": 20532,
+          "favorites": 15082,
+          "comments": 545,
+          "shares": 1955
+        },
+        {
+          "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
+          "publish_time": "2026年04月22日 20:17",
+          "thumbnail": "https://sns-na-i1.xhscdn.com/spectrum/1040g34o31v8sgu9v1m105no933g08br21g6rulo?imageView2/2/w/1080/format/jpg&origin=0",
+          "views": 119869,
+          "likes": 2588,
+          "favorites": 963,
+          "comments": 57,
+          "shares": 165
+        },
+        {
+          "title": "我做了个离谱的充电器...",
+          "publish_time": "2026年03月28日 10:01",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg",
+          "views": 125049,
+          "likes": 4415,
+          "favorites": 2439,
+          "comments": 175,
+          "shares": 338
+        },
+        {
+          "title": "【压力服专业测试】到底谁是智商税❓❓",
+          "publish_time": "2026年01月27日 11:47",
+          "thumbnail": "https://sns-na-i1.xhscdn.com/1040g00831rq7pj3hi2005no933g08br2g1le860?imageView2/2/w/1080/format/jpg&origin=0",
+          "views": 63244,
+          "likes": 3089,
+          "favorites": 738,
+          "comments": 45,
+          "shares": 86
+        },
+        {
+          "title": "花3000多租了栋惠州的别墅，我要后悔死了..",
+          "publish_time": "2026年01月15日 17:05",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/4acc2bd7541bfd155750f3334bc8aec6f01da0d5.jpg",
+          "views": 74884,
+          "likes": 2240,
+          "favorites": 967,
+          "comments": 201,
+          "shares": 2741
+        },
+        {
+          "title": "这支苹果牙刷，让50个人吵疯了......",
+          "publish_time": "2026年01月12日 15:04",
+          "thumbnail": "https://sns-na-i1.xhscdn.com/spectrum/1040g34o31r7ubeh30m105no933g08br2e2s11hg?imageView2/2/w/1080/format/jpg&origin=0",
+          "views": 2506,
+          "likes": 45,
+          "favorites": 11,
+          "comments": 6,
+          "shares": 3
+        },
+        {
+          "title": "迄今最恐怖的手机",
+          "publish_time": "2025年12月08日 20:01",
+          "thumbnail": "https://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg",
+          "views": 393543,
+          "likes": 16442,
+          "favorites": 3809,
+          "comments": 2296,
+          "shares": 20925
+        },
+        {
+          "title": "68倍差价？！人体工学椅实测差别有多大？",
+          "publish_time": "2025年11月06日 19:03",
+          "thumbnail": "https://sns-na-i1.xhscdn.com/spectrum/1040g0k031ohs8i324s005no933g08br2fa9gaio?imageView2/2/w/1080/format/jpg&origin=0",
+          "views": 3243,
+          "likes": 92,
+          "favorites": 31,
+          "comments": 11,
+          "shares": 9
+        },
+        {
+          "title": "26岁，头上竟然长出了摄像头!",
+          "publish_time": "2025年10月17日 20:01",
+          "thumbnail": "https://sns-na-i1.xhscdn.com/spectrum/1040g0k031no0nlpo4u005no933g08br2e6c024g?imageView2/2/w/1080/format/jpg&origin=0",
+          "views": 10729,
+          "likes": 253,
+          "favorites": 127,
+          "comments": 36,
+          "shares": 57
+        },
+        {
+          "title": "\"为什么有人宁愿买安卓平板也不买 iPad？\"",
+          "publish_time": "2025年10月15日 22:34",
+          "thumbnail": "https://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg",
+          "views": 87127,
+          "likes": 1016,
+          "favorites": 256,
+          "comments": 311,
+          "shares": 60
+        }
+      ]
+    }
+  }
+}
