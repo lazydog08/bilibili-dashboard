@@ -6,6 +6,7 @@ from analytics import (
     parse_publish_time,
     safe_percent_change,
 )
+from fetcher.bilibili_api import BilibiliClient
 
 
 def test_normalize_thumbnail_url_variants() -> None:
@@ -36,3 +37,32 @@ def test_parse_publish_time() -> None:
     assert parse_publish_time(1779518820) == "2026-05-23"
     assert parse_publish_time(1779518820000) == "2026-05-23"
     assert parse_publish_time("2026/05/23 12:07") == "2026-05-23"
+
+
+def test_bilibili_archive_manager_item_maps_to_video() -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+    video = client._parse_video(
+        {
+            "Archive": {
+                "bvid": "BVtest",
+                "title": "当年炒到 18 万一台的手机，现在怎么样了？",
+                "cover": "http://i0.hdslb.com/bfs/archive/test.jpg",
+                "ptime": 1779624225,
+                "duration": 389,
+            },
+            "stat": {
+                "view": 20292,
+                "danmaku": 188,
+                "reply": 112,
+                "favorite": 1063,
+                "coin": 2052,
+                "share": 116,
+                "like": 2248,
+            },
+        }
+    )
+
+    assert video["bvid"] == "BVtest"
+    assert video["publish_time"] == "2026-05-24"
+    assert video["views"] == 20292
+    assert video["likes"] == 2248

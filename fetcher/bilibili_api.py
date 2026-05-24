@@ -4,6 +4,7 @@ import asyncio
 import os
 import random
 import time
+from copy import deepcopy
 from datetime import datetime
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -31,6 +32,7 @@ VIDEO_LIST_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/article"
 FAN_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/fan"
 WEB_INDEX_STAT_URL = "https://member.bilibili.com/x/web/index/stat"
 WEB_ARCHIVE_COMPARE_URL = "https://member.bilibili.com/x/web/data/archive_diagnose/compare?size=30"
+WEB_ARCHIVES_URL = "https://member.bilibili.com/x/web/archives?status=is_pubed&pn=1&ps=30&coop=1&interactive=1"
 
 
 class BilibiliAPIError(RuntimeError):
@@ -114,6 +116,7 @@ def _find_video_items(payload: Any) -> list[dict[str, Any]]:
         return [item for item in payload if isinstance(item, dict)]
     candidate_keys = [
         "articles",
+        "arc_audits",
         "archives",
         "arc_list",
         "list",
@@ -128,6 +131,54 @@ def _find_video_items(payload: Any) -> list[dict[str, Any]]:
             if isinstance(candidate, list) and candidate and all(isinstance(row, dict) for row in candidate):
                 return candidate
     return []
+
+
+def _video_identity(item: dict[str, Any]) -> str:
+    value = pick_value(item, ["bvid", "bv_id", "bvid_str", "aid"], "")
+    return str(value or "").strip()
+
+
+def _video_publish_timestamp(item: dict[str, Any]) -> float:
+    value = pick_value(
+        item,
+        ["ptime", "pubtime", "publish_time", "pub_time", "ctime", "created_at", "created"],
+        None,
+    )
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 10_000_000_000:
+            timestamp /= 1000.0
+        return timestamp
+    if value:
+        try:
+            parsed = datetime.fromisoformat(parse_publish_time(value))
+            return parsed.timestamp()
+        except Exception:  # noqa: BLE001 - unknown platform date formats should not break sorting.
+            return 0.0
+    return 0.0
+
+
+def _merge_video_items(*groups: list[dict[str, Any]], limit: int = 30) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+    anonymous: list[dict[str, Any]] = []
+    for group in groups:
+        for item in group:
+            if not isinstance(item, dict):
+                continue
+            identity = _video_identity(item)
+            if not identity:
+                anonymous.append(item)
+                continue
+            if identity not in merged:
+                merged[identity] = deepcopy(item)
+                continue
+            current = merged[identity]
+            current.setdefault("_fallback_items", [])
+            if isinstance(current["_fallback_items"], list):
+                current["_fallback_items"].append(deepcopy(item))
+    result = list(merged.values()) + anonymous
+    result.sort(key=_video_publish_timestamp, reverse=True)
+    return result[:limit]
 
 
 def _cookie_value(cookie: str, name: str) -> str:
@@ -232,17 +283,47 @@ class BilibiliClient:
         if not self._cookie:
             raise BilibiliAuthOrRiskError(ANTI_RISK_MESSAGE)
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
-            payload = await self._request_first_json(
+            payloads = await self._fetch_video_payloads(client, int(time.time() * 1000))
+        return _merge_video_items(*[_find_video_items(payload) for payload in payloads], limit=30)
+
+    async def _fetch_video_payloads(self, client: httpx.AsyncClient, timestamp: int) -> list[Any]:
+        payloads: list[Any] = []
+        manager_payload = None
+        try:
+            manager_payload = await self._request_json(client, self._creator_url(WEB_ARCHIVES_URL))
+            payloads.append(manager_payload)
+        except BilibiliAuthOrRiskError:
+            raise
+        except BilibiliAPIError as exc:
+            self.warnings.append(f"稿件管理列表获取失败，已尝试数据中心列表：{exc}")
+
+        data_payload = None
+        try:
+            data_payload = await self._request_first_json(
                 client,
                 [
-                    self._creator_url(WEB_ARCHIVE_COMPARE_URL, t=int(time.time() * 1000)),
+                    self._creator_url(WEB_ARCHIVE_COMPARE_URL, t=timestamp),
                     self._creator_url(VIDEO_LIST_URL),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
                     self._creator_url(VIDEO_LIST_SIMPLE_URL),
                 ],
                 "video list",
             )
-        return _find_video_items(payload)[:30]
+            payloads.append(data_payload)
+        except BilibiliAuthOrRiskError:
+            raise
+        except BilibiliAPIError as exc:
+            if not manager_payload:
+                raise
+            self.warnings.append(f"数据中心视频列表获取失败，已使用稿件管理列表回退：{exc}")
+
+        manager_count = len(_find_video_items(manager_payload)) if manager_payload is not None else 0
+        data_count = len(_find_video_items(data_payload)) if data_payload is not None else 0
+        if manager_count and manager_count >= data_count:
+            self.warnings.append("已用稿件管理接口补充最新 B 站投稿。")
+        if not payloads:
+            raise BilibiliAPIError("video list failed: no usable payload")
+        return payloads
 
     async def fetch_video_detail(self, bvid: str) -> Any:
         if not self._cookie:
@@ -290,7 +371,7 @@ class BilibiliClient:
         bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
         title = str(pick_value(item, ["title", "name"], "未命名视频") or "未命名视频")
         publish_time = parse_publish_time(
-            pick_value(item, ["publish_time", "pubtime", "pub_time", "ctime", "created_at", "created"], None)
+            pick_value(item, ["ptime", "publish_time", "pubtime", "pub_time", "ctime", "created_at", "created"], None)
         )
         detail_or_item = detail or item
         ctr = pick_bilibili_percent(
