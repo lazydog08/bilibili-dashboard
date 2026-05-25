@@ -43,6 +43,7 @@ def render_dashboard(context: dict[str, Any], settings: Settings) -> Path:
     env = Environment(autoescape=select_autoescape(["html", "xml"]))
     template = env.from_string(template_text)
     html = template.render(**context)
+    html = "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
     settings.output_path.parent.mkdir(parents=True, exist_ok=True)
     settings.output_path.write_text(html, encoding="utf-8")
     return settings.output_path

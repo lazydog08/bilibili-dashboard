@@ -115,6 +115,19 @@ def test_display_warning_override_hides_stale_cache_fetch_failures() -> None:
     assert context["warnings"] == ["未启用实时获取，已使用缓存或示例数据。"]
 
 
+def test_last_updated_is_rendered_as_readable_local_time() -> None:
+    history = {
+        "schema_version": 1,
+        "source": "cache",
+        "last_updated": "2026-05-25T23:01:47+08:00",
+        "warnings": [],
+        "snapshots": [_snapshot(25)],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    assert context["last_updated"] == "2026-05-25 23:01"
+
+
 def test_live_snapshot_takes_display_priority_over_newer_fixture_date() -> None:
     fixture_snapshot = _snapshot(23)
     fixture_snapshot["source"] = "fixture"

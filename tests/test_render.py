@@ -34,6 +34,7 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     assert "echarts.init" in html
     assert "const ctrChartData =" in html
     assert '<meta http-equiv="refresh" content="1800">' in html
+    assert not any(line.endswith((" ", "\t")) for line in html.splitlines())
 
 
 def test_render_escapes_complex_video_titles(tmp_path) -> None:

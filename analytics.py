@@ -164,6 +164,38 @@ def parse_publish_time(value: Any) -> str:
     return parsed.date().isoformat()
 
 
+def format_update_time(value: Any) -> str:
+    if value is None or value == "":
+        return ""
+
+    tz = ZoneInfo(DEFAULT_TIMEZONE)
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 10_000_000_000:
+            timestamp = timestamp / 1000.0
+        return datetime.fromtimestamp(timestamp, tz=tz).strftime("%Y-%m-%d %H:%M")
+
+    text = str(value).strip()
+    if not text:
+        return ""
+    if re.fullmatch(r"\d{10,13}", text):
+        timestamp = float(text)
+        if timestamp > 10_000_000_000:
+            timestamp = timestamp / 1000.0
+        return datetime.fromtimestamp(timestamp, tz=tz).strftime("%Y-%m-%d %H:%M")
+
+    try:
+        parsed = date_parser.parse(text)
+    except (ValueError, TypeError, OverflowError):
+        return text
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=tz)
+    else:
+        parsed = parsed.astimezone(tz)
+    return parsed.strftime("%Y-%m-%d %H:%M")
+
+
 def _parse_date(value: Any) -> datetime:
     date_text = parse_publish_time(value)
     return datetime.fromisoformat(date_text).replace(tzinfo=ZoneInfo(DEFAULT_TIMEZONE))
@@ -494,7 +526,7 @@ def derive_dashboard_context(
     context = {
         "page_title": "【懒狗小黑】频道数据看板",
         "section_title": "频道数据情况",
-        "last_updated": str(history.get("last_updated") or latest.get("updated_at") or ""),
+        "last_updated": format_update_time(history.get("last_updated") or latest.get("updated_at") or ""),
         "source": source,
         "warnings": warnings,
         "badge_text": badge_text,
