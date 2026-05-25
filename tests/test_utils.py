@@ -66,3 +66,45 @@ def test_bilibili_archive_manager_item_maps_to_video() -> None:
     assert video["publish_time"] == "2026-05-24"
     assert video["views"] == 20292
     assert video["likes"] == 2248
+
+
+def test_bilibili_public_follower_stat_refreshes_channel() -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+    channel = {"total_followers": 170_048}
+
+    changed = client._apply_public_follower_stat(channel, {"follower": 170_273})
+
+    assert changed is True
+    assert channel["total_followers"] == 170_273
+
+
+def test_bilibili_public_archive_stat_only_increases_counters() -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+    video = {
+        "views": 88_036,
+        "likes": 1_000,
+        "coins": 100,
+        "favorites": 200,
+        "shares": 30,
+        "replies": 20,
+    }
+
+    changed = client._apply_public_archive_stat(
+        video,
+        {
+            "view": 90_001,
+            "like": 999,
+            "coin": 120,
+            "favorite": 230,
+            "share": 31,
+            "reply": 21,
+        },
+    )
+
+    assert changed is True
+    assert video["views"] == 90_001
+    assert video["likes"] == 1_000
+    assert video["coins"] == 120
+    assert video["favorites"] == 230
+    assert video["shares"] == 31
+    assert video["replies"] == 21

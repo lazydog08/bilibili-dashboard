@@ -148,12 +148,10 @@ class Settings:
 
 def load_settings() -> Settings:
     timezone = os.getenv("DASHBOARD_TIMEZONE", "Asia/Shanghai")
-    update_interval_minutes = _env_optional_int("DASHBOARD_UPDATE_INTERVAL_MINUTES")
-    if update_interval_minutes is not None:
-        update_interval_minutes = max(1, min(update_interval_minutes, 1440))
+    update_interval_minutes = max(1, min(_env_int("DASHBOARD_UPDATE_INTERVAL_MINUTES", 30), 1440))
     refresh_seconds = _env_optional_int("DASHBOARD_PAGE_REFRESH_SECONDS")
     if refresh_seconds is None:
-        refresh_seconds = update_interval_minutes * 60 if update_interval_minutes else 0
+        refresh_seconds = update_interval_minutes * 60
     refresh_seconds = max(0, min(refresh_seconds, 86400))
     live_kpi_labels = _split_labels(
         os.getenv("BILIBILI_DASHBOARD_KPI_LABELS"),

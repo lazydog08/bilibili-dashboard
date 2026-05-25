@@ -240,9 +240,9 @@ python main.py --live --no-feishu
 python main.py --no-feishu
 ```
 
-## NAS 每小时自动更新
+## NAS 每 30 分钟自动更新
 
-项目已提供适合 NAS / Linux 定时任务调用的脚本。推荐由 NAS 每小时完成抓取、渲染和云端发布，GitHub Pages 只负责展示静态页面，不负责抓取平台数据。
+项目已提供适合 NAS / Linux 定时任务调用的脚本。推荐由 NAS 每 30 分钟完成抓取、渲染和云端发布，GitHub Pages 只负责展示静态页面，不负责抓取平台数据。
 
 ```bash
 scripts/nas_update_dashboard.sh
@@ -256,7 +256,7 @@ scripts/nas_update_dashboard.sh
 4. 设置 `DASHBOARD_PUBLISH_DIR` 为 NAS Web 目录，例如 `/volume1/web/bilibili-dashboard`。
 5. 设置 `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`，并给 NAS 配置 GitHub SSH deploy key。
 6. 保持 `DASHBOARD_GIT_PUSH=0`，统一通过 `nas_update_and_push_cloud.sh` 推送云端。
-7. 在 NAS 的计划任务里每小时执行一次云端更新：
+7. 在 NAS 的计划任务里每 30 分钟执行一次云端更新：
 
 ```bash
 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh
@@ -265,7 +265,7 @@ scripts/nas_update_dashboard.sh
 Linux crontab 示例见 `scripts/nas_cron.example`：
 
 ```cron
-0 * * * * DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+*/30 * * * * DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
 ```
 
 如果 NAS 支持普通 `crontab`，也可以在 NAS 仓库目录执行：
@@ -292,21 +292,21 @@ scripts/install_nas_hourly_cron.sh
 如果 NAS 环境是 iStoreOS / OpenWrt，系统里通常没有 Python，但有 Docker。此时可以先用 Docker 包装脚本本地生成页面：
 
 ```cron
-0 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
+*/30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
 ```
 
-`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续每小时更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
+`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续每 30 分钟更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
 
 脚本行为：
 
 - 推荐 `DASHBOARD_MODE=bilibili-only`，会只更新 B 站真实数据，抖音 / 小红书沿用缓存或手动导入数据。
 - 如果确实要拉取三平台实时数据，可改为 `DASHBOARD_MODE=live`。
 - 如果缺少某个平台凭据，会自动降级到缓存、手动数据或 `--`，不会中断整个看板。
-- 默认不跑测试，避免每小时消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
+- 默认不跑测试，避免定时任务消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
 - 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
 - Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
-- `DASHBOARD_UPDATE_INTERVAL_MINUTES=60` 会让页面右上角“下次更新”按每小时显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
-- `DASHBOARD_PAGE_REFRESH_SECONDS=3600` 会让已经打开的静态页面每小时自动刷新一次，从而看到 NAS 刚生成的新 HTML。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按每 30 分钟显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
 
 可选项：
 
@@ -314,15 +314,15 @@ scripts/install_nas_hourly_cron.sh
 - `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
-- `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1`：云端发布任务每小时先抓取最新数据，再推送 GitHub Pages。
+- `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1`：云端发布任务每 30 分钟先抓取最新数据，再推送 GitHub Pages。
 - `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
-- `DASHBOARD_UPDATE_INTERVAL_MINUTES=60`：页面显示下一次每小时刷新时间。
-- `DASHBOARD_PAGE_REFRESH_SECONDS=3600`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30`：页面显示下一次每 30 分钟刷新时间。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=1800`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
 - `DASHBOARD_MODE=bilibili-only`：只抓取 B 站，适合 NAS 本地看板低风险运行。
 - `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
 - `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。
 
-如果不想公开真实数据，删除每小时的 `nas_update_and_push_cloud.sh` 计划任务，改用 `nas_update_dashboard.sh` 本地输出即可。
+如果不想公开真实数据，删除定时的 `nas_update_and_push_cloud.sh` 计划任务，改用 `nas_update_dashboard.sh` 本地输出即可。
 
 ## Bark 推送
 

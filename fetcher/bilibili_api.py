@@ -33,6 +33,8 @@ FAN_SIMPLE_URL = "https://member.bilibili.com/x/h5/data/fan"
 WEB_INDEX_STAT_URL = "https://member.bilibili.com/x/web/index/stat"
 WEB_ARCHIVE_COMPARE_URL = "https://member.bilibili.com/x/web/data/archive_diagnose/compare?size=30"
 WEB_ARCHIVES_URL = "https://member.bilibili.com/x/web/archives?status=is_pubed&pn=1&ps=30&coop=1&interactive=1"
+PUBLIC_RELATION_STAT_URL = "https://api.bilibili.com/x/relation/stat?vmid={mid}"
+PUBLIC_ARCHIVE_STAT_URL = "https://api.bilibili.com/x/web-interface/archive/stat?bvid={bvid}"
 
 
 class BilibiliAPIError(RuntimeError):
@@ -221,6 +223,13 @@ class BilibiliClient:
             "Cookie": self._cookie,
         }
 
+    @property
+    def public_headers(self) -> dict[str, str]:
+        return {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "Referer": "https://www.bilibili.com/",
+        }
+
     async def _request_json(self, client: httpx.AsyncClient, url: str) -> Any:
         last_error: Exception | None = None
         for attempt in range(self.max_retries):
@@ -366,6 +375,34 @@ class BilibiliClient:
             "total_shares": pick_number(overview, ["total_share", "share", "shares"], 0),
         }
 
+    def _apply_public_follower_stat(self, channel: dict[str, int], payload: Any) -> bool:
+        follower = pick_number(payload, ["follower", "followers", "fans", "total_followers"], 0)
+        if follower <= 0:
+            return False
+        changed = channel.get("total_followers") != follower
+        channel["total_followers"] = follower
+        return changed
+
+    def _apply_public_archive_stat(self, video: dict[str, Any], payload: Any) -> bool:
+        changed = False
+        fields = {
+            "views": ["view", "views", "play"],
+            "likes": ["like", "likes"],
+            "coins": ["coin", "coins"],
+            "favorites": ["favorite", "favorites", "fav"],
+            "shares": ["share", "shares"],
+            "replies": ["reply", "replies", "comment", "comments"],
+        }
+        for field, keys in fields.items():
+            value = pick_number(payload, keys, 0)
+            if value <= 0:
+                continue
+            current = safe_int(video.get(field), 0)
+            if value > current:
+                video[field] = value
+                changed = True
+        return changed
+
     def _parse_video(self, item: dict[str, Any], detail: Any | None = None) -> dict[str, Any]:
         detail = detail or {}
         bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
@@ -435,16 +472,7 @@ class BilibiliClient:
                 self.warnings.append(f"总览数据获取失败，已使用视频列表推导：{exc}")
                 overview = {}
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            video_payload = await self._request_first_json(
-                client,
-                [
-                    self._creator_url(WEB_ARCHIVE_COMPARE_URL, t=timestamp),
-                    self._creator_url(VIDEO_LIST_URL),
-                    self._creator_url(VIDEO_LIST_SIMPLE_URL, pn=1, ps=30),
-                    self._creator_url(VIDEO_LIST_SIMPLE_URL),
-                ],
-                "video list",
-            )
+            video_payloads = await self._fetch_video_payloads(client, timestamp)
             await asyncio.sleep(random.uniform(0.8, 1.8))
             try:
                 fan_detail = await self._request_first_json(
@@ -457,7 +485,7 @@ class BilibiliClient:
             except BilibiliAPIError as exc:
                 self.warnings.append(f"粉丝明细获取失败，已使用 0 回退：{exc}")
                 fan_detail = {}
-            videos = _find_video_items(video_payload)[:30]
+            videos = _merge_video_items(*[_find_video_items(payload) for payload in video_payloads], limit=30)
 
             details: dict[str, Any] = {}
             for index in range(0, len(videos), 2):
@@ -494,14 +522,52 @@ class BilibiliClient:
         for item in videos:
             bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
             parsed_videos.append(self._parse_video(item, details.get(bvid)))
+        channel = self._parse_channel_with_video_fallback(overview, fan_detail, parsed_videos)
+        await self._enrich_public_stats(channel, parsed_videos)
 
         return {
             "date": now.date().isoformat(),
             "updated_at": now.isoformat(timespec="seconds"),
-            "channel": self._parse_channel_with_video_fallback(overview, fan_detail, parsed_videos),
+            "channel": channel,
             "videos": parsed_videos,
             "warnings": sorted(set(self.warnings)),
         }
+
+    async def _enrich_public_stats(
+        self,
+        channel: dict[str, int],
+        videos: list[dict[str, Any]],
+    ) -> None:
+        async with httpx.AsyncClient(headers=self.public_headers, timeout=min(self.timeout, 12.0)) as client:
+            if self._mid:
+                try:
+                    payload = await self._request_json(client, PUBLIC_RELATION_STAT_URL.format(mid=self._mid))
+                    self._apply_public_follower_stat(channel, payload)
+                except BilibiliAPIError:
+                    pass
+
+            for index in range(0, len(videos), 5):
+                group = videos[index : index + 5]
+
+                async def fetch_public_stat(video: dict[str, Any]) -> tuple[dict[str, Any], Any | None]:
+                    bvid = str(video.get("bvid") or "")
+                    if not bvid:
+                        return video, None
+                    try:
+                        payload = await self._request_json(
+                            client,
+                            PUBLIC_ARCHIVE_STAT_URL.format(bvid=bvid),
+                        )
+                        return video, payload
+                    except BilibiliAPIError:
+                        return video, None
+
+                for video, payload in await asyncio.gather(*(fetch_public_stat(video) for video in group)):
+                    if payload is None:
+                        continue
+                    self._apply_public_archive_stat(video, payload)
+                if index + 5 < len(videos):
+                    await asyncio.sleep(random.uniform(0.2, 0.6))
 
     def _parse_channel_with_video_fallback(
         self,
