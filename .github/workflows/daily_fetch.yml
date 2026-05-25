@@ -1,9 +1,6 @@
 name: Daily Bilibili Dashboard Update
 
 on:
-  schedule:
-    - cron: '30 12 * * *'
-      timezone: 'Asia/Shanghai'
   workflow_dispatch:
 
 permissions:
