@@ -54,3 +54,11 @@ def test_update_interval_setting_is_clamped(monkeypatch) -> None:
 
     monkeypatch.setenv("DASHBOARD_PAGE_REFRESH_SECONDS", "0")
     assert load_settings().page_refresh_seconds == 0
+
+
+def test_nas_finder_url_setting_has_default_and_override(monkeypatch) -> None:
+    monkeypatch.delenv("DASHBOARD_NAS_FINDER_URL", raising=False)
+    assert load_settings().nas_finder_url.startswith("smb://192.168.31.68/")
+
+    monkeypatch.setenv("DASHBOARD_NAS_FINDER_URL", "smb://nas.local/share")
+    assert load_settings().nas_finder_url == "smb://nas.local/share"

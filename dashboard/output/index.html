@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta http-equiv="refresh" content="3600">
+  <meta http-equiv="refresh" content="1800">
 
   <title>【懒狗小黑】频道数据看板</title>
   <style>
@@ -79,6 +79,15 @@
       min-width: 0;
     }
 
+    .meta-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      max-width: 100%;
+      flex-wrap: wrap;
+    }
+
     .badge {
       display: inline-flex;
       align-items: center;
@@ -93,6 +102,53 @@
       font-weight: 700;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
       white-space: nowrap;
+    }
+
+    .nas-open-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 100%;
+      padding: 8px 12px;
+      border: 1px solid rgba(245, 245, 245, .18);
+      border-radius: 8px;
+      background: rgba(245, 245, 245, .08);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+    }
+
+    .nas-open-link:hover,
+    .nas-open-link:focus-visible {
+      border-color: rgba(245, 245, 245, .34);
+      background: rgba(245, 245, 245, .14);
+      outline: none;
+    }
+
+    .nas-open-icon {
+      position: relative;
+      width: 16px;
+      height: 12px;
+      border: 1.6px solid currentColor;
+      border-radius: 3px;
+      flex: 0 0 auto;
+    }
+
+    .nas-open-icon::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: -5px;
+      width: 7px;
+      height: 5px;
+      border: 1.6px solid currentColor;
+      border-bottom: 0;
+      border-radius: 3px 3px 0 0;
+      background: rgba(245, 245, 245, .08);
     }
 
     .badge-mark {
@@ -880,6 +936,10 @@
         align-items: flex-start;
       }
 
+      .meta-actions {
+        justify-content: flex-start;
+      }
+
       .updated {
         text-align: left;
       }
@@ -1031,9 +1091,17 @@
       </div>
       <div class="center-title">频道数据情况</div>
       <div class="right-meta">
-        <div class="badge"><span class="badge-mark" aria-hidden="true"></span>B站创作中心数据（部分明细回退）</div>
+        <div class="meta-actions">
+          <div class="badge"><span class="badge-mark" aria-hidden="true"></span>B站创作中心数据（部分明细回退）</div>
+
+          <a class="nas-open-link" href="smb://192.168.31.68/0_视频制作总盘/1_懒狗小黑" aria-label="用访达打开 NAS 目录">
+            <span class="nas-open-icon" aria-hidden="true"></span>
+            <span>打开 NAS</span>
+          </a>
+
+        </div>
         <div class="updated">最后更新：2026-05-26 01:02</div>
-        <div class="updated">下次更新：今天 02:00（约 0小时57分钟）</div>
+        <div class="updated">下次更新：今天 01:30（约 0小时10分钟）</div>
       </div>
     </header>
 
@@ -3331,7 +3399,7 @@
           axisPointer: { type: 'shadow' },
           formatter: params => platformTooltip(params, data)
         },
-        grid: { left: 86, right: 18, top: 18, bottom: 76 },
+        grid: { left: 90, right: 18, top: 46, bottom: 82 },
         xAxis: {
           type: 'category',
           data: hasData ? data.labels : [],
@@ -3343,8 +3411,9 @@
           {
             type: 'value',
             name: data.metric_label || '播放量',
-            nameTextStyle: { color: TEXT },
-            axisLabel: { color: TEXT },
+            nameGap: 18,
+            nameTextStyle: { color: TEXT, fontWeight: 800, padding: [0, 0, 8, 0] },
+            axisLabel: { color: TEXT, margin: 12 },
             splitLine: { lineStyle: { color: GRID } }
           }
         ],

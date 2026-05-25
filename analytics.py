@@ -530,6 +530,7 @@ def derive_dashboard_context(
         "source": source,
         "warnings": warnings,
         "badge_text": badge_text,
+        "nas_finder_url": getattr(config, "nas_finder_url", ""),
         "kpis": _derive_kpis(display_snapshots, latest, previous, config),
         "ctr_chart": {
             "labels": [video["axis_title"] for video in ctr_videos],

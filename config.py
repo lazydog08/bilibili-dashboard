@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+DEFAULT_NAS_FINDER_URL = "smb://192.168.31.68/0_视频制作总盘/1_懒狗小黑"
 DEFAULT_ENV_PATHS = [
     PROJECT_ROOT / "data" / "secrets" / "dashboard.env",
     Path.home() / ".config" / "bilibili-dashboard" / "dashboard.env",
@@ -117,6 +118,7 @@ class Settings:
     log_retention_days: int = 30
     platform_content_limit: int = 50
     log_path: Path = PROJECT_ROOT / "data" / "logs" / "update.log"
+    nas_finder_url: str = DEFAULT_NAS_FINDER_URL
     manual_platform_path: Path = PROJECT_ROOT / "data" / "manual_platform_metrics.json"
     manual_platform_enabled: bool = True
     bilibili_fetch_timeout_seconds: float = 180.0
@@ -185,6 +187,7 @@ def load_settings() -> Settings:
         log_retention_days=_env_int("LOG_RETENTION_DAYS", 30),
         platform_content_limit=max(1, min(_env_int("PLATFORM_CONTENT_LIMIT", 50), 50)),
         log_path=PROJECT_ROOT / "data" / "logs" / "update.log",
+        nas_finder_url=os.getenv("DASHBOARD_NAS_FINDER_URL") or DEFAULT_NAS_FINDER_URL,
         manual_platform_path=_env_path(
             "MANUAL_PLATFORM_DATA_PATH",
             PROJECT_ROOT / "data" / "manual_platform_metrics.json",

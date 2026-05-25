@@ -333,6 +333,7 @@ command -v ssh
 可选项：
 
 - `DASHBOARD_PUBLISH_DIR=/volume1/web/bilibili-dashboard`：每次更新后把 `index.html` 复制到 NAS Web 目录，方便手机浏览。
+- `DASHBOARD_NAS_FINDER_URL=smb://192.168.31.68/0_视频制作总盘/1_懒狗小黑`：页面右上角“打开 NAS”按钮使用的访达地址；点击后由 macOS 用 Finder 打开 SMB 共享。
 - `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。

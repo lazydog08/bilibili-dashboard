@@ -1,9 +1,8 @@
 from __future__ import annotations
-
 from pathlib import Path
 
 from analytics import derive_dashboard_context, load_fixture_history
-from config import PROJECT_ROOT, load_settings
+from config import DEFAULT_NAS_FINDER_URL, PROJECT_ROOT, load_settings
 from main import _resolve_snapshot_date, render_dashboard
 
 
@@ -17,6 +16,7 @@ REQUIRED_TEXT = [
     "近三十天上线节目封面总览",
     "视频播放量与粉丝增量",
     "平均播放时长与完播率",
+    "打开 NAS",
 ]
 
 
@@ -34,6 +34,20 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     assert "echarts.init" in html
     assert "const ctrChartData =" in html
     assert '<meta http-equiv="refresh" content="1800">' in html
+    assert f'href="{DEFAULT_NAS_FINDER_URL}"' in html
+    reach_start = html.find("reachChart.setOption({")
+    interaction_start = html.find("interactionChart.setOption({", reach_start)
+    assert reach_start != -1, "reach chart config is missing"
+    assert interaction_start != -1, "interaction chart config boundary is missing"
+    reach_chart_body = html[reach_start:interaction_start]
+    for snippet in [
+        "grid: { left: 90, right: 18, top: 46, bottom: 82 }",
+        "nameGap: 18",
+        "fontWeight: 800",
+        "padding: [0, 0, 8, 0]",
+        "axisLabel: { color: TEXT, margin: 12 }",
+    ]:
+        assert snippet in reach_chart_body
     assert not any(line.endswith((" ", "\t")) for line in html.splitlines())
 
 
