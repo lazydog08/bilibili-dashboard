@@ -139,6 +139,8 @@ class Settings:
     xiaohongshu_cookie_present: bool = False
     xiaohongshu_data_url_present: bool = False
     xiaohongshu_data_url: str = ""
+    xiaohongshu_content_data_url_present: bool = False
+    xiaohongshu_content_data_url: str = ""
     xiaohongshu_official_config_present: bool = False
     xiaohongshu_official_data_url_present: bool = False
     xiaohongshu_official_data_url: str = ""
@@ -221,6 +223,8 @@ def load_settings() -> Settings:
         xiaohongshu_cookie_present=bool(os.getenv("XIAOHONGSHU_COOKIE") or os.getenv("XIAOHONGSHU_TOKEN")),
         xiaohongshu_data_url_present=bool(os.getenv("XIAOHONGSHU_DATA_URL")),
         xiaohongshu_data_url=os.getenv("XIAOHONGSHU_DATA_URL", ""),
+        xiaohongshu_content_data_url_present=bool(os.getenv("XIAOHONGSHU_CONTENT_DATA_URL")),
+        xiaohongshu_content_data_url=os.getenv("XIAOHONGSHU_CONTENT_DATA_URL", ""),
         xiaohongshu_official_config_present=bool(
             os.getenv("XIAOHONGSHU_ACCESS_TOKEN")
             or os.getenv("XIAOHONGSHU_APP_ID")

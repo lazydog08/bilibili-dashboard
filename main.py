@@ -316,6 +316,7 @@ async def _collect_platform_snapshots(
                 settings.xiaohongshu_account_id,
                 settings.xiaohongshu_cookie_present,
                 settings.xiaohongshu_data_url,
+                content_data_url=settings.xiaohongshu_content_data_url,
                 official_data_url=settings.xiaohongshu_official_data_url,
                 official_config_present=settings.xiaohongshu_official_config_present,
                 manual_snapshot=manual_snapshots.get("xiaohongshu"),

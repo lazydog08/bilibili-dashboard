@@ -47,7 +47,7 @@ start dashboard/output/index.html
 抖音和小红书支持四级数据来源，按顺序自动降级：
 
 1. 官方 API / OpenAPI：配置平台授权令牌和官方数据地址后优先使用。
-2. 授权后台 Cookie：你登录自己的后台后，把可返回 JSON 的汇总或作品列表请求地址配置到 `DOUYIN_DATA_URL` / `XIAOHONGSHU_DATA_URL`，把 Cookie 配置到对应 Secret。
+2. 授权后台 Cookie：你登录自己的后台后，把可返回 JSON 的汇总请求地址配置到 `DOUYIN_DATA_URL` / `XIAOHONGSHU_DATA_URL`；如果小红书汇总接口不含作品列表，把作品列表请求地址单独配置到 `XIAOHONGSHU_CONTENT_DATA_URL`。
 3. 手动导入：如果官方 API 和后台 Cookie 都不可用，读取 `data/manual_platform_metrics.json`。
 4. 不可用占位：没有可靠数据源时，页面显示 `-- / 暂不可用`。
 
@@ -71,7 +71,8 @@ python main.py --live --no-feishu
 export DOUYIN_COOKIE='只放在本机环境变量里'
 export DOUYIN_DATA_URL='你自己后台里可返回 JSON 的数据接口地址'
 export XIAOHONGSHU_COOKIE='只放在本机环境变量里'
-export XIAOHONGSHU_DATA_URL='你自己后台里可返回 JSON 的数据接口地址'
+export XIAOHONGSHU_DATA_URL='你自己后台里可返回 JSON 的汇总接口地址'
+export XIAOHONGSHU_CONTENT_DATA_URL='可选：你自己后台里可返回 JSON 的作品列表接口地址'
 python main.py --live --no-feishu
 ```
 
@@ -171,6 +172,7 @@ export FEISHU_DATE_FORMAT='iso'
 - `XIAOHONGSHU_OFFICIAL_DATA_URL`，可选，小红书官方 / 蒲公英 / 创作者接口数据地址
 - `DOUYIN_DATA_URL`，可选，抖音后台授权数据源地址
 - `XIAOHONGSHU_DATA_URL`，可选，小红书后台授权数据源地址
+- `XIAOHONGSHU_CONTENT_DATA_URL`，可选，小红书作品列表授权数据源地址；如果 `XIAOHONGSHU_DATA_URL` 只是账号汇总接口，需单独配置这个字段才能刷新最新作品明细
 - `BARK_DEVICE_KEY`，可选，用于 iPhone Bark 推送
 - `FEISHU_APP_ID`，可选
 - `FEISHU_APP_SECRET`，可选
@@ -206,19 +208,25 @@ export FEISHU_DATE_FORMAT='iso'
 - 提交更新后的 `data/history.json` 和 `dashboard/output/index.html`。
 - 上传并部署 GitHub Pages。
 
-`.github/workflows/deploy_pages.yml` 会在 NAS 推送 `dashboard/output/index.html` 或 `data/history.json` 后自动部署 GitHub Pages。
+`.github/workflows/pages_deploy.yml` 会在 NAS 推送 `dashboard/output/**` 后自动部署 GitHub Pages。
 
-如果后续还想把 GitHub Actions 也恢复成每天北京时间 12:30 和 20:00 自动抓取，可以给 `daily_fetch.yml` 加回下面的计划任务。GitHub Actions 的 `schedule` 使用 UTC：
+NAS 侧负责抓取和提交，GitHub 侧只负责静态部署。按仓库名推断，线上看板地址通常是：
+
+```text
+https://lazydog08.github.io/bilibili-dashboard/
+```
+
+如果后续还想把 GitHub Actions 也恢复成每天北京时间 12:00 和 20:00 自动抓取，可以给 `daily_fetch.yml` 加回下面的计划任务。GitHub Actions 的 `schedule` 使用 UTC：
 
 ```yaml
 on:
   schedule:
-    - cron: '30 4 * * *'
+    - cron: '0 4 * * *'
     - cron: '0 12 * * *'
   workflow_dispatch:
 ```
 
-因为北京时间 12:30 是 UTC 04:30，北京时间 20:00 是 UTC 12:00。
+因为北京时间 12:00 是 UTC 04:00，北京时间 20:00 是 UTC 12:00。
 
 本地手动更新：
 
@@ -232,9 +240,9 @@ python main.py --live --no-feishu
 python main.py --no-feishu
 ```
 
-## NAS 本地看板半小时刷新
+## NAS 每小时自动更新
 
-项目已提供适合 NAS / Linux 定时任务调用的脚本。推荐把真实账号数据只发布到 NAS 本地 Web 目录，不推送到公开 GitHub Pages。
+项目已提供适合 NAS / Linux 定时任务调用的脚本。推荐由 NAS 每小时完成抓取、渲染和云端发布，GitHub Pages 只负责展示静态页面，不负责抓取平台数据。
 
 ```bash
 scripts/nas_update_dashboard.sh
@@ -246,17 +254,24 @@ scripts/nas_update_dashboard.sh
 2. 复制 `data/secrets/dashboard.env.example` 到 `~/.config/bilibili-dashboard/dashboard.env`。
 3. 只在这个仓库外部的 `dashboard.env` 里填写 Cookie、Bark device key、抖音 / 小红书授权接口等敏感配置。
 4. 设置 `DASHBOARD_PUBLISH_DIR` 为 NAS Web 目录，例如 `/volume1/web/bilibili-dashboard`。
-5. 保持 `DASHBOARD_GIT_PUSH=0`，不要把真实账号数据推送到 GitHub。
-6. 在 NAS 的计划任务里每 30 分钟执行一次：
+5. 设置 `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`，并给 NAS 配置 GitHub SSH deploy key。
+6. 保持 `DASHBOARD_GIT_PUSH=0`，统一通过 `nas_update_and_push_cloud.sh` 推送云端。
+7. 在 NAS 的计划任务里每小时执行一次云端更新：
 
 ```bash
-/path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh
+/path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh
 ```
 
 Linux crontab 示例见 `scripts/nas_cron.example`：
 
 ```cron
-*/30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh >/dev/null 2>&1
+0 * * * * DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+```
+
+如果 NAS 支持普通 `crontab`，也可以在 NAS 仓库目录执行：
+
+```bash
+scripts/install_nas_hourly_cron.sh
 ```
 
 `nas_update_dashboard.sh` 会：
@@ -266,24 +281,32 @@ Linux crontab 示例见 `scripts/nas_cron.example`：
 - 如果配置了 `DASHBOARD_PUBLISH_DIR`，同步复制到 NAS Web 目录。
 - 写入 `data/logs/nas-update.log`，不输出 Cookie、token 或 Bark key。
 
+`nas_update_and_push_cloud.sh` 会：
+
+- 拉取远端最新状态，避免覆盖 GitHub 上的数据。
+- 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。
+- 默认按 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1` 先调用 `nas_update_dashboard.sh` 抓取并生成最新页面。
+- 提交并推送到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
+- 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
+
 如果 NAS 环境是 iStoreOS / OpenWrt，系统里通常没有 Python，但有 Docker。此时可以先用 Docker 包装脚本本地生成页面：
 
 ```cron
-*/30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
+0 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
 ```
 
-`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续半小时更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
+`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续每小时更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
 
 脚本行为：
 
 - 推荐 `DASHBOARD_MODE=bilibili-only`，会只更新 B 站真实数据，抖音 / 小红书沿用缓存或手动导入数据。
 - 如果确实要拉取三平台实时数据，可改为 `DASHBOARD_MODE=live`。
 - 如果缺少某个平台凭据，会自动降级到缓存、手动数据或 `--`，不会中断整个看板。
-- 默认不跑测试，避免每半小时消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
+- 默认不跑测试，避免每小时消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
 - 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
 - Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
-- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按半小时显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
-- `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=60` 会让页面右上角“下次更新”按每小时显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=3600` 会让已经打开的静态页面每小时自动刷新一次，从而看到 NAS 刚生成的新 HTML。
 
 可选项：
 
@@ -291,14 +314,15 @@ Linux crontab 示例见 `scripts/nas_cron.example`：
 - `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
+- `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1`：云端发布任务每小时先抓取最新数据，再推送 GitHub Pages。
 - `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
-- `DASHBOARD_UPDATE_INTERVAL_MINUTES=30`：页面显示下一次半小时刷新时间。
-- `DASHBOARD_PAGE_REFRESH_SECONDS=1800`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
+- `DASHBOARD_UPDATE_INTERVAL_MINUTES=60`：页面显示下一次每小时刷新时间。
+- `DASHBOARD_PAGE_REFRESH_SECONDS=3600`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
 - `DASHBOARD_MODE=bilibili-only`：只抓取 B 站，适合 NAS 本地看板低风险运行。
 - `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
 - `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。
 
-`scripts/nas_update_and_push_cloud.sh` 仍保留为手动备用。如果你明确要把真实数据推到 GitHub，再单独使用它。默认本地看板不需要这个脚本。
+如果不想公开真实数据，删除每小时的 `nas_update_and_push_cloud.sh` 计划任务，改用 `nas_update_dashboard.sh` 本地输出即可。
 
 ## Bark 推送
 

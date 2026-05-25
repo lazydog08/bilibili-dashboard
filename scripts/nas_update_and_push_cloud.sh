@@ -29,6 +29,13 @@ log() {
   printf '[%s] %s\n' "$timestamp" "$*" >> "$LOG_FILE"
 }
 
+LOCK_DIR="${DASHBOARD_CLOUD_LOCK_DIR:-$REPO_DIR/data/logs/nas-cloud-update.lock}"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  log "Another NAS cloud update is already running; skipped."
+  exit 0
+fi
+trap 'rm -rf "$LOCK_DIR"' EXIT
+
 BRANCH="${DASHBOARD_CLOUD_BRANCH:-main}"
 REMOTE_NAME="${DASHBOARD_CLOUD_REMOTE_NAME:-origin}"
 REMOTE_URL="${DASHBOARD_CLOUD_REMOTE_URL:-}"
@@ -49,6 +56,10 @@ if [[ ! -d "$REPO_DIR/.git" ]]; then
   git init >> "$LOG_FILE" 2>&1
   git branch -M "$BRANCH" >> "$LOG_FILE" 2>&1 || true
   git remote add "$REMOTE_NAME" "$REMOTE_URL" >> "$LOG_FILE" 2>&1
+  git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1 || log "Initial Git fetch failed; continuing with local state."
+  if git rev-parse --verify "refs/remotes/$REMOTE_NAME/$BRANCH" >/dev/null 2>&1; then
+    git reset --mixed "refs/remotes/$REMOTE_NAME/$BRANCH" >> "$LOG_FILE" 2>&1
+  fi
 fi
 
 if ! git remote get-url "$REMOTE_NAME" >/dev/null 2>&1; then
@@ -62,19 +73,35 @@ fi
 git config user.email "${DASHBOARD_GIT_EMAIL:-nas-dashboard@local}" >> "$LOG_FILE" 2>&1
 git config user.name "${DASHBOARD_GIT_NAME:-UGREEN NAS Dashboard Bot}" >> "$LOG_FILE" 2>&1
 
-if [[ "${DASHBOARD_GIT_PULL_BEFORE_PUSH:-1}" == "1" ]]; then
-  log "Pulling latest cloud repository state."
-  git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1 || log "Git fetch failed; continuing with local state."
+sync_cloud_state() {
+  log "Synchronizing latest cloud repository state."
+  git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1 || {
+    log "Git fetch failed; aborting to avoid pushing over unknown cloud state."
+    exit 1
+  }
   if git rev-parse --verify "refs/remotes/$REMOTE_NAME/$BRANCH" >/dev/null 2>&1; then
-    git rebase "refs/remotes/$REMOTE_NAME/$BRANCH" >> "$LOG_FILE" 2>&1 || {
+    git -c rebase.autoStash=true rebase "refs/remotes/$REMOTE_NAME/$BRANCH" >> "$LOG_FILE" 2>&1 || {
       log "Git rebase failed; aborting to avoid overwriting cloud data."
       git rebase --abort >> "$LOG_FILE" 2>&1 || true
       exit 1
     }
   fi
+}
+
+if [[ "${DASHBOARD_GIT_PULL_BEFORE_PUSH:-1}" == "1" ]]; then
+  sync_cloud_state
 fi
 
-DASHBOARD_GIT_PUSH=0 "$SCRIPT_DIR/nas_update_dashboard.sh"
+if [[ "${DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH:-1}" == "1" ]]; then
+  DASHBOARD_GIT_PUSH=0 "$SCRIPT_DIR/nas_update_dashboard.sh"
+else
+  log "Skipping dashboard refresh before cloud push; using latest local output."
+fi
+
+if [[ ! -f "$REPO_DIR/data/history.json" || ! -f "$REPO_DIR/dashboard/output/index.html" ]]; then
+  log "Dashboard output is missing; run nas_update_dashboard.sh before pushing."
+  exit 1
+fi
 
 git add data/history.json dashboard/output/index.html
 if git diff --staged --quiet; then
@@ -87,6 +114,13 @@ commit_time="$(TZ="$TIMEZONE" date '+%Y-%m-%d %H:%M')"
 git commit -m "chore: update dashboard from NAS $commit_time" >> "$LOG_FILE" 2>&1
 
 log "Pushing dashboard update to cloud."
-git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1
+if ! git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1; then
+  log "Git push failed; synchronizing cloud state and retrying once."
+  sync_cloud_state
+  git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1 || {
+    log "Git push failed after retry."
+    exit 1
+  }
+fi
 
 log "NAS cloud update finished."

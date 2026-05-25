@@ -399,6 +399,7 @@ def _prepare_video(video: dict[str, Any]) -> dict[str, Any]:
         "thumbnail": normalize_thumbnail_url(video.get("thumbnail")),
         "publish_time": publish_time,
         "views": safe_int(video.get("views"), 0),
+        "views_label": format_number(video.get("views")),
         "likes": safe_int(video.get("likes"), 0),
         "coins": safe_int(video.get("coins"), 0),
         "favorites": safe_int(video.get("favorites"), 0),

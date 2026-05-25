@@ -209,8 +209,23 @@ def _normalize_content_from_payload(payload: Any, content_limit: int = 50) -> li
         title = pick_first(item, ["title", "desc", "description", "name", "display_title", "note_title"])
         rows.append(
             {
+                "id": pick_first(item, ["id", "item_id", "note_id", "aweme_id", "oid"]),
+                "item_id": pick_first(item, ["item_id", "aweme_id"]),
+                "note_id": pick_first(item, ["note_id", "id", "oid"]),
                 "title": title or "未命名内容",
-                "publish_time": pick_first(item, ["publish_time", "publishTime", "publishedAt", "create_time", "ctime", "time"]),
+                "publish_time": pick_first(
+                    item,
+                    [
+                        "publish_time",
+                        "publishTime",
+                        "publishedAt",
+                        "publish_time_str",
+                        "create_time",
+                        "createTime",
+                        "ctime",
+                        "time",
+                    ],
+                ),
                 "thumbnail": _pick_thumbnail(item),
                 "views": pick_number_deep(item, ["views", "view_count", "play_count", "read_count", "播放量", "阅读量"]),
                 "likes": pick_number_deep(item, ["likes", "like_count", "digg_count", "点赞数"]),

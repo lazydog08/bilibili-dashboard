@@ -744,14 +744,13 @@
 
     .thumbnail-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px 20px;
-      max-height: min(58vh, 620px);
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      max-height: min(66vh, 760px);
       overflow-x: hidden;
       overflow-y: auto;
       overscroll-behavior: contain;
-      scroll-behavior: smooth;
-      padding: 22px 8px 6px 0;
+      padding: 10px 8px 4px 0;
       scrollbar-color: rgba(245, 245, 245, .34) rgba(255, 255, 255, .06);
       scrollbar-width: thin;
     }
@@ -776,6 +775,18 @@
 
     .video-card {
       min-width: 0;
+      display: grid;
+      gap: 9px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(32, 32, 32, .58);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .thumb-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 7px;
     }
 
     .thumb {
@@ -783,18 +794,43 @@
       aspect-ratio: 16 / 9;
       display: block;
       object-fit: cover;
-      border-radius: 6px;
+      border-radius: 7px;
       background: var(--panel-soft);
-      box-shadow: 0 7px 18px rgba(0, 0, 0, .28);
+      box-shadow: 0 7px 18px rgba(0, 0, 0, .22);
+    }
+
+    .view-badge {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      max-width: calc(100% - 16px);
+      padding: 5px 7px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .68);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+      backdrop-filter: blur(10px);
+    }
+
+    .view-badge-label {
+      color: rgba(255, 255, 255, .68);
+      font-size: 11px;
+      font-weight: 760;
     }
 
     .video-title {
-      margin: 12px 0 12px;
+      margin: 0;
       color: var(--text);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 760;
-      line-height: 1.45;
-      min-height: 43px;
+      line-height: 1.36;
+      min-height: 38px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -803,18 +839,22 @@
 
     .video-meta {
       display: grid;
-      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
       color: #dedede;
       font-size: 12px;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     .video-meta span {
-      display: block;
       min-width: 0;
-      white-space: nowrap;
+      display: grid;
+      gap: 2px;
+      padding: 6px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .055);
+      white-space: normal;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .video-meta b {
@@ -1123,15 +1163,21 @@
           <div class="thumbnail-grid">
             {% for video in recent_videos %}
             <article class="video-card">
-              <img
-                class="thumb"
-                src="{{ video.thumbnail }}"
-                alt="{{ video.title }}"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="{{ video.bvid or loop.index }}"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="{{ video.thumbnail }}"
+                  alt="{{ video.title }}"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="{{ video.bvid or loop.index }}"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>{{ video.views_label }}</span>
+                </div>
+              </div>
               <div class="video-title" title="{{ video.title }}">{{ video.short_title }}</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>{{ video.publish_time }}</span>
@@ -1187,10 +1233,10 @@
             </section>
           </div>
           <div class="content-list">
-            {% for item in platform.content_items %}
+            {%- for item in platform.content_items %}
             <article class="content-row">
               <div class="content-media">
-                {% if item.thumbnail %}
+                {%- if item.thumbnail %}
                 <img
                   class="content-thumb"
                   src="{{ item.thumbnail }}"
@@ -1200,24 +1246,24 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">{{ item.short_title }}</div>
-                {% else %}
+                {%- else %}
                 <div class="content-thumb-placeholder">{{ item.short_title }}</div>
-                {% endif %}
-                {% if item.thumbnail_note %}
+                {%- endif %}
+                {%- if item.thumbnail_note %}
                 <div class="content-thumbnail-note">{{ item.thumbnail_note }}</div>
-                {% endif %}
+                {%- endif %}
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="{{ item.title }}">{{ item.short_title }}</h3>
                 <div class="content-time">发布时间：{{ item.publish_time }}</div>
                 <div class="content-metrics">
-                  {% for metric in item.metrics %}
+                  {%- for metric in item.metrics %}
                   <div class="content-metric"><span>{{ metric.label }}</span>{{ metric.value }}</div>
-                  {% endfor %}
+                  {%- endfor %}
                 </div>
               </div>
             </article>
-            {% endfor %}
+            {%- endfor %}
           </div>
           {% else %}
           <div class="empty-state">

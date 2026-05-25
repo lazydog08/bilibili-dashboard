@@ -3,7 +3,10 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from datetime import datetime
 from typing import Any
+from urllib.parse import urlencode, urlparse
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -24,6 +27,10 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 XHS_BASE_URL = "https://creator.xiaohongshu.com"
 XHS_PERSONAL_INFO_URL = f"{XHS_BASE_URL}/api/galaxy/creator/home/personal_info"
 XHS_ACCOUNT_BASE_URL = f"{XHS_BASE_URL}/api/galaxy/v2/creator/datacenter/account/base"
+XHS_LATEST_NOTE_URL = f"{XHS_BASE_URL}/api/galaxy/creator/home/latest_note_data"
+XHS_NOTE_DETAIL_URL = f"{XHS_BASE_URL}/api/galaxy/creator/data/note_detail_new"
+XHS_NOTE_STATS_URL = f"{XHS_BASE_URL}/api/galaxy/creator/data/note_stats/new"
+XHS_CONTENT_REFERER = "https://creator.xiaohongshu.com/creator/notes?source=official"
 
 
 def _safe_int(value: Any) -> int | None:
@@ -44,11 +51,15 @@ def _safe_float(value: Any) -> float | None:
         return None
 
 
-def _xhs_headers(cookie: str, extra_headers: dict[str, str] | None = None) -> dict[str, str]:
+def _xhs_headers(
+    cookie: str,
+    extra_headers: dict[str, str] | None = None,
+    referer: str = "https://creator.xiaohongshu.com/new/home",
+) -> dict[str, str]:
     return {
         "User-Agent": USER_AGENT,
         "Accept": "application/json, text/plain, */*",
-        "Referer": "https://creator.xiaohongshu.com/new/home",
+        "Referer": referer,
         "Origin": XHS_BASE_URL,
         "Cookie": cookie,
         **(extra_headers or {}),
@@ -60,8 +71,9 @@ async def _authorized_xhs_get_json(
     cookie: str,
     *,
     extra_headers: dict[str, str] | None = None,
+    referer: str = "https://creator.xiaohongshu.com/new/home",
 ) -> Any:
-    headers = _xhs_headers(cookie, extra_headers)
+    headers = _xhs_headers(cookie, extra_headers, referer)
     async with httpx.AsyncClient(headers=headers, timeout=20.0, follow_redirects=False) as client:
         response = await client.get(url)
     if response.status_code in {401, 403, 406, 412, 429}:
@@ -88,6 +100,89 @@ def _pick_personal_fans(personal: dict[str, Any]) -> int | None:
 def _period_data(account_base: dict[str, Any], key: str) -> dict[str, Any]:
     value = account_base.get(key)
     return value if isinstance(value, dict) else {}
+
+
+def _with_query(url: str, params: dict[str, Any]) -> str:
+    if "?" in url:
+        return url
+    return f"{url}?{urlencode(params)}"
+
+
+def _is_xhs_summary_url(url: str) -> bool:
+    parsed = urlparse(str(url or ""))
+    if "creator.xiaohongshu.com" not in parsed.netloc:
+        return False
+    return parsed.path in {
+        urlparse(XHS_PERSONAL_INFO_URL).path,
+        urlparse(XHS_ACCOUNT_BASE_URL).path,
+    }
+
+
+def _content_items_from_payload(payload: Any, account_id: str, timezone_name: str, content_limit: int) -> list[dict[str, Any]]:
+    snapshot = snapshot_from_payload(
+        platform="xiaohongshu",
+        account_id=account_id,
+        payload=payload,
+        timezone_name=timezone_name,
+        key_map=XiaohongshuClient.KEY_MAP,
+        custom_key_map=XiaohongshuClient.CUSTOM_KEY_MAP,
+        source="authorized_cookie",
+        content_limit=content_limit,
+    )
+    items = snapshot.get("contentItems")
+    return [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
+
+
+def _note_info_from_payload(payload: Any) -> dict[str, Any]:
+    data = _payload_data(payload)
+    note_info = data.get("noteInfo")
+    return note_info if isinstance(note_info, dict) else {}
+
+
+def _post_time_label(value: Any, timezone_name: str) -> str:
+    timestamp = _safe_int(value)
+    if timestamp is None:
+        return "--"
+    if timestamp > 10_000_000_000:
+        timestamp = timestamp // 1000
+    return datetime.fromtimestamp(timestamp, tz=ZoneInfo(timezone_name)).strftime("%Y-%m-%d %H:%M")
+
+
+def _seconds_label(value: Any) -> str | None:
+    number = _safe_float(value)
+    if number is None:
+        return None
+    if number > 1000:
+        number = number / 1000.0
+    return f"{number:.1f}秒"
+
+
+def _latest_note_item_from_payload(
+    latest_payload: Any,
+    detail_payload: Any,
+    timezone_name: str,
+) -> dict[str, Any] | None:
+    note_info = _note_info_from_payload(latest_payload)
+    note_id = str(note_info.get("id") or "").strip()
+    title = str(note_info.get("title") or "").strip()
+    if not note_id and not title:
+        return None
+    detail = _payload_data(detail_payload)
+    seven = _period_data(detail, "seven")
+    return {
+        "id": note_id,
+        "note_id": note_id,
+        "title": title or "未命名内容",
+        "publish_time": _post_time_label(note_info.get("postTime"), timezone_name),
+        "thumbnail": note_info.get("coverUrl"),
+        "views": _safe_int(seven.get("view_count")),
+        "likes": _safe_int(seven.get("like_count")),
+        "favorites": _safe_int(seven.get("collect_count")),
+        "comments": _safe_int(seven.get("comment_count")),
+        "shares": _safe_int(seven.get("share_count")),
+        "avd": _seconds_label(seven.get("view_time_avg")),
+        "danmaku": _safe_int(seven.get("danmaku_count")),
+    }
 
 
 class XiaohongshuBaseSource:
@@ -139,9 +234,16 @@ class XiaohongshuOfficialApiSource(XiaohongshuBaseSource):
 class XiaohongshuCookieSource(XiaohongshuBaseSource):
     source = "authorized_cookie"
 
-    def __init__(self, account_id: str = "", data_url: str = "", content_limit: int = 50) -> None:
+    def __init__(
+        self,
+        account_id: str = "",
+        data_url: str = "",
+        content_limit: int = 50,
+        content_data_url: str = "",
+    ) -> None:
         super().__init__(account_id, content_limit)
         self.data_url = data_url
+        self.content_data_url = content_data_url
 
     def configured(self) -> bool:
         return bool(os.getenv("XIAOHONGSHU_COOKIE"))
@@ -156,6 +258,8 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
                 return await self._fetch_creator_center_snapshot(cookie, timezone_name, extra_headers)
             except Exception as primary_exc:  # noqa: BLE001 - keep the older configurable URL fallback.
                 if not self.data_url:
+                    raise SourceUnavailableError(f"小红书数据中心接口失败：{type(primary_exc).__name__}") from primary_exc
+                if _is_xhs_summary_url(self.data_url):
                     raise SourceUnavailableError(f"小红书数据中心接口失败：{type(primary_exc).__name__}") from primary_exc
         if extra_headers:
             payload = await fetch_authorized_json_with_headers(
@@ -177,6 +281,97 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
             message="来自小红书本人账号授权后台 Cookie 数据源。",
             content_limit=self.content_limit,
         )
+
+    def _content_url_candidates(self) -> list[tuple[str, str]]:
+        candidates: list[tuple[str, str]] = []
+        if self.content_data_url:
+            candidates.append((self.content_data_url, "configured_content_url"))
+        if self.data_url and not _is_xhs_summary_url(self.data_url):
+            candidates.append((self.data_url, "configured_data_url"))
+        note_stats_url = _with_query(
+            XHS_NOTE_STATS_URL,
+            {
+                "page": "1",
+                "page_size": str(min(max(self.content_limit, 1), 50)),
+                "sort_by": "time",
+                "note_type": "0",
+                "time": "90",
+                "is_recent": "true",
+            },
+        )
+        candidates.append((note_stats_url, "creator_note_stats"))
+
+        seen: set[str] = set()
+        unique: list[tuple[str, str]] = []
+        for url, label in candidates:
+            if not url or url in seen:
+                continue
+            seen.add(url)
+            unique.append((url, label))
+        return unique
+
+    async def _fetch_latest_note_item(
+        self,
+        cookie: str,
+        timezone_name: str,
+        extra_headers: dict[str, str],
+    ) -> tuple[list[dict[str, Any]], str]:
+        latest_payload = await _authorized_xhs_get_json(
+            XHS_LATEST_NOTE_URL,
+            cookie,
+            extra_headers=extra_headers,
+            referer="https://creator.xiaohongshu.com/new/home?source=official",
+        )
+        note_info = _note_info_from_payload(latest_payload)
+        note_id = str(note_info.get("id") or "").strip()
+        detail_payload: Any = {}
+        if note_id:
+            detail_payload = await _authorized_xhs_get_json(
+                _with_query(XHS_NOTE_DETAIL_URL, {"note_id": note_id}),
+                cookie,
+                extra_headers=extra_headers,
+                referer="https://creator.xiaohongshu.com/new/home?source=official",
+            )
+        item = _latest_note_item_from_payload(latest_payload, detail_payload, timezone_name)
+        if not item:
+            return [], "latest_note_data: 未识别到最新笔记"
+        return [item], "最新笔记已读取 1 条。"
+
+    async def _fetch_content_items(
+        self,
+        cookie: str,
+        timezone_name: str,
+        extra_headers: dict[str, str],
+    ) -> tuple[list[dict[str, Any]], str]:
+        errors: list[str] = []
+        for url, label in self._content_url_candidates():
+            try:
+                if extra_headers:
+                    payload = await _authorized_xhs_get_json(
+                        url,
+                        cookie,
+                        extra_headers=extra_headers,
+                        referer=XHS_CONTENT_REFERER,
+                    )
+                else:
+                    payload = await _authorized_xhs_get_json(url, cookie, referer=XHS_CONTENT_REFERER)
+            except Exception as exc:  # noqa: BLE001 - summary data should still be usable.
+                errors.append(f"{label}: {type(exc).__name__}")
+                continue
+            items = _content_items_from_payload(payload, self.account_id, timezone_name, self.content_limit)
+            if items:
+                return items, f"作品列表已读取 {len(items)} 条。"
+            errors.append(f"{label}: 未识别到作品明细")
+        try:
+            latest_items, latest_message = await self._fetch_latest_note_item(cookie, timezone_name, extra_headers)
+            if latest_items:
+                return latest_items, latest_message
+            errors.append(latest_message)
+        except Exception as exc:  # noqa: BLE001 - summary data should still be usable.
+            errors.append(f"latest_note_data: {type(exc).__name__}")
+        if self.data_url and _is_xhs_summary_url(self.data_url) and not self.content_data_url:
+            errors.append("XIAOHONGSHU_DATA_URL 当前是汇总接口，未单独配置 XIAOHONGSHU_CONTENT_DATA_URL")
+        return [], f"作品列表未更新（{'; '.join(errors[:3])}），将沿用缓存或手动导入明细。"
 
     async def _fetch_creator_center_snapshot(
         self,
@@ -208,6 +403,7 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
             "completion_rate": _safe_float(seven.get("video_full_view_rate")),
             "profile_visits": _safe_int(seven.get("home_view_count")),
         }
+        content_items, content_message = await self._fetch_content_items(cookie, timezone_name, extra_headers)
         return build_platform_snapshot(
             platform="xiaohongshu",
             account_id=account_id,
@@ -222,16 +418,16 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
                 "30d": _safe_int(thirty.get("net_rise_fans_count")),
             },
             metric_columns={"current": "近7日", "previous": "对比期"},
-            content_items=[],
+            content_items=content_items,
             status="success",
-            message="来自小红书本人账号授权后台数据中心；作品列表接口需要额外平台签名，当前仅使用可安全读取的汇总指标。",
+            message=f"来自小红书本人账号授权后台数据中心；{content_message}",
             source=self.source,
             raw={
                 "summary": {
                     "source": self.source,
                     "personal_info": bool(personal),
                     "account_metrics": len(seven),
-                    "content_count": 0,
+                    "content_count": len(content_items),
                 }
             },
         )
@@ -325,6 +521,7 @@ class XiaohongshuClient:
         cookie_present: bool = False,
         data_url: str = "",
         *,
+        content_data_url: str = "",
         official_data_url: str = "",
         official_config_present: bool = False,
         manual_snapshot: dict[str, Any] | None = None,
@@ -338,7 +535,7 @@ class XiaohongshuClient:
             self.sources.extend(
                 [
                     XiaohongshuOfficialApiSource(account_id, official_data_url, content_limit),
-                    XiaohongshuCookieSource(account_id, data_url, content_limit),
+                    XiaohongshuCookieSource(account_id, data_url, content_limit, content_data_url),
                 ]
             )
         self.sources.extend([XiaohongshuManualSource(manual_snapshot), XiaohongshuUnavailableSource(account_id)])

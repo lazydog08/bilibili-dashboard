@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
+
   <title>【懒狗小黑】频道数据看板</title>
   <style>
     :root {
@@ -742,14 +742,13 @@
 
     .thumbnail-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px 20px;
-      max-height: min(58vh, 620px);
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      max-height: min(66vh, 760px);
       overflow-x: hidden;
       overflow-y: auto;
       overscroll-behavior: contain;
-      scroll-behavior: smooth;
-      padding: 22px 8px 6px 0;
+      padding: 10px 8px 4px 0;
       scrollbar-color: rgba(245, 245, 245, .34) rgba(255, 255, 255, .06);
       scrollbar-width: thin;
     }
@@ -774,6 +773,18 @@
 
     .video-card {
       min-width: 0;
+      display: grid;
+      gap: 9px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(32, 32, 32, .58);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .thumb-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 7px;
     }
 
     .thumb {
@@ -781,18 +792,43 @@
       aspect-ratio: 16 / 9;
       display: block;
       object-fit: cover;
-      border-radius: 6px;
+      border-radius: 7px;
       background: var(--panel-soft);
-      box-shadow: 0 7px 18px rgba(0, 0, 0, .28);
+      box-shadow: 0 7px 18px rgba(0, 0, 0, .22);
+    }
+
+    .view-badge {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      max-width: calc(100% - 16px);
+      padding: 5px 7px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .68);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+      backdrop-filter: blur(10px);
+    }
+
+    .view-badge-label {
+      color: rgba(255, 255, 255, .68);
+      font-size: 11px;
+      font-weight: 760;
     }
 
     .video-title {
-      margin: 12px 0 12px;
+      margin: 0;
       color: var(--text);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 760;
-      line-height: 1.45;
-      min-height: 43px;
+      line-height: 1.36;
+      min-height: 38px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -801,18 +837,22 @@
 
     .video-meta {
       display: grid;
-      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
       color: #dedede;
       font-size: 12px;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     .video-meta span {
-      display: block;
       min-width: 0;
-      white-space: nowrap;
+      display: grid;
+      gap: 2px;
+      padding: 6px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .055);
+      white-space: normal;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .video-meta b {
@@ -990,32 +1030,32 @@
       <div class="center-title">频道数据情况</div>
       <div class="right-meta">
         <div class="badge"><span class="badge-mark" aria-hidden="true"></span>B站创作中心数据（部分明细回退）</div>
-        <div class="updated">最后更新：2026-05-25T16:48:03+08:00</div>
-        <div class="updated">下次更新：今天 20:00（约 3小时11分钟）</div>
+        <div class="updated">最后更新：2026-05-25T18:04:41+08:00</div>
+        <div class="updated">下次更新：今天 20:00（约 1小时55分钟）</div>
       </div>
     </header>
 
-    
+
     <section class="warning">
-      
+
         <div>30 个视频明细接口不可用，已使用列表数据回退。</div>
-      
+
         <div>粉丝明细获取失败，已使用 0 回退：fan detail failed: Bilibili request failed: Bilibili API returned code -400: 请求错误</div>
-      
+
     </section>
-    
+
 
     <section class="platform-grid" aria-label="三平台运营指标">
-      
+
       <article class="platform-card" style="--platform-accent: #00a1d6">
         <header class="platform-head">
           <div>
             <div class="platform-name">
               <span class="platform-logo" style="--platform-accent: #00a1d6">
-                
+
                   <img src="https://www.bilibili.com/favicon.ico" alt="B 站图标" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-grid';">
                   <span class="platform-logo-fallback" style="display: none;">B</span>
-                
+
               </span>
               <span>B 站</span>
             </div>
@@ -1027,27 +1067,27 @@
 
         <section class="platform-fans">
           <div class="platform-fans-label">当前粉丝量</div>
-          <div class="platform-fans-value is-neutral">169,989</div>
-          <div class="platform-last">最近成功：2026-05-25 16:48</div>
+          <div class="platform-fans-value is-neutral">170,048</div>
+          <div class="platform-last">最近成功：2026-05-25 18:04</div>
         </section>
 
         <section class="growth-grid" aria-label="B 站涨粉">
-          
+
           <div class="growth-item">
             <div class="growth-label">相比昨日的涨粉</div>
             <div class="growth-value is-unavailable">--</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">7日涨粉</div>
-            <div class="growth-value is-positive">+1,255</div>
+            <div class="growth-value is-positive">+1,314</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">30日涨粉</div>
             <div class="growth-value is-unavailable">--</div>
           </div>
-          
+
         </section>
 
         <section class="metric-block">
@@ -1058,37 +1098,37 @@
             <div class="metric-cell metric-head">上次累计</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">播放量 / 阅读量<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">43,725,501</div>
               <div class="metric-cell is-neutral">43,725,501</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
               <div class="metric-cell metric-name">点赞数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">1,229,525</div>
               <div class="metric-cell is-neutral">1,229,525</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
               <div class="metric-cell metric-name">收藏数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">386,475</div>
               <div class="metric-cell is-neutral">386,475</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
               <div class="metric-cell metric-name">评论数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">103,649</div>
               <div class="metric-cell is-neutral">103,649</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
               <div class="metric-cell metric-name">分享 / 转发数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">97,435</div>
               <div class="metric-cell is-neutral">97,435</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
           </div>
         </section>
 
@@ -1100,34 +1140,34 @@
             <div class="metric-cell metric-head">上次累计</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">投币数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">252,663</div>
               <div class="metric-cell is-neutral">252,663</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
               <div class="metric-cell metric-name">弹幕数<div class="metric-note">当前累计 / 上次累计</div></div>
               <div class="metric-cell is-neutral">86,816</div>
               <div class="metric-cell is-neutral">86,816</div>
               <div class="metric-cell is-neutral">0</div>
               <div class="metric-cell is-neutral">0.0%</div>
-            
+
           </div>
         </section>
 
         <div class="status-note">30 个视频明细接口不可用，已使用列表数据回退。; 粉丝明细获取失败，已使用 0 回退：fan detail failed: Bilibili request failed: Bilibili API returned code -400: 请求错误</div>
       </article>
-      
+
       <article class="platform-card" style="--platform-accent: #31f5ff">
         <header class="platform-head">
           <div>
             <div class="platform-name">
               <span class="platform-logo" style="--platform-accent: #31f5ff">
-                
+
                   <img src="https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico" alt="抖音图标" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-grid';">
                   <span class="platform-logo-fallback" style="display: none;">抖</span>
-                
+
               </span>
               <span>抖音</span>
             </div>
@@ -1140,26 +1180,26 @@
         <section class="platform-fans">
           <div class="platform-fans-label">当前粉丝量</div>
           <div class="platform-fans-value is-neutral">91,742</div>
-          <div class="platform-last">最近成功：2026-05-25 16:01</div>
+          <div class="platform-last">最近成功：2026-05-25 18:04</div>
         </section>
 
         <section class="growth-grid" aria-label="抖音涨粉">
-          
+
           <div class="growth-item">
             <div class="growth-label">相比昨日的涨粉</div>
             <div class="growth-value is-unavailable">--</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">7日涨粉</div>
             <div class="growth-value is-negative">-25</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">30日涨粉</div>
             <div class="growth-value is-positive">+222</div>
           </div>
-          
+
         </section>
 
         <section class="metric-block">
@@ -1170,37 +1210,37 @@
             <div class="metric-cell metric-head">前7日</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">播放量 / 阅读量</div>
               <div class="metric-cell is-neutral">76,798</div>
               <div class="metric-cell is-neutral">80,466</div>
               <div class="metric-cell is-negative">-3,668</div>
               <div class="metric-cell is-negative">-4.6%</div>
-            
+
               <div class="metric-cell metric-name">点赞数</div>
               <div class="metric-cell is-neutral">2,224</div>
               <div class="metric-cell is-neutral">2,324</div>
               <div class="metric-cell is-negative">-100</div>
               <div class="metric-cell is-negative">-4.3%</div>
-            
+
               <div class="metric-cell metric-name">收藏数<div class="metric-note">暂不可用</div></div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">评论数</div>
               <div class="metric-cell is-neutral">21</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">分享 / 转发数</div>
               <div class="metric-cell is-neutral">342</div>
               <div class="metric-cell is-neutral">357</div>
               <div class="metric-cell is-negative">-15</div>
               <div class="metric-cell is-negative">-4.2%</div>
-            
+
           </div>
         </section>
 
@@ -1212,40 +1252,40 @@
             <div class="metric-cell metric-head">前7日</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">主页访问量</div>
               <div class="metric-cell is-neutral">1,848</div>
               <div class="metric-cell is-neutral">1,934</div>
               <div class="metric-cell is-negative">-86</div>
               <div class="metric-cell is-negative">-4.4%</div>
-            
+
               <div class="metric-cell metric-name">封面点击率（%）</div>
               <div class="metric-cell is-neutral">7.9</div>
               <div class="metric-cell is-neutral">7.1</div>
               <div class="metric-cell is-positive">+0.8</div>
               <div class="metric-cell is-positive">+11.3%</div>
-            
+
               <div class="metric-cell metric-name">完播率<div class="metric-note">暂不可用</div></div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
           </div>
         </section>
 
         <div class="status-note">来自抖音本人账号授权后台数据中心。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。</div>
       </article>
-      
+
       <article class="platform-card" style="--platform-accent: #ff2442">
         <header class="platform-head">
           <div>
             <div class="platform-name">
               <span class="platform-logo" style="--platform-accent: #ff2442">
-                
+
                   <img src="https://www.xiaohongshu.com/favicon.ico" alt="小红书图标" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-grid';">
                   <span class="platform-logo-fallback" style="display: none;">红</span>
-                
+
               </span>
               <span>小红书</span>
             </div>
@@ -1258,26 +1298,26 @@
         <section class="platform-fans">
           <div class="platform-fans-label">当前粉丝量</div>
           <div class="platform-fans-value is-neutral">39,502</div>
-          <div class="platform-last">最近成功：2026-05-25 16:01</div>
+          <div class="platform-last">最近成功：2026-05-25 18:04</div>
         </section>
 
         <section class="growth-grid" aria-label="小红书涨粉">
-          
+
           <div class="growth-item">
             <div class="growth-label">相比昨日的涨粉</div>
             <div class="growth-value is-unavailable">--</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">7日涨粉</div>
             <div class="growth-value is-negative">-5</div>
           </div>
-          
+
           <div class="growth-item">
             <div class="growth-label">30日涨粉</div>
             <div class="growth-value is-positive">+202</div>
           </div>
-          
+
         </section>
 
         <section class="metric-block">
@@ -1288,37 +1328,37 @@
             <div class="metric-cell metric-head">对比期</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">播放量 / 阅读量</div>
               <div class="metric-cell is-neutral">3,308</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">点赞数</div>
               <div class="metric-cell is-neutral">85</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">收藏数</div>
               <div class="metric-cell is-neutral">26</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">评论数</div>
               <div class="metric-cell is-neutral">5</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">分享 / 转发数</div>
               <div class="metric-cell is-neutral">21</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
           </div>
         </section>
 
@@ -1330,49 +1370,49 @@
             <div class="metric-cell metric-head">对比期</div>
             <div class="metric-cell metric-head">增减量</div>
             <div class="metric-cell metric-head">变化幅度</div>
-            
+
               <div class="metric-cell metric-name">笔记曝光量</div>
               <div class="metric-cell is-neutral">10,393</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">搜索进入量<div class="metric-note">暂不可用</div></div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">封面点击率（%）</div>
               <div class="metric-cell is-neutral">13.3</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">平均观看时长（秒）</div>
               <div class="metric-cell is-neutral">42.4</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">完播率（%）</div>
               <div class="metric-cell is-neutral">0.7</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
               <div class="metric-cell metric-name">主页访问量</div>
               <div class="metric-cell is-neutral">185</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
               <div class="metric-cell is-unavailable">--</div>
-            
+
           </div>
         </section>
 
-        <div class="status-note">来自小红书本人账号授权后台数据中心；作品列表接口需要额外平台签名，当前仅使用可安全读取的汇总指标。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。</div>
+        <div class="status-note">来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。</div>
       </article>
-      
+
     </section>
 
     <section class="panel trend-panel">
@@ -1384,28 +1424,28 @@
     </section>
 
     <nav class="platform-tabs" aria-label="平台内容明细切换">
-      
+
       <button class="tab-button is-active" type="button" data-tab-target="bilibili">
-        
+
           <img class="tab-icon" src="https://www.bilibili.com/favicon.ico" alt="" loading="lazy" referrerpolicy="no-referrer">
-        
+
         <span>B 站</span>
       </button>
-      
+
       <button class="tab-button" type="button" data-tab-target="douyin">
-        
+
           <img class="tab-icon" src="https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_web/public/favicon.ico" alt="" loading="lazy" referrerpolicy="no-referrer">
-        
+
         <span>抖音</span>
       </button>
-      
+
       <button class="tab-button" type="button" data-tab-target="xiaohongshu">
-        
+
           <img class="tab-icon" src="https://www.xiaohongshu.com/favicon.ico" alt="" loading="lazy" referrerpolicy="no-referrer">
-        
+
         <span>小红书</span>
       </button>
-      
+
     </nav>
 
     <section class="platform-detail is-active" data-platform-detail="bilibili">
@@ -1427,577 +1467,757 @@
             <h2 class="panel-title">近三十天上线节目封面总览</h2>
           </div>
           <div class="thumbnail-grid">
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/86fa897e38469194869c0d236dfbdb9d8769d517.jpg"
-                alt="当年炒到 18 万一台的手机，现在怎么样了？"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1enGJ6CEEu"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/86fa897e38469194869c0d236dfbdb9d8769d517.jpg"
+                  alt="当年炒到 18 万一台的手机，现在怎么样了？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1enGJ6CEEu"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>88,036</span>
+                </div>
+              </div>
               <div class="video-title" title="当年炒到 18 万一台的手机，现在怎么样了？">当年炒到 18 万一台的手机，现在怎么…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-05-24</span>
-                <span><b>点击率：</b>0.91%</span>
+                <span><b>点击率：</b>1.84%</span>
                 <span><b>平均播放时长：</b>1.5</span>
                 <span><b>平均播放占比：</b>22.7%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/0ee4ee2922159cd8a770f63a85bade712e844b63.jpg"
-                alt="战争制裁下的俄罗斯，老百姓过着怎样的生活？"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1d7osBTEr4"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/0ee4ee2922159cd8a770f63a85bade712e844b63.jpg"
+                  alt="战争制裁下的俄罗斯，老百姓过着怎样的生活？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1d7osBTEr4"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>1,305,085</span>
+                </div>
+              </div>
               <div class="video-title" title="战争制裁下的俄罗斯，老百姓过着怎样的生活？">战争制裁下的俄罗斯，老百姓过着怎样的生…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-04-22</span>
-                <span><b>点击率：</b>0.37%</span>
+                <span><b>点击率：</b>0.74%</span>
                 <span><b>平均播放时长：</b>2.5</span>
                 <span><b>平均播放占比：</b>24.9%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg"
-                alt="我做了个离谱的充电站..."
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1C5XKBQErL"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg"
+                  alt="我做了个离谱的充电站..."
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1C5XKBQErL"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>367,220</span>
+                </div>
+              </div>
               <div class="video-title" title="我做了个离谱的充电站...">我做了个离谱的充电站...</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-03-27</span>
-                <span><b>点击率：</b>0.40%</span>
+                <span><b>点击率：</b>0.80%</span>
                 <span><b>平均播放时长：</b>1.8</span>
                 <span><b>平均播放占比：</b>20.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/0558ce424e305f5eb790133552270637ad8b12ed.jpg"
-                alt="甲方还是喜欢第一版！！"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1WbcFz4EbH"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/0558ce424e305f5eb790133552270637ad8b12ed.jpg"
+                  alt="甲方还是喜欢第一版！！"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1WbcFz4EbH"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>405,816</span>
+                </div>
+              </div>
               <div class="video-title" title="甲方还是喜欢第一版！！">甲方还是喜欢第一版！！</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-02-09</span>
-                <span><b>点击率：</b>0.45%</span>
+                <span><b>点击率：</b>0.91%</span>
                 <span><b>平均播放时长：</b>0.7</span>
                 <span><b>平均播放占比：</b>13.2%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/4acc2bd7541bfd155750f3334bc8aec6f01da0d5.jpg"
-                alt="花3000多租了栋惠州的别墅，我要后悔死了..."
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1B8rfBwEnL"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/4acc2bd7541bfd155750f3334bc8aec6f01da0d5.jpg"
+                  alt="花3000多租了栋惠州的别墅，我要后悔死了..."
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1B8rfBwEnL"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>992,977</span>
+                </div>
+              </div>
               <div class="video-title" title="花3000多租了栋惠州的别墅，我要后悔死了...">花3000多租了栋惠州的别墅，我要后悔…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-01-15</span>
-                <span><b>点击率：</b>0.66%</span>
+                <span><b>点击率：</b>1.32%</span>
                 <span><b>平均播放时长：</b>5.5</span>
                 <span><b>平均播放占比：</b>37.0%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/abf5f4f651d9a2a20a94421fe1c39788d6a5a976.jpg"
-                alt="这支“苹果牙刷”，让50个人吵疯了......"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1oRrNBLERg"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/abf5f4f651d9a2a20a94421fe1c39788d6a5a976.jpg"
+                  alt="这支“苹果牙刷”，让50个人吵疯了......"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1oRrNBLERg"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>328,477</span>
+                </div>
+              </div>
               <div class="video-title" title="这支“苹果牙刷”，让50个人吵疯了......">这支“苹果牙刷”，让50个人吵疯了..…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2026-01-09</span>
-                <span><b>点击率：</b>0.09%</span>
+                <span><b>点击率：</b>0.19%</span>
                 <span><b>平均播放时长：</b>0.9</span>
                 <span><b>平均播放占比：</b>10.1%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg"
-                alt="迄今最恐怖的手机"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1JE2kBPEg2"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg"
+                  alt="迄今最恐怖的手机"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1JE2kBPEg2"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>1,558,551</span>
+                </div>
+              </div>
               <div class="video-title" title="迄今最恐怖的手机">迄今最恐怖的手机</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-12-08</span>
-                <span><b>点击率：</b>0.67%</span>
+                <span><b>点击率：</b>1.35%</span>
                 <span><b>平均播放时长：</b>3.9</span>
                 <span><b>平均播放占比：</b>40.6%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/1c0119202cb948c3a533561823153fd546c00e60.jpg"
-                alt="看完海信 E8S Pro，我差点把 OLED 电视卖了…"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV14jUQBVESy"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/1c0119202cb948c3a533561823153fd546c00e60.jpg"
+                  alt="看完海信 E8S Pro，我差点把 OLED 电视卖了…"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV14jUQBVESy"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>226,668</span>
+                </div>
+              </div>
               <div class="video-title" title="看完海信 E8S Pro，我差点把 OLED 电视卖了…">看完海信 E8S Pro，我差点把 O…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-11-25</span>
-                <span><b>点击率：</b>0.11%</span>
+                <span><b>点击率：</b>0.22%</span>
                 <span><b>平均播放时长：</b>0.8</span>
                 <span><b>平均播放占比：</b>14.0%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg"
-                alt="200块手搓一个18级台风，它能顶起小米YU7？"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1MmkkBzEeP"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg"
+                  alt="200块手搓一个18级台风，它能顶起小米YU7？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1MmkkBzEeP"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>6,528,918</span>
+                </div>
+              </div>
               <div class="video-title" title="200块手搓一个18级台风，它能顶起小米YU7？">200块手搓一个18级台风，它能顶起小…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-11-11</span>
-                <span><b>点击率：</b>0.54%</span>
+                <span><b>点击率：</b>1.09%</span>
                 <span><b>平均播放时长：</b>1.5</span>
                 <span><b>平均播放占比：</b>14.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/2b7662df6343ac98bb136c6ac029b2fd4557b2db.jpg"
-                alt="百元到万元！人体工学椅实测差别有多大？"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1Ru2FBuEyd"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/2b7662df6343ac98bb136c6ac029b2fd4557b2db.jpg"
+                  alt="百元到万元！人体工学椅实测差别有多大？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1Ru2FBuEyd"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>137,461</span>
+                </div>
+              </div>
               <div class="video-title" title="百元到万元！人体工学椅实测差别有多大？">百元到万元！人体工学椅实测差别有多大？</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-11-06</span>
-                <span><b>点击率：</b>0.10%</span>
+                <span><b>点击率：</b>0.20%</span>
                 <span><b>平均播放时长：</b>2.0</span>
                 <span><b>平均播放占比：</b>20.6%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/35caa5b2a6e0d9a1d0197f13d8636c25cf3ab453.jpg"
-                alt="【收藏】两台手机同时登陆一个微信！5分钟包教包会，不需要Root！"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1wTspz5EeD"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/35caa5b2a6e0d9a1d0197f13d8636c25cf3ab453.jpg"
+                  alt="【收藏】两台手机同时登陆一个微信！5分钟包教包会，不需要Root！"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1wTspz5EeD"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>327,810</span>
+                </div>
+              </div>
               <div class="video-title" title="【收藏】两台手机同时登陆一个微信！5分钟包教包会，不需要Root！">【收藏】两台手机同时登陆一个微信！5分…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-10-25</span>
-                <span><b>点击率：</b>0.69%</span>
+                <span><b>点击率：</b>1.38%</span>
                 <span><b>平均播放时长：</b>1.5</span>
                 <span><b>平均播放占比：</b>33.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/9209c2f6a7d9e5274631e9af253b130dd7d02ce1.jpg"
-                alt="25 岁，头上竟然长出了摄像头!"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1osWCztEBq"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/9209c2f6a7d9e5274631e9af253b130dd7d02ce1.jpg"
+                  alt="25 岁，头上竟然长出了摄像头!"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1osWCztEBq"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>132,856</span>
+                </div>
+              </div>
               <div class="video-title" title="25 岁，头上竟然长出了摄像头!">25 岁，头上竟然长出了摄像头!</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-10-17</span>
-                <span><b>点击率：</b>0.42%</span>
+                <span><b>点击率：</b>0.85%</span>
                 <span><b>平均播放时长：</b>1.3</span>
                 <span><b>平均播放占比：</b>23.0%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg"
-                alt="&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1Pg4zzPEVy"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg"
+                  alt="&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1Pg4zzPEVy"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>1,397,673</span>
+                </div>
+              </div>
               <div class="video-title" title="&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;">&#34;为什么有人宁愿买安卓平板也不买 iP…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-10-15</span>
-                <span><b>点击率：</b>0.65%</span>
+                <span><b>点击率：</b>1.31%</span>
                 <span><b>平均播放时长：</b>1.3</span>
                 <span><b>平均播放占比：</b>18.1%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/9e231622bc46e119a79c9d468db9b376a55fcfab.jpg"
-                alt="一个不买 iPhone 的理由"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1cS42zSEFZ"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/9e231622bc46e119a79c9d468db9b376a55fcfab.jpg"
+                  alt="一个不买 iPhone 的理由"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1cS42zSEFZ"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>296,490</span>
+                </div>
+              </div>
               <div class="video-title" title="一个不买 iPhone 的理由">一个不买 iPhone 的理由</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-10-13</span>
-                <span><b>点击率：</b>0.94%</span>
+                <span><b>点击率：</b>1.88%</span>
                 <span><b>平均播放时长：</b>1.2</span>
                 <span><b>平均播放占比：</b>13.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/0391b6f26e76d37752f327ab8929dc002fd6a214.jpg"
-                alt="iPhone 17买前必看：等等党还是直接上？"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1WNHSzUEqE"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/0391b6f26e76d37752f327ab8929dc002fd6a214.jpg"
+                  alt="iPhone 17买前必看：等等党还是直接上？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1WNHSzUEqE"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>641,283</span>
+                </div>
+              </div>
               <div class="video-title" title="iPhone 17买前必看：等等党还是直接上？">iPhone 17买前必看：等等党还是…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-09-10</span>
-                <span><b>点击率：</b>0.55%</span>
+                <span><b>点击率：</b>1.11%</span>
                 <span><b>平均播放时长：</b>3.2</span>
                 <span><b>平均播放占比：</b>52.3%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/9b15bdfd565b68a37a650a4ea62b17ede8d2bfb3.jpg"
-                alt="半价买的全新iPhone16 Pro，用了一年。美版苹果深度分享"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1s1YgzMEUj"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/9b15bdfd565b68a37a650a4ea62b17ede8d2bfb3.jpg"
+                  alt="半价买的全新iPhone16 Pro，用了一年。美版苹果深度分享"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1s1YgzMEUj"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>135,061</span>
+                </div>
+              </div>
               <div class="video-title" title="半价买的全新iPhone16 Pro，用了一年。美版苹果深度分享">半价买的全新iPhone16 Pro，…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-09-07</span>
-                <span><b>点击率：</b>0.74%</span>
+                <span><b>点击率：</b>1.48%</span>
                 <span><b>平均播放时长：</b>2.6</span>
                 <span><b>平均播放占比：</b>41.0%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/0a00fdd3baaa732a81080d7143101b0857439116.jpg"
-                alt="3000多在深圳周边租栋别墅？沉浸式 Roomtour 数码博主的家"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1s4h9zpEaD"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/0a00fdd3baaa732a81080d7143101b0857439116.jpg"
+                  alt="3000多在深圳周边租栋别墅？沉浸式 Roomtour 数码博主的家"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1s4h9zpEaD"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>489,923</span>
+                </div>
+              </div>
               <div class="video-title" title="3000多在深圳周边租栋别墅？沉浸式 Roomtour 数码博主的家">3000多在深圳周边租栋别墅？沉浸式 …</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-08-29</span>
-                <span><b>点击率：</b>0.26%</span>
+                <span><b>点击率：</b>0.53%</span>
                 <span><b>平均播放时长：</b>4.1</span>
                 <span><b>平均播放占比：</b>38.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/f28475f9ad4e985932bd8ac9d989b4eda8052e12.jpg"
-                alt="大家都在学苹果，只有这家学到了精髓..."
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1i73LzjEHh"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/f28475f9ad4e985932bd8ac9d989b4eda8052e12.jpg"
+                  alt="大家都在学苹果，只有这家学到了精髓..."
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1i73LzjEHh"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>410,837</span>
+                </div>
+              </div>
               <div class="video-title" title="大家都在学苹果，只有这家学到了精髓...">大家都在学苹果，只有这家学到了精髓...</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-07-04</span>
-                <span><b>点击率：</b>0.61%</span>
+                <span><b>点击率：</b>1.22%</span>
                 <span><b>平均播放时长：</b>0.7</span>
                 <span><b>平均播放占比：</b>11.3%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/6fc7241b4cf681aec384612b7d4347dbd70aa404.jpg"
-                alt="讲道理，这真的至尊吗？一加 Ace5 至尊版上手体验"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1t8TCzTE4R"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/6fc7241b4cf681aec384612b7d4347dbd70aa404.jpg"
+                  alt="讲道理，这真的至尊吗？一加 Ace5 至尊版上手体验"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1t8TCzTE4R"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>250,874</span>
+                </div>
+              </div>
               <div class="video-title" title="讲道理，这真的至尊吗？一加 Ace5 至尊版上手体验">讲道理，这真的至尊吗？一加 Ace5 …</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-06-10</span>
-                <span><b>点击率：</b>0.10%</span>
+                <span><b>点击率：</b>0.21%</span>
                 <span><b>平均播放时长：</b>1.4</span>
                 <span><b>平均播放占比：</b>17.2%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/d50e9c966f031be5976294370edfe2b45ef8a15d.jpg"
-                alt="2025年的线下机，荣耀400 Pro 表现如何？上手体验"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1snjBz3EfG"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/d50e9c966f031be5976294370edfe2b45ef8a15d.jpg"
+                  alt="2025年的线下机，荣耀400 Pro 表现如何？上手体验"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1snjBz3EfG"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>362,848</span>
+                </div>
+              </div>
               <div class="video-title" title="2025年的线下机，荣耀400 Pro 表现如何？上手体验">2025年的线下机，荣耀400 Pro…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-05-28</span>
-                <span><b>点击率：</b>0.45%</span>
+                <span><b>点击率：</b>0.90%</span>
                 <span><b>平均播放时长：</b>1.0</span>
                 <span><b>平均播放占比：</b>15.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/37d1fb21ca10977d343efd7b566f155d877f7de7.jpg"
-                alt="玄戒，没有让小米更流畅！小米15S Pro零售版自费开箱锐评"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1FhJpzFEKA"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/37d1fb21ca10977d343efd7b566f155d877f7de7.jpg"
+                  alt="玄戒，没有让小米更流畅！小米15S Pro零售版自费开箱锐评"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1FhJpzFEKA"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>312,955</span>
+                </div>
+              </div>
               <div class="video-title" title="玄戒，没有让小米更流畅！小米15S Pro零售版自费开箱锐评">玄戒，没有让小米更流畅！小米15S P…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-05-23</span>
-                <span><b>点击率：</b>0.55%</span>
+                <span><b>点击率：</b>1.11%</span>
                 <span><b>平均播放时长：</b>2.2</span>
                 <span><b>平均播放占比：</b>48.0%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/80a470c1033047110e3d1f5a2a19a5b1b3a41eda.jpg"
-                alt="反向Ultra？浅谈OPPO Find X8 Ultra体验分享"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV17uJhzjE8x"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/80a470c1033047110e3d1f5a2a19a5b1b3a41eda.jpg"
+                  alt="反向Ultra？浅谈OPPO Find X8 Ultra体验分享"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV17uJhzjE8x"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>237,994</span>
+                </div>
+              </div>
               <div class="video-title" title="反向Ultra？浅谈OPPO Find X8 Ultra体验分享">反向Ultra？浅谈OPPO Find…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-05-20</span>
-                <span><b>点击率：</b>0.11%</span>
+                <span><b>点击率：</b>0.22%</span>
                 <span><b>平均播放时长：</b>2.1</span>
                 <span><b>平均播放占比：</b>18.5%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/797a597d7b14d2acbbdee196525bea7f7e12fc6b.jpg"
-                alt="带劲的 ，Ultra"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1hGVkzHErT"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/797a597d7b14d2acbbdee196525bea7f7e12fc6b.jpg"
+                  alt="带劲的 ，Ultra"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1hGVkzHErT"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>842,948</span>
+                </div>
+              </div>
               <div class="video-title" title="带劲的 ，Ultra">带劲的 ，Ultra</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-05-06</span>
-                <span><b>点击率：</b>0.26%</span>
+                <span><b>点击率：</b>0.52%</span>
                 <span><b>平均播放时长：</b>1.4</span>
                 <span><b>平均播放占比：</b>12.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/0ef8fa44bbc51354514f127ec63ff9e10c72a1b3.jpg"
-                alt="听网友造的手机？红魔10 Air 上手体验"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1EqoKYwEt2"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/0ef8fa44bbc51354514f127ec63ff9e10c72a1b3.jpg"
+                  alt="听网友造的手机？红魔10 Air 上手体验"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1EqoKYwEt2"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>435,993</span>
+                </div>
+              </div>
               <div class="video-title" title="听网友造的手机？红魔10 Air 上手体验">听网友造的手机？红魔10 Air 上手…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-04-16</span>
-                <span><b>点击率：</b>0.37%</span>
+                <span><b>点击率：</b>0.74%</span>
                 <span><b>平均播放时长：</b>1.7</span>
                 <span><b>平均播放占比：</b>25.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/078cec445f7dbf7ff004d5b66d0ec2e9820ce09d.jpg"
-                alt="18台，1000 - 5000，4月份全价位国补手机推荐"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1myoRYUEQz"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/078cec445f7dbf7ff004d5b66d0ec2e9820ce09d.jpg"
+                  alt="18台，1000 - 5000，4月份全价位国补手机推荐"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1myoRYUEQz"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>172,212</span>
+                </div>
+              </div>
               <div class="video-title" title="18台，1000 - 5000，4月份全价位国补手机推荐">18台，1000 - 5000，4月份…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-03-28</span>
-                <span><b>点击率：</b>0.29%</span>
+                <span><b>点击率：</b>0.58%</span>
                 <span><b>平均播放时长：</b>4.1</span>
                 <span><b>平均播放占比：</b>33.7%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/21e3bbe7b3b783504f2595d300a053386f47e4cd.jpg"
-                alt="除了联想小新pro14，14寸Win本还有高手？荣耀笔记本上手体验"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1TU9iYsEoC"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/21e3bbe7b3b783504f2595d300a053386f47e4cd.jpg"
+                  alt="除了联想小新pro14，14寸Win本还有高手？荣耀笔记本上手体验"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1TU9iYsEoC"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>132,277</span>
+                </div>
+              </div>
               <div class="video-title" title="除了联想小新pro14，14寸Win本还有高手？荣耀笔记本上手体验">除了联想小新pro14，14寸Win本…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-03-03</span>
-                <span><b>点击率：</b>0.50%</span>
+                <span><b>点击率：</b>1.00%</span>
                 <span><b>平均播放时长：</b>1.6</span>
                 <span><b>平均播放占比：</b>26.7%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg"
-                alt="500天，我让这台小米手机走遍了全中国！"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1p393YCERG"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg"
+                  alt="500天，我让这台小米手机走遍了全中国！"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1p393YCERG"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>180,543</span>
+                </div>
+              </div>
               <div class="video-title" title="500天，我让这台小米手机走遍了全中国！">500天，我让这台小米手机走遍了全中国！</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-02-28</span>
-                <span><b>点击率：</b>0.52%</span>
+                <span><b>点击率：</b>1.04%</span>
                 <span><b>平均播放时长：</b>5.3</span>
                 <span><b>平均播放占比：</b>27.9%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i0.hdslb.com/bfs/archive/768d2349e042de0aaa2e979d8e515f7d6786588b.jpg"
-                alt="【官方抽奖】总价5000元，100份，助力哪吒2冲刺票房榜单，送100张电影票"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1g1PieXEBT"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i0.hdslb.com/bfs/archive/768d2349e042de0aaa2e979d8e515f7d6786588b.jpg"
+                  alt="【官方抽奖】总价5000元，100份，助力哪吒2冲刺票房榜单，送100张电影票"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1g1PieXEBT"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>29,614</span>
+                </div>
+              </div>
               <div class="video-title" title="【官方抽奖】总价5000元，100份，助力哪吒2冲刺票房榜单，送100张电影票">【官方抽奖】总价5000元，100份，…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-02-25</span>
-                <span><b>点击率：</b>0.35%</span>
+                <span><b>点击率：</b>0.70%</span>
                 <span><b>平均播放时长：</b>12.0</span>
                 <span><b>平均播放占比：</b>35.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i1.hdslb.com/bfs/archive/864b3aff86c1e9998df454e193fb4b12f0f52630.jpg"
-                alt="或许是国补，最值的手机"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1Z6KFeTEfR"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i1.hdslb.com/bfs/archive/864b3aff86c1e9998df454e193fb4b12f0f52630.jpg"
+                  alt="或许是国补，最值的手机"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1Z6KFeTEfR"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>1,314,758</span>
+                </div>
+              </div>
               <div class="video-title" title="或许是国补，最值的手机">或许是国补，最值的手机</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-02-14</span>
-                <span><b>点击率：</b>0.53%</span>
+                <span><b>点击率：</b>1.07%</span>
                 <span><b>平均播放时长：</b>3.2</span>
                 <span><b>平均播放占比：</b>35.4%</span>
               </div>
             </article>
-            
+
             <article class="video-card">
-              <img
-                class="thumb"
-                src="http://i2.hdslb.com/bfs/archive/28c98d7eb30ccd8123b11011a0939372a420fa98.jpg"
-                alt="4000 多买 iPhone16 Pro 的秘密，我找到了..."
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                data-fallback-seed="BV1WvfoYpEp3"
-                onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
-              >
+              <div class="thumb-wrap">
+                <img
+                  class="thumb"
+                  src="http://i2.hdslb.com/bfs/archive/28c98d7eb30ccd8123b11011a0939372a420fa98.jpg"
+                  alt="4000 多买 iPhone16 Pro 的秘密，我找到了..."
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  data-fallback-seed="BV1WvfoYpEp3"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
+                >
+                <div class="view-badge">
+                  <span class="view-badge-label">播放</span>
+                  <span>888,917</span>
+                </div>
+              </div>
               <div class="video-title" title="4000 多买 iPhone16 Pro 的秘密，我找到了...">4000 多买 iPhone16 Pr…</div>
               <div class="video-meta">
                 <span><b>上线时间：</b>2025-01-25</span>
-                <span><b>点击率：</b>0.45%</span>
+                <span><b>点击率：</b>0.91%</span>
                 <span><b>平均播放时长：</b>4.8</span>
                 <span><b>平均播放占比：</b>39.4%</span>
               </div>
             </article>
-            
+
           </div>
         </article>
       </section>
@@ -2019,10 +2239,10 @@
       </section>
     </section>
 
-    
-      
-    
-      
+
+
+
+
       <section class="platform-detail" data-platform-detail="douyin" style="--platform-accent: #31f5ff">
         <p class="section-caption">抖音内容明细</p>
         <article class="panel content-panel">
@@ -2030,7 +2250,7 @@
             <h2 class="panel-title">抖音作品表现</h2>
             <span class="panel-subtle">13 条</span>
           </div>
-          
+
           <div class="content-chart-grid">
             <section class="content-chart-shell is-reach">
               <h3 class="mini-chart-title">抖音播放 / 阅读表现</h3>
@@ -2046,136 +2266,136 @@
             </section>
           </div>
           <div class="content-list">
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
-                  src="https://p3-sign.douyinpic.com/tos-cn-i-dy/aba695a7a22f413eb962ea41ffb20062~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780905600&amp;x-signature=9sC9x818fmAoFDh9L2FCGAAFvuY%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=202605251601580F654F07C1A52A87E3ED"
+                  src="https://p3-sign.douyinpic.com/tos-cn-i-dy/aba695a7a22f413eb962ea41ffb20062~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780912800&amp;x-signature=6I0mL5RWdZI%2FJeHrFzrKzAiVthE%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=20260525180440BA12877D1650F399766D"
                   alt="当年炒到 18 万一台的手机，现在怎么样了？"
                   loading="lazy"
                   referrerpolicy="no-referrer"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">当年炒到 18 万一台的手机，现在怎么样了？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="当年炒到 18 万一台的手机，现在怎么样了？">当年炒到 18 万一台的手机，现在怎么样了？</h3>
                 <div class="content-time">发布时间：2026-05-24</div>
                 <div class="content-metrics">
-                  
-                  <div class="content-metric"><span>播放 / 阅读</span>9,716</div>
-                  
-                  <div class="content-metric"><span>点赞</span>313</div>
-                  
-                  <div class="content-metric"><span>收藏</span>27</div>
-                  
+
+                  <div class="content-metric"><span>播放 / 阅读</span>10,566</div>
+
+                  <div class="content-metric"><span>点赞</span>338</div>
+
+                  <div class="content-metric"><span>收藏</span>30</div>
+
                   <div class="content-metric"><span>评论</span>27</div>
-                  
-                  <div class="content-metric"><span>分享 / 转发</span>25</div>
-                  
-                  <div class="content-metric"><span>CTR</span>31.89%</div>
-                  
-                  <div class="content-metric"><span>平均播放时长</span>34.6秒</div>
-                  
-                  <div class="content-metric"><span>完播率</span>1.17%</div>
-                  
+
+                  <div class="content-metric"><span>分享 / 转发</span>26</div>
+
+                  <div class="content-metric"><span>CTR</span>33.21%</div>
+
+                  <div class="content-metric"><span>平均播放时长</span>37.1秒</div>
+
+                  <div class="content-metric"><span>完播率</span>1.11%</div>
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
-                  src="https://p3-sign.douyinpic.com/tos-cn-i-dy/538aac5aa27941edae55c317c56998a3~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780905600&amp;x-signature=xdF23a6TzNUdoJ5%2BOUif1xDoZQk%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=202605251601586967E059BE1D7E785ED8"
+                  src="https://p3-sign.douyinpic.com/tos-cn-i-dy/538aac5aa27941edae55c317c56998a3~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780912800&amp;x-signature=jmb8FVE0KeCYWMCuK%2Bi4yl5IAvE%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=20260525180440AFC90364D2CFE89BA859"
                   alt="战争制裁下的俄罗斯，老百姓过着怎样的生活？"
                   loading="lazy"
                   referrerpolicy="no-referrer"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">战争制裁下的俄罗斯，老百姓过着怎样的生活？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="战争制裁下的俄罗斯，老百姓过着怎样的生活？">战争制裁下的俄罗斯，老百姓过着怎样的生活？</h3>
                 <div class="content-time">发布时间：2026年04月22日 22:49</div>
                 <div class="content-metrics">
-                  
-                  <div class="content-metric"><span>播放 / 阅读</span>27,523</div>
-                  
+
+                  <div class="content-metric"><span>播放 / 阅读</span>27,538</div>
+
                   <div class="content-metric"><span>点赞</span>1,783</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>57</div>
-                  
+
                   <div class="content-metric"><span>评论</span>53</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>69</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>4.83%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>29.0秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>1.05%</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>5</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
-                  src="https://p9-sign.douyinpic.com/tos-cn-i-dy/cc0ad3da955241f9b90bed3b56ab7c47~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780905600&amp;x-signature=Vhqw8vcFWRIDsi8ZvDEOcxJuSYY%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=202605251601584D1999E48E48EC790E55"
+                  src="https://p9-sign.douyinpic.com/tos-cn-i-dy/cc0ad3da955241f9b90bed3b56ab7c47~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&amp;x-expires=1780912800&amp;x-signature=WFwRs691F96r7V8duOyKLVO%2B9JQ%3D&amp;from=327834062&amp;s=PackSourceEnum_PUBLISH&amp;se=false&amp;sc=cover&amp;biz_tag=aweme_video&amp;l=20260525180440605702ED368EB99EBE01"
                   alt="我做了个离谱的充电器..."
                   loading="lazy"
                   referrerpolicy="no-referrer"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">我做了个离谱的充电器...</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="我做了个离谱的充电器...">我做了个离谱的充电器...</h3>
                 <div class="content-time">发布时间：2026年03月27日 22:28</div>
                 <div class="content-metrics">
-                  
-                  <div class="content-metric"><span>播放 / 阅读</span>1,228,295</div>
-                  
-                  <div class="content-metric"><span>点赞</span>46,201</div>
-                  
-                  <div class="content-metric"><span>收藏</span>12,679</div>
-                  
+
+                  <div class="content-metric"><span>播放 / 阅读</span>1,228,694</div>
+
+                  <div class="content-metric"><span>点赞</span>46,209</div>
+
+                  <div class="content-metric"><span>收藏</span>12,680</div>
+
                   <div class="content-metric"><span>评论</span>1,037</div>
-                  
-                  <div class="content-metric"><span>分享 / 转发</span>5,101</div>
-                  
+
+                  <div class="content-metric"><span>分享 / 转发</span>5,105</div>
+
                   <div class="content-metric"><span>CTR</span>10.17%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>34.2秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>0.75%</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>143</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg"
@@ -2185,39 +2405,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">“豆包，你们 AI 未来会统治人类吗？”</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="“豆包，你们 AI 未来会统治人类吗？”">“豆包，你们 AI 未来会统治人类吗？”</h3>
                 <div class="content-time">发布时间：2025年12月08日 20:15</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>28,476,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>807,000</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>80,000</div>
-                  
+
                   <div class="content-metric"><span>评论</span>55,000</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>1,241,000</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>7.94%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>51秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>4,462</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg"
@@ -2227,39 +2447,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">200块手搓一个18级台风，它能顶起小米YU7？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="200块手搓一个18级台风，它能顶起小米YU7？">200块手搓一个18级台风，它能顶起小米YU7？</h3>
                 <div class="content-time">发布时间：2025年11月13日 15:53</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>3,887,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>182,000</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>52,000</div>
-                  
+
                   <div class="content-metric"><span>评论</span>2,615</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>24,000</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>9.79%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>55秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>474</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g0k031ohs8i324s005no933g08br2fa9gaio?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2269,41 +2489,41 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">68倍差价？！人体工学椅实测差别有多大？</div>
-                
-                
+
+
                 <div class="content-thumbnail-note">同标题内容封面兜底</div>
-                
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="68倍差价？！人体工学椅实测差别有多大？">68倍差价？！人体工学椅实测差别有多大？</h3>
                 <div class="content-time">发布时间：2025年11月06日 19:32</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>82,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>1,455</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>266</div>
-                  
+
                   <div class="content-metric"><span>评论</span>50</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>106</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>21.3%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>32秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>3</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i1.hdslb.com/bfs/archive/35caa5b2a6e0d9a1d0197f13d8636c25cf3ab453.jpg"
@@ -2313,39 +2533,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">【收藏】两台手机同时登陆一个微信！5分钟包教包会，仅供学习使…</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="【收藏】两台手机同时登陆一个微信！5分钟包教包会，仅供学习使用，使用有风险，请谨慎。">【收藏】两台手机同时登陆一个微信！5分钟包教包会，仅供学习使…</h3>
                 <div class="content-time">发布时间：2025年10月25日 12:00</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>205,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>4,919</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>3,121</div>
-                  
+
                   <div class="content-metric"><span>评论</span>187</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>663</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>11.36%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>28秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>2</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g0k031no0nlpo4u005no933g08br2e6c024g?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2355,41 +2575,41 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">26岁，头上竟然长出了摄像头!</div>
-                
-                
+
+
                 <div class="content-thumbnail-note">同标题内容封面兜底</div>
-                
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="26岁，头上竟然长出了摄像头!">26岁，头上竟然长出了摄像头!</h3>
                 <div class="content-time">发布时间：2025年10月17日 20:01</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>36,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>549</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>124</div>
-                  
+
                   <div class="content-metric"><span>评论</span>34</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>68</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>15.71%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>43秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>4</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg"
@@ -2399,39 +2619,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">为什么有人宁愿买安卓平板也不买 iPad？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="为什么有人宁愿买安卓平板也不买 iPad？">为什么有人宁愿买安卓平板也不买 iPad？</h3>
                 <div class="content-time">发布时间：2025年10月15日 22:35</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>385,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>5,057</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>831</div>
-                  
+
                   <div class="content-metric"><span>评论</span>653</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>458</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>8.13%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>28秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>12</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/9e231622bc46e119a79c9d468db9b376a55fcfab.jpg"
@@ -2441,39 +2661,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">给你一个不买 iPhone 的理由？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="给你一个不买 iPhone 的理由？">给你一个不买 iPhone 的理由？</h3>
                 <div class="content-time">发布时间：2025年10月13日 21:32</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>138,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>1,884</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>308</div>
-                  
+
                   <div class="content-metric"><span>评论</span>265</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>157</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>6.64%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>29秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>7</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20900%201200%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232f2f2f%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23171717%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22glow%22%20cx%3D%2224%25%22%20cy%3D%2218%25%22%20r%3D%2262%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2331f5ff%22%20stop-opacity%3D%220.42%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2331f5ff%22%20stop-opacity%3D%220%22%2F%3E%0A%20%20%20%20%3C%2FradialGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22900%22%20height%3D%221200%22%20rx%3D%2248%22%20fill%3D%22url%28%23bg%29%22%2F%3E%0A%20%20%3Crect%20width%3D%22900%22%20height%3D%221200%22%20rx%3D%2248%22%20fill%3D%22url%28%23glow%29%22%2F%3E%0A%20%20%3Crect%20x%3D%2248%22%20y%3D%2248%22%20width%3D%22804%22%20height%3D%221104%22%20rx%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22%2331f5ff%22%20stroke-opacity%3D%220.35%22%20stroke-width%3D%223%22%2F%3E%0A%20%20%3Ctext%20x%3D%2272%22%20y%3D%22116%22%20fill%3D%22%2331f5ff%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CPingFang%20SC%2CMicrosoft%20YaHei%2Csans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22800%22%3E%E6%8A%96%E9%9F%B3%E4%BD%9C%E5%93%81%E5%B0%81%E9%9D%A2%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%2272%22%20y%3D%22480%22%20fill%3D%22%23f5f5f5%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CPingFang%20SC%2CMicrosoft%20YaHei%2Csans-serif%22%20font-size%3D%2258%22%20font-weight%3D%22900%22%20line-height%3D%221.28%22%3E%3Ctspan%20x%3D%2272%22%20dy%3D%220%22%3E%E4%B8%BA%E4%BA%86%E5%AE%9E%E7%8E%B0%E8%BA%BA%E7%9D%80%E8%B5%9A%E9%92%B1%EF%BC%8C%E6%88%91%E7%AB%9F%E7%84%B6%E7%94%A8%E4%B8%8A%E4%BA%86%3C%2Ftspan%3E%3Ctspan%20x%3D%2272%22%20dy%3D%221.28em%22%3E%E5%AE%83%EF%BC%81%3C%2Ftspan%3E%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%2272%22%20y%3D%221092%22%20fill%3D%22%23b8b8b8%22%20font-family%3D%22-apple-system%2CBlinkMacSystemFont%2CSegoe%20UI%2CPingFang%20SC%2CMicrosoft%20YaHei%2Csans-serif%22%20font-size%3D%2228%22%3E%E5%90%8E%E5%8F%B0%E6%9C%AA%E8%BF%94%E5%9B%9E%E5%B0%81%E9%9D%A2%EF%BC%8C%E5%B7%B2%E7%94%A8%E6%9C%AC%E5%9C%B0%E5%8D%A0%E4%BD%8D%E4%BF%9D%E8%AF%81%E5%8F%AF%E8%AF%BB%3C%2Ftext%3E%0A%3C%2Fsvg%3E"
@@ -2483,41 +2703,41 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">为了实现躺着赚钱，我竟然用上了它！</div>
-                
-                
+
+
                 <div class="content-thumbnail-note">自动生成封面占位</div>
-                
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="为了实现躺着赚钱，我竟然用上了它！">为了实现躺着赚钱，我竟然用上了它！</h3>
                 <div class="content-time">发布时间：2025年10月12日 17:00</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>18,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>4,426</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>--</div>
-                  
+
                   <div class="content-metric"><span>评论</span>19</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>18</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i2.hdslb.com/bfs/archive/0391b6f26e76d37752f327ab8929dc002fd6a214.jpg"
@@ -2527,39 +2747,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">iPhone 17买前必看：等等党还是直接上？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="iPhone 17买前必看：等等党还是直接上？">iPhone 17买前必看：等等党还是直接上？</h3>
                 <div class="content-time">发布时间：2025年09月10日 09:39</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>359,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>5,013</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>470</div>
-                  
+
                   <div class="content-metric"><span>评论</span>399</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>1,028</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>6.47%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>43秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>31</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg"
@@ -2569,51 +2789,51 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">500天，我让这台小米手机走遍了中国！</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="500天，我让这台小米手机走遍了中国！">500天，我让这台小米手机走遍了中国！</h3>
                 <div class="content-time">发布时间：2025年03月01日 13:36</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>328,000</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>13,000</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>1,319</div>
-                  
+
                   <div class="content-metric"><span>评论</span>840</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>3,080</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>12.06%</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>46秒</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>46</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
           </div>
-          
+
         </article>
       </section>
-      
-    
-      
+
+
+
       <section class="platform-detail" data-platform-detail="xiaohongshu" style="--platform-accent: #ff2442">
         <p class="section-caption">小红书内容明细</p>
         <article class="panel content-panel">
           <div class="panel-header">
             <h2 class="panel-title">小红书作品表现</h2>
-            <span class="panel-subtle">11 条</span>
+            <span class="panel-subtle">12 条</span>
           </div>
-          
+
           <div class="content-chart-grid">
             <section class="content-chart-shell is-reach">
               <h3 class="mini-chart-title">小红书播放 / 阅读表现</h3>
@@ -2629,10 +2849,52 @@
             </section>
           </div>
           <div class="content-list">
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
+                <img
+                  class="content-thumb"
+                  src="http://ci.xiaohongshu.com/spectrum/1040g34o320i8a96lli105no933g08br24slcs0g?imageView2/2/w/1080/format/jpg"
+                  alt="当年炒到 18 万一台的手机，现在怎么样了？"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
+                >
+                <div class="content-thumb-placeholder" style="display: none;">当年炒到 18 万一台的手机，现在怎么样了？</div>
+
+
+              </div>
+              <div class="content-body">
+                <h3 class="content-title" title="当年炒到 18 万一台的手机，现在怎么样了？">当年炒到 18 万一台的手机，现在怎么样了？</h3>
+                <div class="content-time">发布时间：2026-05-24 20:56</div>
+                <div class="content-metrics">
+
+                  <div class="content-metric"><span>播放 / 阅读</span>5,487</div>
+
+                  <div class="content-metric"><span>点赞</span>195</div>
+
+                  <div class="content-metric"><span>收藏</span>70</div>
+
+                  <div class="content-metric"><span>评论</span>11</div>
+
+                  <div class="content-metric"><span>分享 / 转发</span>49</div>
+
+                  <div class="content-metric"><span>CTR</span>--</div>
+
+                  <div class="content-metric"><span>平均播放时长</span>294.2秒</div>
+
+                  <div class="content-metric"><span>完播率</span>--</div>
+
+                  <div class="content-metric"><span>弹幕</span>0</div>
+
+                </div>
+              </div>
+            </article>
+
+            <article class="content-row">
+              <div class="content-media">
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g34o31v8sgu9v1m105no933g08br21g6rulo?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2642,39 +2904,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">战争制裁下的俄罗斯，人们过着怎样的生活？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="战争制裁下的俄罗斯，人们过着怎样的生活？">战争制裁下的俄罗斯，人们过着怎样的生活？</h3>
                 <div class="content-time">发布时间：2026年04月22日 20:17</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>119,869</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>2,588</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>963</div>
-                  
+
                   <div class="content-metric"><span>评论</span>57</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>165</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg"
@@ -2684,39 +2946,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">我做了个离谱的充电器...</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="我做了个离谱的充电器...">我做了个离谱的充电器...</h3>
                 <div class="content-time">发布时间：2026年03月28日 10:01</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>125,049</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>4,415</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>2,439</div>
-                  
+
                   <div class="content-metric"><span>评论</span>175</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>338</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/1040g00831rq7pj3hi2005no933g08br2g1le860?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2726,39 +2988,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">【压力服专业测试】到底谁是智商税❓❓</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="【压力服专业测试】到底谁是智商税❓❓">【压力服专业测试】到底谁是智商税❓❓</h3>
                 <div class="content-time">发布时间：2026年01月27日 11:47</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>63,244</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>3,089</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>738</div>
-                  
+
                   <div class="content-metric"><span>评论</span>45</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>86</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/4acc2bd7541bfd155750f3334bc8aec6f01da0d5.jpg"
@@ -2768,39 +3030,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">花3000多租了栋惠州的别墅，我要后悔死了..</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="花3000多租了栋惠州的别墅，我要后悔死了..">花3000多租了栋惠州的别墅，我要后悔死了..</h3>
                 <div class="content-time">发布时间：2026年01月15日 17:05</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>74,884</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>2,240</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>967</div>
-                  
+
                   <div class="content-metric"><span>评论</span>201</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>2,741</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g34o31r7ubeh30m105no933g08br2e2s11hg?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2810,39 +3072,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">这支苹果牙刷，让50个人吵疯了......</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="这支苹果牙刷，让50个人吵疯了......">这支苹果牙刷，让50个人吵疯了......</h3>
                 <div class="content-time">发布时间：2026年01月12日 15:04</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>2,506</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>45</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>11</div>
-                  
+
                   <div class="content-metric"><span>评论</span>6</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>3</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg"
@@ -2852,39 +3114,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">迄今最恐怖的手机</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="迄今最恐怖的手机">迄今最恐怖的手机</h3>
                 <div class="content-time">发布时间：2025年12月08日 20:01</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>393,543</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>16,442</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>3,809</div>
-                  
+
                   <div class="content-metric"><span>评论</span>2,296</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>20,925</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i0.hdslb.com/bfs/archive/64b3a6d3c5ae47dabcc092dfebc065b370328a51.jpg"
@@ -2894,39 +3156,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">200块手搓一个18级台风，它能顶起小米YU7？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="200块手搓一个18级台风，它能顶起小米YU7？">200块手搓一个18级台风，它能顶起小米YU7？</h3>
                 <div class="content-time">发布时间：2025年11月11日 20:40</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>403,917</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>20,532</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>15,082</div>
-                  
+
                   <div class="content-metric"><span>评论</span>545</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>1,955</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g0k031ohs8i324s005no933g08br2fa9gaio?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2936,39 +3198,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">68倍差价？！人体工学椅实测差别有多大？</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="68倍差价？！人体工学椅实测差别有多大？">68倍差价？！人体工学椅实测差别有多大？</h3>
                 <div class="content-time">发布时间：2025年11月06日 19:03</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>3,243</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>92</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>31</div>
-                  
+
                   <div class="content-metric"><span>评论</span>11</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>9</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://sns-na-i1.xhscdn.com/spectrum/1040g0k031no0nlpo4u005no933g08br2e6c024g?imageView2/2/w/1080/format/jpg&amp;origin=0"
@@ -2978,39 +3240,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">26岁，头上竟然长出了摄像头!</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="26岁，头上竟然长出了摄像头!">26岁，头上竟然长出了摄像头!</h3>
                 <div class="content-time">发布时间：2025年10月17日 20:01</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>10,729</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>253</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>127</div>
-                  
+
                   <div class="content-metric"><span>评论</span>36</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>57</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg"
@@ -3020,39 +3282,39 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;">&#34;为什么有人宁愿买安卓平板也不买 iPad？&#34;</h3>
                 <div class="content-time">发布时间：2025年10月15日 22:34</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>87,127</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>1,016</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>256</div>
-                  
+
                   <div class="content-metric"><span>评论</span>311</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>60</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
             <article class="content-row">
               <div class="content-media">
-                
+
                 <img
                   class="content-thumb"
                   src="https://i2.hdslb.com/bfs/archive/dc8b4168af51d7d67353ecb73bb0709ecec5e1bf.jpg"
@@ -3062,51 +3324,51 @@
                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
                 >
                 <div class="content-thumb-placeholder" style="display: none;">500天，我让这台小米手机走遍了中国！</div>
-                
-                
+
+
               </div>
               <div class="content-body">
                 <h3 class="content-title" title="500天，我让这台小米手机走遍了中国！">500天，我让这台小米手机走遍了中国！</h3>
                 <div class="content-time">发布时间：2025年03月01日 13:34</div>
                 <div class="content-metrics">
-                  
+
                   <div class="content-metric"><span>播放 / 阅读</span>46,624</div>
-                  
+
                   <div class="content-metric"><span>点赞</span>1,321</div>
-                  
+
                   <div class="content-metric"><span>收藏</span>321</div>
-                  
+
                   <div class="content-metric"><span>评论</span>110</div>
-                  
+
                   <div class="content-metric"><span>分享 / 转发</span>204</div>
-                  
+
                   <div class="content-metric"><span>CTR</span>--</div>
-                  
+
                   <div class="content-metric"><span>平均播放时长</span>--</div>
-                  
+
                   <div class="content-metric"><span>完播率</span>--</div>
-                  
+
                   <div class="content-metric"><span>弹幕</span>--</div>
-                  
+
                 </div>
               </div>
             </article>
-            
+
           </div>
-          
+
         </article>
       </section>
-      
-    
+
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
   <script>
-    const ctrChartData = {"full_titles": ["\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhone16 Pro\uff0c\u7528\u4e86\u4e00\u5e74\u3002\u7f8e\u7248\u82f9\u679c\u6df1\u5ea6\u5206\u4eab", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4e0d\u9700\u8981Root\uff01", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86...", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u5bb6\u5b66\u5230\u4e86\u7cbe\u9ad3...", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "\u7384\u6212\uff0c\u6ca1\u6709\u8ba9\u5c0f\u7c73\u66f4\u6d41\u7545\uff01\u5c0f\u7c7315S Pro\u96f6\u552e\u7248\u81ea\u8d39\u5f00\u7bb1\u9510\u8bc4", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u6216\u8bb8\u662f\u56fd\u8865\uff0c\u6700\u503c\u7684\u624b\u673a", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u5168\u4e2d\u56fd\uff01", "\u9664\u4e86\u8054\u60f3\u5c0f\u65b0pro14\uff0c14\u5bf8Win\u672c\u8fd8\u6709\u9ad8\u624b\uff1f\u8363\u8000\u7b14\u8bb0\u672c\u4e0a\u624b\u4f53\u9a8c", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "2025\u5e74\u7684\u7ebf\u4e0b\u673a\uff0c\u8363\u8000400 Pro \u8868\u73b0\u5982\u4f55\uff1f\u4e0a\u624b\u4f53\u9a8c", "4000 \u591a\u4e70 iPhone16 Pro \u7684\u79d8\u5bc6\uff0c\u6211\u627e\u5230\u4e86...", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u542c\u7f51\u53cb\u9020\u7684\u624b\u673a\uff1f\u7ea2\u9b5410 Air \u4e0a\u624b\u4f53\u9a8c", "\u3010\u5b98\u65b9\u62bd\u5956\u3011\u603b\u4ef75000\u5143\uff0c100\u4efd\uff0c\u52a9\u529b\u54ea\u54122\u51b2\u523a\u7968\u623f\u699c\u5355\uff0c\u9001100\u5f20\u7535\u5f71\u7968", "18\u53f0\uff0c1000 - 5000\uff0c4\u6708\u4efd\u5168\u4ef7\u4f4d\u56fd\u8865\u624b\u673a\u63a8\u8350", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u680b\u522b\u5885\uff1f\u6c89\u6d78\u5f0f Roomtour \u6570\u7801\u535a\u4e3b\u7684\u5bb6", "\u5e26\u52b2\u7684 \uff0cUltra", "\u770b\u5b8c\u6d77\u4fe1 E8S Pro\uff0c\u6211\u5dee\u70b9\u628a OLED \u7535\u89c6\u5356\u4e86\u2026", "\u53cd\u5411Ultra\uff1f\u6d45\u8c08OPPO Find X8 Ultra\u4f53\u9a8c\u5206\u4eab", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "\u8bb2\u9053\u7406\uff0c\u8fd9\u771f\u7684\u81f3\u5c0a\u5417\uff1f\u4e00\u52a0 Ace5 \u81f3\u5c0a\u7248\u4e0a\u624b\u4f53\u9a8c", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......"], "labels": ["\u4e00\u4e2a\u4e0d\u4e70 iPhone\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u2026", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhon\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u2026", "\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u2026", "iPhone 17\u4e70\u524d\u2026", "\u7384\u6212\uff0c\u6ca1\u6709\u8ba9\u5c0f\u7c73\u66f4\u6d41\u7545\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u2026", "\u6216\u8bb8\u662f\u56fd\u8865\uff0c\u6700\u503c\u7684\u624b\u673a", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u2026", "\u9664\u4e86\u8054\u60f3\u5c0f\u65b0pro14\u2026", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "2025\u5e74\u7684\u7ebf\u4e0b\u673a\uff0c\u8363\u2026", "4000 \u591a\u4e70 iPh\u2026", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u2026", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9.\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u2026", "\u542c\u7f51\u53cb\u9020\u7684\u624b\u673a\uff1f\u7ea2\u9b541\u2026", "\u3010\u5b98\u65b9\u62bd\u5956\u3011\u603b\u4ef7500\u2026", "18\u53f0\uff0c1000 - \u2026", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u2026", "\u5e26\u52b2\u7684 \uff0cUltra", "\u770b\u5b8c\u6d77\u4fe1 E8S Pr\u2026", "\u53cd\u5411Ultra\uff1f\u6d45\u8c08O\u2026", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "\u8bb2\u9053\u7406\uff0c\u8fd9\u771f\u7684\u81f3\u5c0a\u5417\uff1f\u2026", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba95\u2026"], "values": [0.94, 0.91, 0.74, 0.69, 0.67, 0.66, 0.65, 0.61, 0.55, 0.55, 0.54, 0.53, 0.52, 0.5, 0.45, 0.45, 0.45, 0.42, 0.4, 0.37, 0.37, 0.35, 0.29, 0.26, 0.26, 0.11, 0.11, 0.1, 0.1, 0.09]};
-    const viewsFollowersChartData = {"follower_gain": [61, 587, 1048, 754, 178, 482, 69, 3299, 67, 7743, 55, 2766, 42, 2144, 223, 1151, 156, 98], "full_titles": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u5bb6\u5b66\u5230\u4e86\u7cbe\u9ad3...", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u680b\u522b\u5885\uff1f\u6c89\u6d78\u5f0f Roomtour \u6570\u7801\u535a\u4e3b\u7684\u5bb6", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhone16 Pro\uff0c\u7528\u4e86\u4e00\u5e74\u3002\u7f8e\u7248\u82f9\u679c\u6df1\u5ea6\u5206\u4eab", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4e0d\u9700\u8981Root\uff01", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u770b\u5b8c\u6d77\u4fe1 E8S Pro\uff0c\u6211\u5dee\u70b9\u628a OLED \u7535\u89c6\u5356\u4e86\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86...", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f"], "labels": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u2026", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u2026", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhon\u2026", "iPhone 17\u4e70\u524d\u2026", "\u4e00\u4e2a\u4e0d\u4e70 iPhone\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u2026", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u2026", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u2026", "\u770b\u5b8c\u6d77\u4fe1 E8S Pr\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba95\u2026", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u2026", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9.\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u2026"], "views": [410837, 489920, 135059, 641280, 296490, 1397668, 132856, 327771, 137461, 6528898, 226668, 1558427, 328476, 992910, 405813, 367178, 1304762, 82368]};
+    const ctrChartData = {"full_titles": ["\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhone16 Pro\uff0c\u7528\u4e86\u4e00\u5e74\u3002\u7f8e\u7248\u82f9\u679c\u6df1\u5ea6\u5206\u4eab", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4e0d\u9700\u8981Root\uff01", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86...", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u5bb6\u5b66\u5230\u4e86\u7cbe\u9ad3...", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "\u7384\u6212\uff0c\u6ca1\u6709\u8ba9\u5c0f\u7c73\u66f4\u6d41\u7545\uff01\u5c0f\u7c7315S Pro\u96f6\u552e\u7248\u81ea\u8d39\u5f00\u7bb1\u9510\u8bc4", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u6216\u8bb8\u662f\u56fd\u8865\uff0c\u6700\u503c\u7684\u624b\u673a", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u5168\u4e2d\u56fd\uff01", "\u9664\u4e86\u8054\u60f3\u5c0f\u65b0pro14\uff0c14\u5bf8Win\u672c\u8fd8\u6709\u9ad8\u624b\uff1f\u8363\u8000\u7b14\u8bb0\u672c\u4e0a\u624b\u4f53\u9a8c", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "4000 \u591a\u4e70 iPhone16 Pro \u7684\u79d8\u5bc6\uff0c\u6211\u627e\u5230\u4e86...", "2025\u5e74\u7684\u7ebf\u4e0b\u673a\uff0c\u8363\u8000400 Pro \u8868\u73b0\u5982\u4f55\uff1f\u4e0a\u624b\u4f53\u9a8c", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u542c\u7f51\u53cb\u9020\u7684\u624b\u673a\uff1f\u7ea2\u9b5410 Air \u4e0a\u624b\u4f53\u9a8c", "\u3010\u5b98\u65b9\u62bd\u5956\u3011\u603b\u4ef75000\u5143\uff0c100\u4efd\uff0c\u52a9\u529b\u54ea\u54122\u51b2\u523a\u7968\u623f\u699c\u5355\uff0c\u9001100\u5f20\u7535\u5f71\u7968", "18\u53f0\uff0c1000 - 5000\uff0c4\u6708\u4efd\u5168\u4ef7\u4f4d\u56fd\u8865\u624b\u673a\u63a8\u8350", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u680b\u522b\u5885\uff1f\u6c89\u6d78\u5f0f Roomtour \u6570\u7801\u535a\u4e3b\u7684\u5bb6", "\u5e26\u52b2\u7684 \uff0cUltra", "\u770b\u5b8c\u6d77\u4fe1 E8S Pro\uff0c\u6211\u5dee\u70b9\u628a OLED \u7535\u89c6\u5356\u4e86\u2026", "\u53cd\u5411Ultra\uff1f\u6d45\u8c08OPPO Find X8 Ultra\u4f53\u9a8c\u5206\u4eab", "\u8bb2\u9053\u7406\uff0c\u8fd9\u771f\u7684\u81f3\u5c0a\u5417\uff1f\u4e00\u52a0 Ace5 \u81f3\u5c0a\u7248\u4e0a\u624b\u4f53\u9a8c", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......"], "labels": ["\u4e00\u4e2a\u4e0d\u4e70 iPhone\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u2026", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhon\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u2026", "\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u2026", "iPhone 17\u4e70\u524d\u2026", "\u7384\u6212\uff0c\u6ca1\u6709\u8ba9\u5c0f\u7c73\u66f4\u6d41\u7545\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u2026", "\u6216\u8bb8\u662f\u56fd\u8865\uff0c\u6700\u503c\u7684\u624b\u673a", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u2026", "\u9664\u4e86\u8054\u60f3\u5c0f\u65b0pro14\u2026", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "4000 \u591a\u4e70 iPh\u2026", "2025\u5e74\u7684\u7ebf\u4e0b\u673a\uff0c\u8363\u2026", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u2026", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9.\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u2026", "\u542c\u7f51\u53cb\u9020\u7684\u624b\u673a\uff1f\u7ea2\u9b541\u2026", "\u3010\u5b98\u65b9\u62bd\u5956\u3011\u603b\u4ef7500\u2026", "18\u53f0\uff0c1000 - \u2026", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u2026", "\u5e26\u52b2\u7684 \uff0cUltra", "\u770b\u5b8c\u6d77\u4fe1 E8S Pr\u2026", "\u53cd\u5411Ultra\uff1f\u6d45\u8c08O\u2026", "\u8bb2\u9053\u7406\uff0c\u8fd9\u771f\u7684\u81f3\u5c0a\u5417\uff1f\u2026", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba95\u2026"], "values": [1.88, 1.84, 1.48, 1.38, 1.35, 1.32, 1.31, 1.22, 1.11, 1.11, 1.09, 1.07, 1.04, 1.0, 0.91, 0.91, 0.9, 0.85, 0.8, 0.74, 0.74, 0.7, 0.58, 0.53, 0.52, 0.22, 0.22, 0.21, 0.2, 0.19]};
+    const viewsFollowersChartData = {"follower_gain": [61, 587, 1048, 754, 178, 482, 69, 3299, 67, 7743, 55, 2766, 42, 2144, 223, 1151, 156, 98], "full_titles": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u5bb6\u5b66\u5230\u4e86\u7cbe\u9ad3...", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u680b\u522b\u5885\uff1f\u6c89\u6d78\u5f0f Roomtour \u6570\u7801\u535a\u4e3b\u7684\u5bb6", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhone16 Pro\uff0c\u7528\u4e86\u4e00\u5e74\u3002\u7f8e\u7248\u82f9\u679c\u6df1\u5ea6\u5206\u4eab", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4e0d\u9700\u8981Root\uff01", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u770b\u5b8c\u6d77\u4fe1 E8S Pro\uff0c\u6211\u5dee\u70b9\u628a OLED \u7535\u89c6\u5356\u4e86\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86...", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f"], "labels": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u2026", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u2026", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhon\u2026", "iPhone 17\u4e70\u524d\u2026", "\u4e00\u4e2a\u4e0d\u4e70 iPhone\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u2026", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u2026", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u2026", "\u770b\u5b8c\u6d77\u4fe1 E8S Pr\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba95\u2026", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u2026", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9.\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u2026"], "views": [410837, 489923, 135061, 641283, 296490, 1397673, 132856, 327810, 137461, 6528918, 226668, 1558551, 328477, 992977, 405816, 367220, 1305085, 88036]};
     const avdAvpChartData = {"avd": [0.67, 4.12, 2.55, 3.24, 1.17, 1.29, 1.31, 1.5, 2.03, 1.52, 0.78, 3.87, 0.88, 5.51, 0.72, 1.85, 2.5, 1.47], "avp": [11.29, 38.42, 41.03, 52.29, 13.43, 18.13, 22.99, 33.4, 20.65, 14.44, 13.96, 40.55, 10.06, 36.96, 13.24, 20.41, 24.88, 22.72], "full_titles": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u5bb6\u5b66\u5230\u4e86\u7cbe\u9ad3...", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u680b\u522b\u5885\uff1f\u6c89\u6d78\u5f0f Roomtour \u6570\u7801\u535a\u4e3b\u7684\u5bb6", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhone16 Pro\uff0c\u7528\u4e86\u4e00\u5e74\u3002\u7f8e\u7248\u82f9\u679c\u6df1\u5ea6\u5206\u4eab", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4e0d\u9700\u8981Root\uff01", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u770b\u5b8c\u6d77\u4fe1 E8S Pro\uff0c\u6211\u5dee\u70b9\u628a OLED \u7535\u89c6\u5356\u4e86\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86...", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f"], "labels": ["\u5927\u5bb6\u90fd\u5728\u5b66\u82f9\u679c\uff0c\u53ea\u6709\u8fd9\u2026", "3000\u591a\u5728\u6df1\u5733\u5468\u8fb9\u79df\u2026", "\u534a\u4ef7\u4e70\u7684\u5168\u65b0iPhon\u2026", "iPhone 17\u4e70\u524d\u2026", "\u4e00\u4e2a\u4e0d\u4e70 iPhone\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u2026", "25 \u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u2026", "\u767e\u5143\u5230\u4e07\u5143\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u2026", "\u770b\u5b8c\u6d77\u4fe1 E8S Pr\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u8fd9\u652f\u201c\u82f9\u679c\u7259\u5237\u201d\uff0c\u8ba95\u2026", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u2026", "\u7532\u65b9\u8fd8\u662f\u559c\u6b22\u7b2c\u4e00\u7248\uff01\uff01", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u7ad9.\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u2026"]};
-    const followerTrendChartData = {"labels": ["12:57", "14:54", "15:11", "15:23", "16:01", "16:48", "14:55"], "series": [{"data": [169726, 169910, 169932, 169938, 169967, 169989, null], "name": "B \u7ad9"}, {"data": [91742, null, 91742, 91742, 91742, null, 91742], "name": "\u6296\u97f3"}, {"data": [39502, null, 39502, 39502, 39502, null, 39502], "name": "\u5c0f\u7ea2\u4e66"}]};
-    const platformContentCharts = {"douyin": {"accent": "#31f5ff", "avd_seconds": [51.0, 55.0, 34.2, 28.0, 43.0, 46.0, 28.0, 29.0, 32.0, 43.0, 29.0, null], "comments": [55000, 2615, 1037, 653, 399, 840, 187, 265, 50, 34, 53, 19], "ctr": [7.94, 9.79, 10.17, 8.13, 6.47, 12.06, 11.36, 6.64, 21.3, 15.71, 4.83, null], "danmaku": [4462, 474, 143, 12, 31, 46, 2, 7, 3, 4, 5, null], "depth_title": "\u70b9\u51fb\u7387 / \u5e73\u5747\u64ad\u653e", "engagement_rate": [7.67, 6.7, 5.29, 1.82, 1.92, 5.56, 4.34, 1.89, 2.29, 2.15, 7.13, 24.79], "favorites": [80000, 52000, 12679, 831, 470, 1319, 3121, 308, 266, 124, 57, null], "full_titles": ["\u201c\u8c46\u5305\uff0c\u4f60\u4eec AI \u672a\u6765\u4f1a\u7edf\u6cbb\u4eba\u7c7b\u5417\uff1f\u201d", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668...", "\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u4e2d\u56fd\uff01", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4ec5\u4f9b\u5b66\u4e60\u4f7f\u7528\uff0c\u4f7f\u7528\u6709\u98ce\u9669\uff0c\u8bf7\u8c28\u614e\u3002", "\u7ed9\u4f60\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531\uff1f", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u4e3a\u4e86\u5b9e\u73b0\u8eba\u7740\u8d5a\u94b1\uff0c\u6211\u7adf\u7136\u7528\u4e0a\u4e86\u5b83\uff01"], "labels": ["\u201c\u8c46\u5305\uff0c\u4f60\u4eec AI \u672a\u6765\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u2026", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668..\u2026", "\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u2026", "iPhone 17\u4e70\u524d\u5fc5\u2026", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u2026", "\u7ed9\u4f60\u4e00\u4e2a\u4e0d\u4e70 iPhon\u2026", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u2026", "\u4e3a\u4e86\u5b9e\u73b0\u8eba\u7740\u8d5a\u94b1\uff0c\u6211\u7adf\u7136\u2026"], "likes": [807000, 182000, 46201, 5057, 5013, 13000, 4919, 1884, 1455, 549, 1783, 4426], "metric_label": "\u64ad\u653e\u91cf", "shares": [1241000, 24000, 5101, 458, 1028, 3080, 663, 157, 106, 68, 69, 18], "views": [28476000, 3887000, 1228295, 385000, 359000, 328000, 205000, 138000, 82000, 36000, 27523, 18000]}, "xiaohongshu": {"accent": "#ff2442", "avd_seconds": [null, null, null, null, null, null, null, null, null, null, null], "comments": [545, 2296, 175, 57, 311, 201, 45, 110, 36, 11, 6], "ctr": [null, null, null, null, null, null, null, null, null, null, null], "danmaku": [null, null, null, null, null, null, null, null, null, null, null], "depth_title": "\u4e92\u52a8\u7387\uff08\u6309\u4e92\u52a8 / \u9605\u8bfb\u8ba1\u7b97\uff09", "engagement_rate": [9.44, 11.05, 5.89, 3.15, 1.89, 8.21, 6.26, 4.2, 4.41, 4.41, 2.59], "favorites": [15082, 3809, 2439, 963, 256, 967, 738, 321, 127, 31, 11], "full_titles": ["200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u4eba\u4eec\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86..", "\u3010\u538b\u529b\u670d\u4e13\u4e1a\u6d4b\u8bd5\u3011\u5230\u5e95\u8c01\u662f\u667a\u5546\u7a0e\u2753\u2753", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u4e2d\u56fd\uff01", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "\u8fd9\u652f\u82f9\u679c\u7259\u5237\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......"], "labels": ["200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668..\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u4eba\u4eec\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u2026", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u2026", "\u3010\u538b\u529b\u670d\u4e13\u4e1a\u6d4b\u8bd5\u3011\u5230\u5e95\u8c01\u2026", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u2026", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u2026", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "\u8fd9\u652f\u82f9\u679c\u7259\u5237\uff0c\u8ba950\u4e2a\u4eba\u2026"], "likes": [20532, 16442, 4415, 2588, 1016, 2240, 3089, 1321, 253, 92, 45], "metric_label": "\u9605\u8bfb\u91cf", "shares": [1955, 20925, 338, 165, 60, 2741, 86, 204, 57, 9, 3], "views": [403917, 393543, 125049, 119869, 87127, 74884, 63244, 46624, 10729, 3243, 2506]}};
+    const followerTrendChartData = {"labels": ["12:57", "17:54", "18:04"], "series": [{"data": [169726, 170036, 170048], "name": "B \u7ad9"}, {"data": [91742, 91742, 91742], "name": "\u6296\u97f3"}, {"data": [39502, 39502, 39502], "name": "\u5c0f\u7ea2\u4e66"}]};
+    const platformContentCharts = {"douyin": {"accent": "#31f5ff", "avd_seconds": [51.0, 55.0, 34.2, 28.0, 43.0, 46.0, 28.0, 29.0, 32.0, 43.0, 29.0, null], "comments": [55000, 2615, 1037, 653, 399, 840, 187, 265, 50, 34, 53, 19], "ctr": [7.94, 9.79, 10.17, 8.13, 6.47, 12.06, 11.36, 6.64, 21.3, 15.71, 4.83, null], "danmaku": [4462, 474, 143, 12, 31, 46, 2, 7, 3, 4, 5, null], "depth_title": "\u70b9\u51fb\u7387 / \u5e73\u5747\u64ad\u653e", "engagement_rate": [7.67, 6.7, 5.29, 1.82, 1.92, 5.56, 4.34, 1.89, 2.29, 2.15, 7.12, 24.79], "favorites": [80000, 52000, 12680, 831, 470, 1319, 3121, 308, 266, 124, 57, null], "full_titles": ["\u201c\u8c46\u5305\uff0c\u4f60\u4eec AI \u672a\u6765\u4f1a\u7edf\u6cbb\u4eba\u7c7b\u5417\uff1f\u201d", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668...", "\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f", "iPhone 17\u4e70\u524d\u5fc5\u770b\uff1a\u7b49\u7b49\u515a\u8fd8\u662f\u76f4\u63a5\u4e0a\uff1f", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u4e2d\u56fd\uff01", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u4e00\u4e2a\u5fae\u4fe1\uff015\u5206\u949f\u5305\u6559\u5305\u4f1a\uff0c\u4ec5\u4f9b\u5b66\u4e60\u4f7f\u7528\uff0c\u4f7f\u7528\u6709\u98ce\u9669\uff0c\u8bf7\u8c28\u614e\u3002", "\u7ed9\u4f60\u4e00\u4e2a\u4e0d\u4e70 iPhone \u7684\u7406\u7531\uff1f", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u59d3\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\u4e3a\u4e86\u5b9e\u73b0\u8eba\u7740\u8d5a\u94b1\uff0c\u6211\u7adf\u7136\u7528\u4e0a\u4e86\u5b83\uff01"], "labels": ["\u201c\u8c46\u5305\uff0c\u4f60\u4eec AI \u672a\u6765\u2026", "200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u2026", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668..\u2026", "\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u2026", "iPhone 17\u4e70\u524d\u5fc5\u2026", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u2026", "\u3010\u6536\u85cf\u3011\u4e24\u53f0\u624b\u673a\u540c\u65f6\u767b\u9646\u2026", "\u7ed9\u4f60\u4e00\u4e2a\u4e0d\u4e70 iPhon\u2026", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u8001\u767e\u2026", "\u4e3a\u4e86\u5b9e\u73b0\u8eba\u7740\u8d5a\u94b1\uff0c\u6211\u7adf\u7136\u2026"], "likes": [807000, 182000, 46209, 5057, 5013, 13000, 4919, 1884, 1455, 549, 1783, 4426], "metric_label": "\u64ad\u653e\u91cf", "shares": [1241000, 24000, 5105, 458, 1028, 3080, 663, 157, 106, 68, 69, 18], "views": [28476000, 3887000, 1228694, 385000, 359000, 328000, 205000, 138000, 82000, 36000, 27538, 18000]}, "xiaohongshu": {"accent": "#ff2442", "avd_seconds": [null, null, null, null, null, null, null, null, null, 294.2, null, null], "comments": [545, 2296, 175, 57, 311, 201, 45, 110, 36, 11, 11, 6], "ctr": [null, null, null, null, null, null, null, null, null, null, null, null], "danmaku": [null, null, null, null, null, null, null, null, null, 0, null, null], "depth_title": "\u4e92\u52a8\u7387\uff08\u6309\u4e92\u52a8 / \u9605\u8bfb\u8ba1\u7b97\uff09", "engagement_rate": [9.44, 11.05, 5.89, 3.15, 1.89, 8.21, 6.26, 4.2, 4.41, 5.92, 4.41, 2.59], "favorites": [15082, 3809, 2439, 963, 256, 967, 738, 321, 127, 70, 31, 11], "full_titles": ["200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u98ce\uff0c\u5b83\u80fd\u9876\u8d77\u5c0f\u7c73YU7\uff1f", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668...", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u4eba\u4eec\u8fc7\u7740\u600e\u6837\u7684\u751f\u6d3b\uff1f", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u677f\u4e5f\u4e0d\u4e70 iPad\uff1f\"", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u522b\u5885\uff0c\u6211\u8981\u540e\u6094\u6b7b\u4e86..", "\u3010\u538b\u529b\u670d\u4e13\u4e1a\u6d4b\u8bd5\u3011\u5230\u5e95\u8c01\u662f\u667a\u5546\u7a0e\u2753\u2753", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u673a\u8d70\u904d\u4e86\u4e2d\u56fd\uff01", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u50cf\u5934!", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u624b\u673a\uff0c\u73b0\u5728\u600e\u4e48\u6837\u4e86\uff1f", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u5b9e\u6d4b\u5dee\u522b\u6709\u591a\u5927\uff1f", "\u8fd9\u652f\u82f9\u679c\u7259\u5237\uff0c\u8ba950\u4e2a\u4eba\u5435\u75af\u4e86......"], "labels": ["200\u5757\u624b\u6413\u4e00\u4e2a18\u7ea7\u53f0\u2026", "\u8fc4\u4eca\u6700\u6050\u6016\u7684\u624b\u673a", "\u6211\u505a\u4e86\u4e2a\u79bb\u8c31\u7684\u5145\u7535\u5668..\u2026", "\u6218\u4e89\u5236\u88c1\u4e0b\u7684\u4fc4\u7f57\u65af\uff0c\u4eba\u4eec\u2026", "\"\u4e3a\u4ec0\u4e48\u6709\u4eba\u5b81\u613f\u4e70\u5b89\u5353\u5e73\u2026", "\u82b13000\u591a\u79df\u4e86\u680b\u60e0\u5dde\u7684\u2026", "\u3010\u538b\u529b\u670d\u4e13\u4e1a\u6d4b\u8bd5\u3011\u5230\u5e95\u8c01\u2026", "500\u5929\uff0c\u6211\u8ba9\u8fd9\u53f0\u5c0f\u7c73\u624b\u2026", "26\u5c81\uff0c\u5934\u4e0a\u7adf\u7136\u957f\u51fa\u4e86\u6444\u2026", "\u5f53\u5e74\u7092\u5230 18 \u4e07\u4e00\u53f0\u7684\u2026", "68\u500d\u5dee\u4ef7\uff1f\uff01\u4eba\u4f53\u5de5\u5b66\u6905\u2026", "\u8fd9\u652f\u82f9\u679c\u7259\u5237\uff0c\u8ba950\u4e2a\u4eba\u2026"], "likes": [20532, 16442, 4415, 2588, 1016, 2240, 3089, 1321, 253, 195, 92, 45], "metric_label": "\u9605\u8bfb\u91cf", "shares": [1955, 20925, 338, 165, 60, 2741, 86, 204, 57, 49, 9, 3], "views": [403917, 393543, 125049, 119869, 87127, 74884, 63244, 46624, 10729, 5487, 3243, 2506]}};
     const TEXT = '#cccccc';
     const GRID = 'rgba(255,255,255,.08)';
     const ACCENT = '#e45532';

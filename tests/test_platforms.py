@@ -406,3 +406,83 @@ def test_xhs_cookie_source_has_priority_over_manual_when_official_missing(monkey
     assert snapshot["sourceStatus"]["source"] == "authorized_cookie"
     assert snapshot["fans"]["value"] == 777
     assert snapshot["metrics"]["views"]["value"] == 888
+
+
+def test_xhs_cookie_source_merges_creator_summary_and_content_url(monkeypatch) -> None:
+    import fetcher.xiaohongshu_api as xhs_api
+
+    async def fake_xhs_get_json(url, cookie, *, extra_headers=None, referer=""):  # noqa: ANN001
+        if "personal_info" in url:
+            return {
+                "success": True,
+                "data": {
+                    "red_num": "xhs-1",
+                    "fans_count": 300,
+                    "grow_info": {"fans_count": 300},
+                },
+            }
+        if "account/base" in url:
+            return {
+                "success": True,
+                "data": {
+                    "seven": {
+                        "view_count": 1200,
+                        "like_count": 80,
+                        "collect_count": 20,
+                        "comment_count": 6,
+                        "share_count": 3,
+                    },
+                    "thirty": {"net_rise_fans_count": 12},
+                },
+            }
+        return {
+            "success": True,
+            "data": {
+                "list": [
+                    {
+                        "note_id": "note-new",
+                        "note_title": "最新一期小红书内容",
+                        "publish_time": "2026-05-25 16:30",
+                        "read_count": 4567,
+                        "like_count": 123,
+                    }
+                ]
+            },
+        }
+
+    monkeypatch.setattr(xhs_api, "_authorized_xhs_get_json", fake_xhs_get_json)
+    monkeypatch.setenv("XIAOHONGSHU_COOKIE", "configured-cookie")
+    client = XiaohongshuClient(
+        account_id="",
+        data_url=xhs_api.XHS_ACCOUNT_BASE_URL,
+        content_data_url="https://creator.xiaohongshu.com/api/galaxy/creator/data/note_stats/new",
+    )
+    snapshot = asyncio.run(client.fetch_snapshot("Asia/Shanghai"))
+
+    assert snapshot["sourceStatus"]["source"] == "authorized_cookie"
+    assert snapshot["fans"]["value"] == 300
+    assert snapshot["metrics"]["views"]["value"] == 1200
+    assert snapshot["contentItems"][0]["note_id"] == "note-new"
+    assert snapshot["contentItems"][0]["views"] == 4567
+    assert "作品列表已读取 1 条" in snapshot["sourceStatus"]["message"]
+
+
+def test_xhs_summary_url_reports_stale_content_fallback(monkeypatch) -> None:
+    import fetcher.xiaohongshu_api as xhs_api
+
+    async def fake_xhs_get_json(url, cookie, *, extra_headers=None, referer=""):  # noqa: ANN001
+        if "personal_info" in url:
+            return {"success": True, "data": {"fans_count": 300, "grow_info": {"fans_count": 300}}}
+        if "account/base" in url:
+            return {"success": True, "data": {"seven": {"view_count": 1200}, "thirty": {}}}
+        raise RuntimeError("signed content endpoint rejected")
+
+    monkeypatch.setattr(xhs_api, "_authorized_xhs_get_json", fake_xhs_get_json)
+    monkeypatch.setenv("XIAOHONGSHU_COOKIE", "configured-cookie")
+    client = XiaohongshuClient(account_id="", data_url=xhs_api.XHS_ACCOUNT_BASE_URL)
+    snapshot = asyncio.run(client.fetch_snapshot("Asia/Shanghai"))
+
+    assert snapshot["sourceStatus"]["source"] == "authorized_cookie"
+    assert snapshot["contentItems"] == []
+    assert "作品列表未更新" in snapshot["sourceStatus"]["message"]
+    assert "XIAOHONGSHU_CONTENT_DATA_URL" in snapshot["sourceStatus"]["message"]
