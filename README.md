@@ -250,25 +250,37 @@ scripts/nas_update_dashboard.sh
 
 推荐做法：
 
-1. 在 NAS 上用 Git 克隆 GitHub 仓库到固定目录，例如 `/volume1/docker/bilibili-dashboard`、`/root/bilibili-dashboard` 或 NAS 实际共享目录。
+1. 在 NAS 上用 Git 克隆 GitHub 仓库到固定目录，例如绿联 NAS 当前使用的 `/home/小黑/bilibili-dashboard`，或 `/volume1/docker/bilibili-dashboard`、`/root/bilibili-dashboard` 等 NAS 实际共享目录。
 2. 复制 `data/secrets/dashboard.env.example` 到 `~/.config/bilibili-dashboard/dashboard.env`。
 3. 只在这个仓库外部的 `dashboard.env` 里填写 Cookie、Bark device key、抖音 / 小红书授权接口等敏感配置。
 4. 设置 `DASHBOARD_PUBLISH_DIR` 为 NAS Web 目录，例如 `/volume1/web/bilibili-dashboard`。
-5. 设置 `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`，并给 NAS 配置 GitHub SSH deploy key。
+5. 设置 `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`，并给 NAS 配置 GitHub SSH deploy key。脚本会在发现已有 `origin` 与该配置不一致时自动纠正为这个 SSH remote。
 6. 保持 `DASHBOARD_GIT_PUSH=0`，统一通过 `nas_update_and_push_cloud.sh` 推送云端。
 7. 在 NAS 的计划任务里每 30 分钟执行一次云端更新：
 
 ```bash
-/path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh
+cd /path/to/bilibili-dashboard && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh
 ```
 
 Linux crontab 示例见 `scripts/nas_cron.example`：
 
 ```cron
-*/30 * * * * DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+*/30 * * * * cd '/path/to/bilibili-dashboard' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
 ```
 
-如果 NAS 支持普通 `crontab`，也可以在 NAS 仓库目录执行：
+绿联 NAS 如果普通用户写 crontab 失败，例如报 `/var/spool/cron/: mkstemp: Permission denied`，推荐把定时任务安装到 root crontab，并用 `su - 小黑 -c ...` 切回 NAS 用户执行项目：
+
+```cron
+*/30 * * * * /bin/su - '小黑' -c 'cd '\''/home/小黑/bilibili-dashboard'\'' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1'
+```
+
+也可以在 root shell 中用脚本生成同样的 root-su crontab 块：
+
+```bash
+DASHBOARD_NAS_CRON_MODE=root-su DASHBOARD_NAS_RUN_AS_USER='小黑' DASHBOARD_REPO_DIR='/home/小黑/bilibili-dashboard' scripts/install_nas_hourly_cron.sh
+```
+
+如果 NAS 支持普通用户 `crontab`，可以在 NAS 仓库目录执行默认安装：
 
 ```bash
 scripts/install_nas_hourly_cron.sh
@@ -283,11 +295,21 @@ scripts/install_nas_hourly_cron.sh
 
 `nas_update_and_push_cloud.sh` 会：
 
+- 校验并维护 Git remote；如果配置了 `DASHBOARD_CLOUD_REMOTE_URL`，已有 remote 被同步成 HTTPS 或其他地址时会自动 `set-url` 回配置值。
 - 拉取远端最新状态，避免覆盖 GitHub 上的数据。
 - 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。
 - 默认按 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1` 先调用 `nas_update_dashboard.sh` 抓取并生成最新页面。
 - 提交并推送到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
 - 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
+
+云端推送主路径依赖 NAS 宿主机提供 `git` 和 SSH。部署前先检查：
+
+```bash
+command -v git
+command -v ssh
+```
+
+如果 NAS 没有 Git，需要先通过 NAS 系统包、应用中心或对应固件的可用方式安装 Git/SSH 组件，再期待 `nas_update_and_push_cloud.sh` 推送 GitHub。不要把 Cookie、token 或 deploy key 写入仓库。
 
 如果 NAS 环境是 iStoreOS / OpenWrt，系统里通常没有 Python，但有 Docker。此时可以先用 Docker 包装脚本本地生成页面：
 
@@ -295,7 +317,7 @@ scripts/install_nas_hourly_cron.sh
 */30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
 ```
 
-`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。首次运行会拉取 Docker 镜像，后续每 30 分钟更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；如果要让 Docker 容器内直接推送 GitHub，需要换成带 Git 和 SSH 的镜像，或让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
+`nas_docker_update.sh` 会用 `python:3.11-slim` 容器运行项目，项目目录默认是 `/root/bilibili-dashboard`。它只负责本地生成页面，不负责推送 GitHub Pages。首次运行会拉取 Docker 镜像，后续每 30 分钟更新只复用本地镜像。Docker 镜像默认不包含 Git/SSH；当前云端发布推荐让宿主 NAS 执行 `nas_update_and_push_cloud.sh`。
 
 脚本行为：
 
@@ -315,6 +337,8 @@ scripts/install_nas_hourly_cron.sh
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
 - `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1`：云端发布任务每 30 分钟先抓取最新数据，再推送 GitHub Pages。
+- `DASHBOARD_NAS_CRON_MODE=root-su`：安装 root crontab 时用 `su - $DASHBOARD_NAS_RUN_AS_USER -c ...` 切回 NAS 用户执行。
+- `DASHBOARD_NAS_RUN_AS_USER=小黑`：root-su cron 模式下实际运行项目的 NAS 用户。
 - `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30`：页面显示下一次每 30 分钟刷新时间。
 - `DASHBOARD_PAGE_REFRESH_SECONDS=1800`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。

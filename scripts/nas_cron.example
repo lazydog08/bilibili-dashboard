@@ -1,13 +1,18 @@
-# Run every 30 minutes on a Linux/NAS crontab: fetch data, render the dashboard, then
-# push the latest output to GitHub Pages.
-# Replace /path/to/bilibili-dashboard with the real project directory on the NAS.
-*/30 * * * * DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 /path/to/bilibili-dashboard/scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+# Recommended on UGREEN NAS when the normal user cannot write crontab:
+# install this in root crontab, then run the project as the NAS user.
+*/30 * * * * /bin/su - '小黑' -c 'cd '\''/home/小黑/bilibili-dashboard'\'' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1'
+
+# Generic Linux/NAS user crontab: fetch data, render the dashboard, then push
+# the latest output to GitHub Pages. Replace the path with the real project
+# directory on the NAS.
+*/30 * * * * cd '/path/to/bilibili-dashboard' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
 
 # Local-only output, useful when you do not want to publish to GitHub Pages.
-# */30 * * * * /path/to/bilibili-dashboard/scripts/nas_update_dashboard.sh >/dev/null 2>&1
+# */30 * * * * cd '/path/to/bilibili-dashboard' && ./scripts/nas_update_dashboard.sh >/dev/null 2>&1
 
-# On iStoreOS/OpenWrt without Python installed, use Docker instead:
-*/30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
+# Docker local-only output for iStoreOS/OpenWrt without Python installed.
+# This does not push to GitHub Pages.
+# */30 * * * * /root/bilibili-dashboard/scripts/nas_docker_update.sh >/dev/null 2>&1
 
 # Interval schedules are timezone-neutral. Fixed Beijing clock-time schedules need
 # UTC conversion only if the NAS cron service itself runs in UTC.

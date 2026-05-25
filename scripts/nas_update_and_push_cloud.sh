@@ -42,6 +42,24 @@ REMOTE_URL="${DASHBOARD_CLOUD_REMOTE_URL:-}"
 
 log "NAS cloud update started."
 
+ensure_cloud_remote() {
+  local current_remote_url
+  if git remote get-url "$REMOTE_NAME" >/dev/null 2>&1; then
+    current_remote_url="$(git remote get-url "$REMOTE_NAME")"
+    if [[ -n "$REMOTE_URL" && "$current_remote_url" != "$REMOTE_URL" ]]; then
+      log "Git remote '$REMOTE_NAME' does not match configured cloud remote; updating it."
+      git remote set-url "$REMOTE_NAME" "$REMOTE_URL" >> "$LOG_FILE" 2>&1
+    fi
+    return
+  fi
+
+  if [[ -z "$REMOTE_URL" ]]; then
+    log "Git remote '$REMOTE_NAME' is missing. Set DASHBOARD_CLOUD_REMOTE_URL."
+    exit 1
+  fi
+  git remote add "$REMOTE_NAME" "$REMOTE_URL" >> "$LOG_FILE" 2>&1
+}
+
 if ! command -v git >/dev/null 2>&1; then
   log "Git is not available; cannot push dashboard to cloud."
   exit 1
@@ -62,13 +80,7 @@ if [[ ! -d "$REPO_DIR/.git" ]]; then
   fi
 fi
 
-if ! git remote get-url "$REMOTE_NAME" >/dev/null 2>&1; then
-  if [[ -z "$REMOTE_URL" ]]; then
-    log "Git remote '$REMOTE_NAME' is missing. Set DASHBOARD_CLOUD_REMOTE_URL."
-    exit 1
-  fi
-  git remote add "$REMOTE_NAME" "$REMOTE_URL" >> "$LOG_FILE" 2>&1
-fi
+ensure_cloud_remote
 
 git config user.email "${DASHBOARD_GIT_EMAIL:-nas-dashboard@local}" >> "$LOG_FILE" 2>&1
 git config user.name "${DASHBOARD_GIT_NAME:-UGREEN NAS Dashboard Bot}" >> "$LOG_FILE" 2>&1
