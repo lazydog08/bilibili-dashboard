@@ -627,8 +627,43 @@
       margin-bottom: 24px;
     }
 
+    .follower-growth-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .trend-section {
+      min-width: 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--panel-muted);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .trend-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .trend-section-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.3;
+    }
+
     .trend-chart {
-      height: 300px;
+      height: 320px;
+    }
+
+    .growth-contribution-chart {
+      height: 320px;
     }
 
     .reference-grid {
@@ -650,12 +685,81 @@
       grid-column: auto;
     }
 
+    .reference-panel.is-full {
+      grid-column: 1 / -1;
+    }
+
     .reference-chart {
       height: 260px;
     }
 
     .comment-radar {
       margin-bottom: 24px;
+    }
+
+    .comment-header-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .comment-db-button,
+    .comment-sort-button,
+    .comment-db-filter,
+    .comment-db-close {
+      appearance: none;
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .comment-sort-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, .055);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+    }
+
+    .comment-sort-button {
+      min-height: 28px;
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .comment-sort-button.is-active {
+      background: rgba(242, 201, 76, .16);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(242, 201, 76, .28);
+    }
+
+    .comment-db-button {
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(72, 200, 184, .18);
+      color: #d5fff8;
+      font-size: 12px;
+      font-weight: 850;
+      box-shadow: inset 0 0 0 1px rgba(72, 200, 184, .32);
+      white-space: nowrap;
+    }
+
+    .comment-db-button:hover,
+    .comment-db-filter.is-active {
+      background: rgba(242, 201, 76, .18);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(242, 201, 76, .38);
     }
 
     .comment-summary-grid {
@@ -711,6 +815,38 @@
       word-break: break-word;
     }
 
+    .comment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .comment-action {
+      appearance: none;
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .07);
+      color: var(--text);
+      font: inherit;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.2;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+    }
+
+    .comment-action:hover {
+      background: rgba(242, 201, 76, .16);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(242, 201, 76, .32);
+    }
+
     .comment-meta {
       display: flex;
       flex-wrap: wrap;
@@ -736,6 +872,167 @@
       font-size: 11px;
       font-weight: 800;
       line-height: 1.25;
+    }
+
+    .comment-db-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .comment-db-modal[hidden] {
+      display: none;
+    }
+
+    .comment-db-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .68);
+      backdrop-filter: blur(5px);
+    }
+
+    .comment-db-panel {
+      position: relative;
+      width: min(1120px, calc(100vw - 32px));
+      max-height: min(820px, calc(100vh - 32px));
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 18px;
+      border-radius: 10px;
+      background: rgba(20, 17, 12, .98);
+      border: 1px solid rgba(242, 201, 76, .26);
+      box-shadow: 0 26px 80px rgba(0, 0, 0, .48);
+      overflow: hidden;
+    }
+
+    .comment-db-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .comment-db-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .comment-db-subtitle,
+    .comment-db-count {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .comment-db-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: inline-grid;
+      place-items: center;
+      background: rgba(255, 255, 255, .08);
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .comment-db-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .comment-db-search {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(255, 255, 255, .055);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .comment-db-search:focus {
+      border-color: rgba(242, 201, 76, .48);
+      box-shadow: 0 0 0 3px rgba(242, 201, 76, .12);
+    }
+
+    .comment-db-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .comment-db-filter {
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    .comment-db-list {
+      min-height: 0;
+      overflow-y: auto;
+      display: grid;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .comment-db-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .045);
+      border: 1px solid rgba(255, 255, 255, .07);
+    }
+
+    .comment-db-message {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 820;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .comment-db-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .comment-db-score {
+      align-self: start;
+      min-width: 54px;
+      padding: 7px 9px;
+      border-radius: 8px;
+      background: rgba(242, 201, 76, .13);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
     }
 
     .section-caption {
@@ -1305,7 +1602,8 @@
       }
 
       .summary-grid,
-      .reference-grid {
+      .reference-grid,
+      .follower-growth-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1313,7 +1611,8 @@
         grid-row: auto;
       }
 
-      .reference-panel:last-child {
+      .reference-panel:last-child,
+      .reference-panel.is-full {
         grid-column: auto;
       }
 
@@ -1402,6 +1701,26 @@
         grid-template-columns: 1fr;
       }
 
+      .comment-db-panel {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+        padding: 14px;
+      }
+
+      .comment-db-head,
+      .comment-db-controls,
+      .comment-db-row {
+        grid-template-columns: 1fr;
+      }
+
+      .comment-db-controls {
+        align-items: stretch;
+      }
+
+      .comment-db-filters {
+        justify-content: flex-start;
+      }
+
       .platform-card {
         padding: 16px;
       }
@@ -1473,7 +1792,9 @@
       }
 
       .chart,
-      .ctr-chart {
+      .ctr-chart,
+      .trend-chart,
+      .growth-contribution-chart {
         height: 390px;
       }
     }
@@ -1507,7 +1828,6 @@
       </div>
       <div class="headline-block">
         <div class="center-title">{{ section_title }}</div>
-        <div class="center-subtitle">三平台运营参考 · 本地静态看板</div>
       </div>
       <div class="right-meta">
         <div class="meta-actions">
@@ -1556,15 +1876,7 @@
         <div id="indexedFollowerChart" class="chart reference-chart"></div>
       </article>
 
-      <article class="panel reference-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">7 日涨粉贡献</h2>
-          <span class="panel-subtle">平台对比</span>
-        </div>
-        <div id="growthContributionChart" class="chart reference-chart"></div>
-      </article>
-
-      <article class="panel reference-panel">
+      <article class="panel reference-panel is-full">
         <div class="panel-header">
           <h2 class="panel-title">内容表现参考系</h2>
           <span class="panel-subtle">互动率 Top 10</span>
@@ -1678,7 +1990,18 @@
     <section class="panel comment-radar" aria-label="评论雷达">
       <div class="panel-header">
         <h2 class="panel-title">评论雷达</h2>
-        <span class="status-pill">{{ comment_insights["status_label"] }}</span>
+        <div class="comment-header-actions">
+          {% if comment_insights["items"] %}
+          <div class="comment-sort-controls" data-comment-sort-controls aria-label="评论排序">
+            <button class="comment-sort-button is-active" type="button" data-comment-sort="time" aria-pressed="true">按时间</button>
+            <button class="comment-sort-button" type="button" data-comment-sort="likes" aria-pressed="false">按点赞</button>
+          </div>
+          {% endif %}
+          <span class="status-pill">{{ comment_insights["status_label"] }}</span>
+          {% if comment_insights["database_items"] %}
+          <button class="comment-db-button" type="button" data-comment-db-open>查看评论库</button>
+          {% endif %}
+        </div>
       </div>
       <div class="comment-summary-grid">
         {% for item in comment_insights["summary"] %}
@@ -1689,11 +2012,32 @@
         {% endfor %}
       </div>
       {% if comment_insights["items"] %}
-      <div class="comment-list">
+      <div class="comment-list" data-comment-radar-list>
         {% for item in comment_insights["items"] %}
           {% if loop.index <= 6 %}
-          <article class="comment-item">
-            <p class="comment-message">{{ item.message }}</p>
+          <article
+            class="comment-item"
+            data-comment-shell
+            data-comment-card
+            data-comment-created="{{ item.created_sort_key or '1970-01-01T00:00:00+00:00' }}"
+            data-comment-likes="{{ item.like_count }}"
+          >
+            <p
+              class="comment-message"
+              data-comment-text
+              data-comment-preview="{{ item.message }}"
+              data-comment-full="{{ item.message_full or item.message }}"
+            >{{ item.message }}</p>
+            {% if item.has_more or item.comment_url %}
+            <div class="comment-actions">
+              {% if item.has_more %}
+              <button class="comment-action" type="button" data-comment-more-toggle aria-expanded="false">更多</button>
+              {% endif %}
+              {% if item.comment_url and item.comment_url.startswith("https://www.bilibili.com/video/") %}
+              <a class="comment-action" href="{{ item.comment_url }}" rel="noreferrer">直达评论</a>
+              {% endif %}
+            </div>
+            {% endif %}
             <div class="comment-labels">
               {% for label in item.labels %}
               <span class="comment-label">{{ label }}</span>
@@ -1701,6 +2045,7 @@
             </div>
             <div class="comment-meta">
               <span>{{ item.source_label }}</span>
+              <span>时间 {{ item.created_label or item.created_at or "--" }}</span>
               <span>{{ item.video_title }}</span>
               <span>点赞 {{ item.like_count }}</span>
               <span>回复 {{ item.reply_count }}</span>
@@ -1715,12 +2060,54 @@
       {% endif %}
     </section>
 
-    <section class="panel trend-panel">
+    {% if comment_insights["database_items"] %}
+    <div class="comment-db-modal" data-comment-db-modal hidden aria-hidden="true">
+      <div class="comment-db-backdrop" data-comment-db-close></div>
+      <section class="comment-db-panel" role="dialog" aria-modal="true" aria-labelledby="commentDbTitle">
+        <header class="comment-db-head">
+          <div>
+            <h2 class="comment-db-title" id="commentDbTitle">评论数据库</h2>
+            <div class="comment-db-subtitle">页面展示已隐藏联系方式的评论文本；直达评论会打开公开 B 站原评论。</div>
+          </div>
+          <button class="comment-db-close" type="button" data-comment-db-close aria-label="关闭">×</button>
+        </header>
+        <div class="comment-db-controls">
+          <input class="comment-db-search" type="search" data-comment-db-search placeholder="搜索评论或视频标题" autocomplete="off">
+          <div class="comment-db-filters" role="group" aria-label="评论筛选">
+            <button class="comment-db-filter is-active" type="button" data-comment-filter="all">全部</button>
+            <button class="comment-db-filter" type="button" data-comment-filter="attention">需关注</button>
+            <button class="comment-db-filter" type="button" data-comment-filter="latest">最新</button>
+            <button class="comment-db-filter" type="button" data-comment-filter="ranked">高赞</button>
+            <button class="comment-db-filter" type="button" data-comment-filter="controversy">争议</button>
+          </div>
+        </div>
+        <div class="comment-db-count" data-comment-db-count></div>
+        <div class="comment-db-list" data-comment-db-list></div>
+      </section>
+    </div>
+    {% endif %}
+
+    <section class="panel trend-panel follower-growth-panel">
       <div class="panel-header">
-        <h2 class="panel-title">近 30 日三平台粉丝趋势</h2>
-        <span class="panel-subtle">UTC+8</span>
+        <h2 class="panel-title">粉丝增长参考</h2>
+        <span class="panel-subtle">长期趋势 × 近期贡献</span>
       </div>
-      <div id="followerTrendChart" class="chart trend-chart"></div>
+      <div class="follower-growth-grid">
+        <section class="trend-section">
+          <div class="trend-section-head">
+            <h3 class="trend-section-title">近 30 日三平台粉丝趋势</h3>
+            <span class="panel-subtle">UTC+8</span>
+          </div>
+          <div id="followerTrendChart" class="chart trend-chart"></div>
+        </section>
+        <section class="trend-section">
+          <div class="trend-section-head">
+            <h3 class="trend-section-title">7 日涨粉贡献</h3>
+            <span class="panel-subtle">平台对比</span>
+          </div>
+          <div id="growthContributionChart" class="chart growth-contribution-chart"></div>
+        </section>
+      </div>
     </section>
 
     <nav class="platform-tabs" aria-label="平台内容明细切换">
@@ -2578,6 +2965,255 @@
         charts.forEach(chart => chart.resize());
       });
     });
+
+    function installCommentExpanders() {
+      document.querySelectorAll('[data-comment-more-toggle]').forEach(button => {
+        const shell = button.closest('[data-comment-shell]');
+        const message = shell?.querySelector('[data-comment-text]');
+        if (!message) return;
+        const preview = message.getAttribute('data-comment-preview') || message.textContent || '';
+        const full = message.getAttribute('data-comment-full') || preview;
+        button.addEventListener('click', () => {
+          const expanded = button.getAttribute('aria-expanded') === 'true';
+          button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+          button.textContent = expanded ? '更多' : '收起';
+          message.textContent = expanded ? preview : full;
+        });
+      });
+    }
+
+    function installCommentRadarSort() {
+      const list = document.querySelector('[data-comment-radar-list]');
+      const controls = document.querySelector('[data-comment-sort-controls]');
+      if (!list || !controls) return;
+
+      function sortButtons() {
+        return Array.from(controls.querySelectorAll('[data-comment-sort]'));
+      }
+
+      function cardTime(card) {
+        return card.getAttribute('data-comment-created') || '';
+      }
+
+      function cardLikes(card) {
+        return Number(card.getAttribute('data-comment-likes') || 0);
+      }
+
+      function sortCards(mode) {
+        const cards = Array.from(list.querySelectorAll('[data-comment-card]'));
+        cards.sort((a, b) => {
+          if (mode === 'likes') {
+            return cardLikes(b) - cardLikes(a) || cardTime(b).localeCompare(cardTime(a));
+          }
+          return cardTime(b).localeCompare(cardTime(a)) || cardLikes(b) - cardLikes(a);
+        });
+        cards.forEach(card => list.appendChild(card));
+        sortButtons().forEach(button => {
+          const active = button.dataset.commentSort === mode;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      }
+
+      controls.addEventListener('click', event => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest('[data-comment-sort]');
+        if (!button || !controls.contains(button)) return;
+        sortCards(button.dataset.commentSort || 'time');
+      });
+      sortCards('time');
+    }
+
+    function installCommentDatabase() {
+      const openButton = document.querySelector('[data-comment-db-open]');
+      const modal = document.querySelector('[data-comment-db-modal]');
+      const list = document.querySelector('[data-comment-db-list]');
+      const count = document.querySelector('[data-comment-db-count]');
+      const search = document.querySelector('[data-comment-db-search]');
+      const filters = Array.from(document.querySelectorAll('[data-comment-filter]'));
+      const items = Array.isArray(commentInsights.database_items) ? commentInsights.database_items : [];
+      if (!openButton || !modal || !list || !items.length) return;
+
+      let activeFilter = 'all';
+      const attentionThreshold = Number(commentInsights.attention_threshold || 70);
+      const attentionLabels = new Set(['需要回复', '纠错提醒', '争议上升']);
+
+      function addText(parent, tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        node.textContent = text;
+        parent.appendChild(node);
+        return node;
+      }
+
+      function isSafeCommentUrl(url) {
+        try {
+          const parsed = new URL(url);
+          return parsed.protocol === 'https:' && parsed.hostname === 'www.bilibili.com' && parsed.pathname.startsWith('/video/');
+        } catch (error) {
+          return false;
+        }
+      }
+
+      function addCommentActions(parent, item, messageNode) {
+        const fullMessage = item.message_full || item.message || '--';
+        const previewMessage = item.message || fullMessage;
+        if (!item.has_more && !isSafeCommentUrl(item.comment_url || '')) return;
+        const actions = document.createElement('div');
+        actions.className = 'comment-actions';
+        if (item.has_more) {
+          const moreButton = document.createElement('button');
+          moreButton.className = 'comment-action';
+          moreButton.type = 'button';
+          moreButton.textContent = '更多';
+          moreButton.setAttribute('aria-expanded', 'false');
+          moreButton.addEventListener('click', () => {
+            const expanded = moreButton.getAttribute('aria-expanded') === 'true';
+            moreButton.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            moreButton.textContent = expanded ? '更多' : '收起';
+            messageNode.textContent = expanded ? previewMessage : fullMessage;
+          });
+          actions.appendChild(moreButton);
+        }
+        if (isSafeCommentUrl(item.comment_url || '')) {
+          const link = document.createElement('a');
+          link.className = 'comment-action';
+          link.href = item.comment_url;
+          link.rel = 'noreferrer';
+          link.textContent = '直达评论';
+          actions.appendChild(link);
+        }
+        parent.appendChild(actions);
+      }
+
+      function matchesFilter(item) {
+        const labels = Array.isArray(item.labels) ? item.labels : [];
+        if (activeFilter === 'attention') {
+          return Number(item.score || 0) >= attentionThreshold || labels.some(label => attentionLabels.has(label));
+        }
+        if (activeFilter === 'latest') return item.source_label === '最新评论';
+        if (activeFilter === 'ranked') return item.source_label === '高赞评论';
+        if (activeFilter === 'controversy') return labels.includes('争议上升');
+        return true;
+      }
+
+      function matchesSearch(item, query) {
+        if (!query) return true;
+        const haystack = [
+          item.message,
+          item.video_title,
+          item.source_label,
+          item.created_label,
+          ...(Array.isArray(item.labels) ? item.labels : []),
+        ].join(' ').toLowerCase();
+        return haystack.includes(query);
+      }
+
+      function renderCommentDatabase() {
+        const query = String(search?.value || '').trim().toLowerCase();
+        const filtered = items.filter(item => matchesFilter(item) && matchesSearch(item, query));
+        const visibleItems = filtered.slice(0, 80);
+        list.replaceChildren();
+        if (count) {
+          count.textContent = filtered.length > visibleItems.length
+            ? `显示 ${visibleItems.length} / ${filtered.length} 条评论`
+            : `${filtered.length} 条评论`;
+        }
+        if (!visibleItems.length) {
+          addText(list, 'div', 'empty-state', '没有匹配的评论。');
+          return;
+        }
+        visibleItems.forEach(item => {
+          const row = document.createElement('article');
+          row.className = 'comment-db-row';
+          const body = document.createElement('div');
+          const messageNode = addText(body, 'p', 'comment-db-message', item.message || '--');
+          addCommentActions(body, item, messageNode);
+          const labels = Array.isArray(item.labels) ? item.labels : [];
+          if (labels.length) {
+            const labelWrap = document.createElement('div');
+            labelWrap.className = 'comment-labels';
+            labels.forEach(label => addText(labelWrap, 'span', 'comment-label', label));
+            body.appendChild(labelWrap);
+          }
+          const meta = document.createElement('div');
+          meta.className = 'comment-db-meta';
+          [
+            `时间 ${item.created_label || item.created_at || '--'}`,
+            item.source_label || '评论',
+            item.video_title || '--',
+            `点赞 ${Number(item.like_count || 0).toLocaleString()}`,
+            `回复 ${Number(item.reply_count || 0).toLocaleString()}`,
+          ].forEach(text => addText(meta, 'span', '', text));
+          body.appendChild(meta);
+          addText(row, 'div', 'comment-db-score', `评分 ${item.score || 0}`);
+          row.insertBefore(body, row.firstChild);
+          list.appendChild(row);
+        });
+      }
+
+      function openModal() {
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        renderCommentDatabase();
+        if (search) search.focus();
+      }
+
+      function closeModal() {
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        openButton.focus();
+      }
+
+      function keepFocusInModal(event) {
+        if (event.key !== 'Tab' || modal.hidden) return;
+        const focusable = Array.from(modal.querySelectorAll('button, input, [href], [tabindex]:not([tabindex="-1"])'))
+          .filter(element => !element.disabled && element.offsetParent !== null);
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (!modal.contains(document.activeElement)) {
+          event.preventDefault();
+          first.focus();
+          return;
+        }
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+          return;
+        }
+        if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+
+      openButton.addEventListener('click', openModal);
+      document.querySelectorAll('[data-comment-db-close]').forEach(button => {
+        button.addEventListener('click', closeModal);
+      });
+      filters.forEach(button => {
+        button.addEventListener('click', () => {
+          activeFilter = button.dataset.commentFilter || 'all';
+          filters.forEach(item => item.classList.toggle('is-active', item === button));
+          renderCommentDatabase();
+        });
+      });
+      if (search) search.addEventListener('input', renderCommentDatabase);
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !modal.hidden) closeModal();
+        keepFocusInModal(event);
+      });
+    }
+
+    installCommentDatabase();
+    installCommentExpanders();
+    installCommentRadarSort();
 
     charts.forEach(chart => {
       window.addEventListener('resize', () => chart.resize());

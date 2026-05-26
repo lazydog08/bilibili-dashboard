@@ -1607,7 +1607,9 @@ def _build_platform_card(history: dict[str, Any], platform: str, config: Any = N
     }
 
 
-def _trend_snapshots(history: dict[str, Any], platform: str, config: Any = None) -> list[dict[str, Any]]:
+def _daily_trend_snapshots(history: dict[str, Any], platform: str, config: Any = None) -> list[dict[str, Any]]:
+    """Return the latest fan snapshot for each day used by trend charts."""
+    timezone_name = str(getattr(config, "timezone", DEFAULT_TIMEZONE))
     rows = [
         snapshot
         for snapshot in successful_snapshots(history, platform, config)
@@ -1618,7 +1620,14 @@ def _trend_snapshots(history: dict[str, Any], platform: str, config: Any = None)
     latest_source = _snapshot_source(rows[-1])
     if latest_source:
         rows = [snapshot for snapshot in rows if _snapshot_source(snapshot) == latest_source]
-    return rows[-30:]
+    daily_rows: dict[str, tuple[datetime, dict[str, Any]]] = {}
+    for snapshot in rows:
+        captured = _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or timezone_name))
+        day_key = captured.date().isoformat()
+        current = daily_rows.get(day_key)
+        if current is None or captured > current[0]:
+            daily_rows[day_key] = (captured, snapshot)
+    return [snapshot for _, snapshot in sorted(daily_rows.values(), key=lambda item: item[0])][-30:]
 
 
 def next_update_label(
@@ -1671,18 +1680,11 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
     )
     labels: list[str] = []
     series: list[dict[str, Any]] = []
-    trend_rows = {platform: _trend_snapshots(history, platform, config) for platform in platforms}
-    unique_dates = {
-        _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or DEFAULT_TIMEZONE)).date().isoformat()
-        for snapshots in trend_rows.values()
-        for snapshot in snapshots
-    }
-    use_time_labels = len(unique_dates) <= 1
+    timezone_name = str(getattr(config, "timezone", DEFAULT_TIMEZONE))
+    trend_rows = {platform: _daily_trend_snapshots(history, platform, config) for platform in platforms}
     for platform in platforms:
         platform_labels = [
-            _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or DEFAULT_TIMEZONE)).strftime(
-                "%H:%M" if use_time_labels else "%m-%d"
-            )
+            _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or timezone_name)).strftime("%m-%d")
             for snapshot in trend_rows[platform]
         ]
         for label in platform_labels:
@@ -1690,9 +1692,7 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
                 labels.append(label)
     for platform in platforms:
         by_label = {
-            _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or DEFAULT_TIMEZONE)).strftime(
-                "%H:%M" if use_time_labels else "%m-%d"
-            ): snapshot
+            _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or timezone_name)).strftime("%m-%d"): snapshot
             for snapshot in trend_rows[platform]
         }
         series.append(

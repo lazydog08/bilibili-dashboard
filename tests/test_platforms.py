@@ -59,6 +59,36 @@ def test_platform_growth_deltas_and_insufficient_periods() -> None:
     assert card["growth"][2]["value"]["label"] == "--"
 
 
+def test_follower_trend_chart_uses_daily_labels_and_latest_snapshot_per_day() -> None:
+    history = {
+        "platform_snapshots": [
+            build_platform_snapshot(
+                platform="bilibili",
+                captured_at="2026-05-26T01:31:00+08:00",
+                fans=100,
+                metrics={},
+                status="success",
+                source="creator_center",
+            ),
+            build_platform_snapshot(
+                platform="bilibili",
+                captured_at="2026-05-26T15:32:00+08:00",
+                fans=120,
+                metrics={},
+                status="success",
+                source="creator_center",
+            ),
+        ]
+    }
+
+    chart = derive_platform_context(history, _settings())["follower_trend_chart"]
+
+    assert chart["labels"] == ["05-26"]
+    assert all(":" not in label for label in chart["labels"])
+    bilibili_series = next(item for item in chart["series"] if item["name"] == "B 站")
+    assert bilibili_series["data"] == [120]
+
+
 def test_next_update_label_can_use_interval(monkeypatch) -> None:
     import platforms
 

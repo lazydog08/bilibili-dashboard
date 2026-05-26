@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 from pathlib import Path
 
 from analytics import derive_dashboard_context, load_fixture_history
@@ -42,6 +43,7 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     assert "const ctrChartData =" in html
     assert "installCodexTrackpadScrollFallback" in html
     assert "local-scroll-controls" in html
+    assert "三平台运营参考 · 本地静态看板" not in html
     assert 'src="assets/channel-avatar.jpg"' in html
     assert '<meta http-equiv="refresh" content="1800">' in html
     assert "打开 NAS" not in html
@@ -59,6 +61,75 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     ]:
         assert snippet in reach_chart_body
     assert not any(line.endswith((" ", "\t")) for line in html.splitlines())
+
+
+def test_render_includes_interactive_comment_database_when_enabled(tmp_path) -> None:
+    settings = load_settings()
+    object.__setattr__(settings, "output_path", tmp_path / "index.html")
+    object.__setattr__(settings, "enable_comment_insights", True)
+    comment_path = tmp_path / "comments.json"
+    long_message = "这是一条很长的评论，" * 20
+    comment_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "items": [
+                    {
+                        "platform": "bilibili",
+                        "comment_id": "1",
+                        "bvid": "BV1ABC123DEF",
+                        "video_title": "测试视频",
+                        "message": long_message,
+                        "like_count": 2,
+                        "reply_count": 1,
+                        "created_at": "2026-05-02T01:00:00+00:00",
+                        "source_rank": "latest",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    object.__setattr__(settings, "comment_private_path", comment_path)
+    history = load_fixture_history(PROJECT_ROOT / "data" / "fixtures" / "sample_history.json")
+
+    context = derive_dashboard_context(history, settings)
+    output = render_dashboard(context, settings)
+    html = output.read_text(encoding="utf-8")
+
+    assert "data-comment-db-open" in html
+    assert "data-comment-db-list" in html
+    assert "data-comment-sort-controls" in html
+    assert 'data-comment-sort="time"' in html
+    assert 'data-comment-sort="likes"' in html
+    assert "data-comment-card" in html
+    assert "data-comment-more-toggle" in html
+    assert "installCommentDatabase" in html
+    assert "installCommentRadarSort" in html
+    assert "mode === 'likes'" in html
+    assert "cardLikes(b) - cardLikes(a)" in html
+    assert "cardTime(b).localeCompare(cardTime(a))" in html
+    assert "https://www.bilibili.com/video/BV1ABC123DEF/#reply1" in html
+    assert 'target="_blank" rel="noreferrer noopener">直达评论' not in html
+    assert "link.target = '_blank'" not in html
+    assert 'data-comment-created="2026-05-02T01:00:00+00:00"' in html
+    assert "2026-05-02 09:00" in html
+
+
+def test_render_combines_follower_trend_and_growth_contribution(tmp_path) -> None:
+    settings = load_settings()
+    object.__setattr__(settings, "output_path", tmp_path / "index.html")
+    history = load_fixture_history(PROJECT_ROOT / "data" / "fixtures" / "sample_history.json")
+
+    context = derive_dashboard_context(history, settings)
+    output = render_dashboard(context, settings)
+    html = output.read_text(encoding="utf-8")
+
+    assert 'class="panel trend-panel follower-growth-panel"' in html
+    assert "粉丝增长参考" in html
+    assert html.find('id="followerTrendChart"') < html.find('id="growthContributionChart"')
+    assert html.find('class="panel trend-panel follower-growth-panel"') < html.find('id="growthContributionChart"')
 
 
 def test_channel_avatar_asset_exists_for_static_pages() -> None:

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from comments import build_comment_context, public_comment_hash, sanitize_comment_text, score_comment
+from comments import build_comment_context, public_comment_hash, public_comment_item, sanitize_comment_text, score_comment
 from config import PROJECT_ROOT
 from fetcher.bilibili_comments import (
     BilibiliCommentError,
@@ -75,7 +75,7 @@ def test_comment_context_handles_malformed_private_cache(tmp_path) -> None:
         SimpleNamespace(
             enable_comment_insights=True,
             comment_private_path=cache_path,
-            comment_score_push_threshold=70,
+            comment_score_push_threshold=66,
         )
     )
 
@@ -115,6 +115,34 @@ def test_comment_context_exposes_comment_source_label(tmp_path) -> None:
 
     assert context["items"][0]["source_label"] == "最新评论"
     assert context["items"][0]["created_at"] == ""
+    assert context["items"][0]["created_sort_key"] == "1970-01-01T00:00:00+00:00"
+
+
+def test_public_comment_item_exposes_expandable_text_and_direct_link() -> None:
+    long_message = "这是一条很长的评论，" * 20
+
+    item = public_comment_item(
+        {
+            "platform": "bilibili",
+            "comment_id": "123",
+            "bvid": "BV1ABC123DEF",
+            "video_title": "测试视频",
+            "message": long_message,
+            "like_count": 2,
+            "reply_count": 1,
+            "created_at": "2026-05-02T01:00:00+00:00",
+            "source_rank": "latest",
+        },
+        "Asia/Shanghai",
+    )
+
+    assert item["message"].endswith("...")
+    assert item["message_full"].startswith("这是一条很长的评论")
+    assert len(item["message_full"]) > len(item["message"])
+    assert item["has_more"] is True
+    assert item["comment_url"] == "https://www.bilibili.com/video/BV1ABC123DEF/#reply123"
+    assert item["created_sort_key"] == "2026-05-02T01:00:00+00:00"
+    assert "comment_id" not in item
 
 
 def test_comment_context_mixes_attention_and_latest_items(tmp_path) -> None:
@@ -153,13 +181,14 @@ def test_comment_context_mixes_attention_and_latest_items(tmp_path) -> None:
         SimpleNamespace(
             enable_comment_insights=True,
             comment_private_path=cache_path,
-            comment_score_push_threshold=70,
+            comment_score_push_threshold=66,
         )
     )
 
     messages = [item["message"] for item in context["items"]]
     assert "这里是不是硬吹了" in messages
     assert "刚刚看到" in messages
+    assert messages[:2] == ["刚刚看到", "这里是不是硬吹了"]
 
 
 def test_comment_context_keeps_latest_order_within_same_day(tmp_path) -> None:
@@ -203,7 +232,135 @@ def test_comment_context_keeps_latest_order_within_same_day(tmp_path) -> None:
     )
 
     assert [item["message"] for item in context["items"][:2]] == ["晚一点", "早一点"]
-    assert context["items"][0]["created_at"] == "2026-05-02"
+    assert context["items"][0]["created_at"] == "2026-05-03"
+
+
+def test_comment_context_uses_likes_as_time_tiebreaker(tmp_path) -> None:
+    cache_path = tmp_path / "comments.json"
+    cache_path.write_text(
+        """
+        {
+          "schema_version": 1,
+          "items": [
+            {
+              "platform": "bilibili",
+              "comment_id": "low",
+              "video_title": "测试视频",
+              "message": "同一时间低赞",
+              "like_count": 1,
+              "reply_count": 0,
+              "created_at": "2026-05-02T01:00:00+00:00",
+              "source_rank": "latest"
+            },
+            {
+              "platform": "bilibili",
+              "comment_id": "high",
+              "video_title": "测试视频",
+              "message": "同一时间高赞",
+              "like_count": 9,
+              "reply_count": 0,
+              "created_at": "2026-05-02T01:00:00+00:00",
+              "source_rank": "latest"
+            }
+          ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    context = build_comment_context(
+        SimpleNamespace(
+            enable_comment_insights=True,
+            comment_private_path=cache_path,
+            comment_score_push_threshold=70,
+        )
+    )
+
+    assert [item["message"] for item in context["items"][:2]] == ["同一时间高赞", "同一时间低赞"]
+
+
+def test_comment_context_exposes_database_items_with_display_time(tmp_path) -> None:
+    cache_path = tmp_path / "comments.json"
+    cache_path.write_text(
+        """
+        {
+          "schema_version": 1,
+          "items": [
+            {
+              "platform": "bilibili",
+              "comment_id": "early",
+              "video_title": "测试视频",
+              "message": "早一点",
+              "like_count": 0,
+              "reply_count": 0,
+              "created_at": "2026-05-02T01:00:00+00:00",
+              "source_rank": "latest"
+            },
+            {
+              "platform": "bilibili",
+              "comment_id": "late",
+              "video_title": "测试视频",
+              "message": "晚一点",
+              "like_count": 5,
+              "reply_count": 2,
+              "created_at": "2026-05-02T23:00:00+00:00",
+              "source_rank": "ranked"
+            }
+          ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    context = build_comment_context(
+        SimpleNamespace(
+            enable_comment_insights=True,
+            comment_private_path=cache_path,
+            comment_score_push_threshold=66,
+        )
+    )
+
+    assert [item["message"] for item in context["database_items"]] == ["晚一点", "早一点"]
+    assert context["database_items"][0]["created_label"] == "2026-05-03 07:00"
+    assert context["database_items"][0]["created_at"] == "2026-05-03"
+    assert context["attention_threshold"] == 66
+    assert "comment_id" not in context["database_items"][0]
+
+
+def test_comment_context_uses_configured_timezone_for_display_time(tmp_path) -> None:
+    cache_path = tmp_path / "comments.json"
+    cache_path.write_text(
+        """
+        {
+          "schema_version": 1,
+          "items": [
+            {
+              "platform": "bilibili",
+              "comment_id": "utc",
+              "video_title": "测试视频",
+              "message": "晚一点",
+              "like_count": 0,
+              "reply_count": 0,
+              "created_at": "2026-05-02T23:00:00+00:00",
+              "source_rank": "latest"
+            }
+          ]
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    context = build_comment_context(
+        SimpleNamespace(
+            enable_comment_insights=True,
+            comment_private_path=cache_path,
+            comment_score_push_threshold=70,
+            timezone="UTC",
+        )
+    )
+
+    assert context["database_items"][0]["created_label"] == "2026-05-02 23:00"
+    assert context["database_items"][0]["created_at"] == "2026-05-02"
 
 
 def test_private_comment_cache_is_ignored_by_git() -> None:
