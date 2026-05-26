@@ -797,6 +797,10 @@
       gap: 10px;
     }
 
+    .comment-list[data-comment-sort-mode="time"] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .comment-item {
       min-width: 0;
       display: grid;
@@ -2012,7 +2016,7 @@
         {% endfor %}
       </div>
       {% if comment_insights["items"] %}
-      <div class="comment-list" data-comment-radar-list>
+      <div class="comment-list" data-comment-radar-list data-comment-sort-mode="time">
         {% for item in comment_insights["items"] %}
           {% if loop.index <= 6 %}
           <article
@@ -3008,6 +3012,7 @@
           return cardTime(b).localeCompare(cardTime(a)) || cardLikes(b) - cardLikes(a);
         });
         cards.forEach(card => list.appendChild(card));
+        list.dataset.commentSortMode = mode;
         sortButtons().forEach(button => {
           const active = button.dataset.commentSort === mode;
           button.classList.toggle('is-active', active);

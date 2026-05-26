@@ -107,6 +107,9 @@ def test_render_includes_interactive_comment_database_when_enabled(tmp_path) -> 
     assert "data-comment-more-toggle" in html
     assert "installCommentDatabase" in html
     assert "installCommentRadarSort" in html
+    assert '.comment-list[data-comment-sort-mode="time"]' in html
+    assert 'data-comment-sort-mode="time"' in html
+    assert "list.dataset.commentSortMode = mode;" in html
     assert "mode === 'likes'" in html
     assert "cardLikes(b) - cardLikes(a)" in html
     assert "cardTime(b).localeCompare(cardTime(a))" in html
