@@ -1718,6 +1718,5 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
             cards,
             next_update_label=next_update,
             update_interval_minutes=update_interval_minutes,
-            page_refresh_seconds=page_refresh_seconds,
         ),
     }

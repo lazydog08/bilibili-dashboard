@@ -74,6 +74,7 @@ if [[ ! -f "$REQ_STAMP" || -z "$REQ_HASH" || "$(cat "$REQ_STAMP" 2>/dev/null || 
 fi
 
 export ENABLE_BILIBILI_FETCH="${ENABLE_BILIBILI_FETCH:-1}"
+export ENABLE_COMMENT_INSIGHTS="${ENABLE_COMMENT_INSIGHTS:-1}"
 export DASHBOARD_TIMEZONE="$TIMEZONE"
 
 MODE="${DASHBOARD_MODE:-live}"
@@ -89,6 +90,7 @@ case "$MODE" in
     CMD+=("--fixture")
     ;;
   cache|local)
+    CMD+=("--cache")
     ;;
   *)
     log "Unknown DASHBOARD_MODE=$MODE; expected live, bilibili-only, cache, or fixture."
@@ -114,6 +116,24 @@ if "${CMD[@]}" >> "$LOG_FILE" 2>&1; then
 else
   UPDATE_STATUS=$?
   log "Dashboard render failed with exit code $UPDATE_STATUS."
+fi
+
+ENABLE_COMMENT_FETCH="${ENABLE_COMMENT_FETCH:-$ENABLE_COMMENT_INSIGHTS}"
+if [[ "$UPDATE_STATUS" == "0" && "$MODE" != "fixture" && "$ENABLE_COMMENT_FETCH" == "1" ]]; then
+  log "Fetching Bilibili comments."
+  if "$PYTHON_BIN" "$REPO_DIR/scripts/fetch_bilibili_comments.py" >> "$LOG_FILE" 2>&1; then
+    log "Comment fetch completed."
+  else
+    log "Comment fetch failed; rendering with the latest available comment cache."
+  fi
+
+  log "Rendering dashboard with comment cache."
+  if ENABLE_BILIBILI_FETCH=0 "$PYTHON_BIN" "$REPO_DIR/main.py" "--cache" "--no-feishu" "--no-bark" >> "$LOG_FILE" 2>&1; then
+    log "Dashboard comment render completed."
+  else
+    COMMENT_RENDER_STATUS=$?
+    log "Dashboard comment render failed with exit code $COMMENT_RENDER_STATUS; keeping the primary dashboard output."
+  fi
 fi
 
 if [[ "${RUN_DASHBOARD_TESTS:-0}" == "1" ]]; then

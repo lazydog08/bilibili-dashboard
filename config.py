@@ -146,6 +146,14 @@ class Settings:
     xiaohongshu_official_config_present: bool = False
     xiaohongshu_official_data_url_present: bool = False
     xiaohongshu_official_data_url: str = ""
+    enable_comment_insights: bool = False
+    comment_private_path: Path = PROJECT_ROOT / "data" / "private" / "comments.json"
+    comment_video_limit: int = 10
+    comment_recent_page_size: int = 20
+    comment_ranked_video_limit: int = 3
+    comment_ranked_page_size: int = 20
+    comment_score_push_threshold: int = 70
+    comment_retention_days: int = 14
 
 
 def load_settings() -> Settings:
@@ -234,4 +242,15 @@ def load_settings() -> Settings:
         ),
         xiaohongshu_official_data_url_present=bool(os.getenv("XIAOHONGSHU_OFFICIAL_DATA_URL")),
         xiaohongshu_official_data_url=os.getenv("XIAOHONGSHU_OFFICIAL_DATA_URL", ""),
+        enable_comment_insights=_env_flag("ENABLE_COMMENT_INSIGHTS", False),
+        comment_private_path=_env_path(
+            "COMMENT_PRIVATE_PATH",
+            PROJECT_ROOT / "data" / "private" / "comments.json",
+        ),
+        comment_video_limit=max(1, min(_env_int("COMMENT_VIDEO_LIMIT", 10), 30)),
+        comment_recent_page_size=max(1, min(_env_int("COMMENT_RECENT_PAGE_SIZE", 20), 40)),
+        comment_ranked_video_limit=max(0, min(_env_int("COMMENT_RANKED_VIDEO_LIMIT", 3), 10)),
+        comment_ranked_page_size=max(1, min(_env_int("COMMENT_RANKED_PAGE_SIZE", 20), 40)),
+        comment_score_push_threshold=max(1, min(_env_int("COMMENT_SCORE_PUSH_THRESHOLD", 70), 100)),
+        comment_retention_days=max(1, min(_env_int("COMMENT_RETENTION_DAYS", 14), 90)),
     )

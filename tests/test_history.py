@@ -205,5 +205,5 @@ def test_live_partial_source_uses_partial_badge() -> None:
     }
 
     context = derive_dashboard_context(history, load_settings())
-    assert context["badge_text"] == "B站创作中心数据（部分明细回退）"
+    assert context["badge_text"] == "全平台运营数据"
     assert context["recent_videos"][0]["title"] == "真实视频"

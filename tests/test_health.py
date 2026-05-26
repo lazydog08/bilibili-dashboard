@@ -10,14 +10,13 @@ def test_operational_status_reports_partial_platform_quality() -> None:
         ],
         next_update_label="下次更新：今天 13:00",
         update_interval_minutes=30,
-        page_refresh_seconds=1800,
     )
 
     assert status["cards"][0]["value"] == "30 分钟"
     assert status["cards"][1]["value"] == "2 成功 / 1 部分可用"
     assert status["cards"][1]["class"] == "is-warning"
     assert "B 站：部分可用" in status["cards"][1]["meta"]
-    assert "页面自动刷新 30 分钟" in status["cards"][2]["meta"]
+    assert len(status["cards"]) == 2
 
 
 def test_operational_status_reports_all_platforms_successful() -> None:
@@ -29,10 +28,9 @@ def test_operational_status_reports_all_platforms_successful() -> None:
         ],
         next_update_label="下次更新：今天 13:00",
         update_interval_minutes=None,
-        page_refresh_seconds=0,
     )
 
     assert status["cards"][0]["value"] == "按固定时刻"
     assert status["cards"][1]["value"] == "3 个平台正常"
     assert status["cards"][1]["class"] == "is-positive"
-    assert "自动刷新关闭" in status["cards"][2]["meta"]
+    assert len(status["cards"]) == 2

@@ -2,24 +2,28 @@ from __future__ import annotations
 from pathlib import Path
 
 from analytics import derive_dashboard_context, load_fixture_history
-from config import DEFAULT_NAS_FINDER_URL, PROJECT_ROOT, load_settings
+from config import PROJECT_ROOT, load_settings
 from main import _resolve_snapshot_date, render_dashboard
 
 
 REQUIRED_TEXT = [
     "频道数据情况",
+    "懒狗小黑",
+    "B站 UID",
+    "bilibili 知名科技UP主",
+    "Lv.6",
+    "粉丝",
+    "励志能拥有很多数码产品的，一条懒狗。",
     "B 站",
     "抖音",
     "小红书",
     "NAS 更新节奏",
     "平台数据质量",
-    "发布方式",
     "近 30 日三平台粉丝趋势",
     "CTR（展示点击率）",
     "近三十天上线节目封面总览",
     "视频播放量与粉丝增量",
     "平均播放时长与完播率",
-    "打开 NAS",
 ]
 
 
@@ -36,8 +40,11 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
         assert text in html
     assert "echarts.init" in html
     assert "const ctrChartData =" in html
+    assert "installCodexTrackpadScrollFallback" in html
+    assert "local-scroll-controls" in html
+    assert 'src="assets/channel-avatar.jpg"' in html
     assert '<meta http-equiv="refresh" content="1800">' in html
-    assert f'href="{DEFAULT_NAS_FINDER_URL}"' in html
+    assert "打开 NAS" not in html
     reach_start = html.find("reachChart.setOption({")
     interaction_start = html.find("interactionChart.setOption({", reach_start)
     assert reach_start != -1, "reach chart config is missing"
@@ -52,6 +59,14 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     ]:
         assert snippet in reach_chart_body
     assert not any(line.endswith((" ", "\t")) for line in html.splitlines())
+
+
+def test_channel_avatar_asset_exists_for_static_pages() -> None:
+    avatar_path = PROJECT_ROOT / "dashboard" / "output" / "assets" / "channel-avatar.jpg"
+
+    assert avatar_path.exists()
+    assert avatar_path.stat().st_size > 1024
+    assert avatar_path.read_bytes()[:2] == b"\xff\xd8"
 
 
 def test_render_escapes_complex_video_titles(tmp_path) -> None:

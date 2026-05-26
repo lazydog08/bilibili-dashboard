@@ -4,7 +4,7 @@
 
 当前仓库名仍保留 `bilibili-dashboard`，但项目定位已经升级为单个创作者 IP 的三平台自媒体数据看板。结构说明见 [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md)，评论洞察需求计划见 [`docs/COMMENT_INSIGHTS_PLAN.md`](docs/COMMENT_INSIGHTS_PLAN.md)。
 
-页面会把三类状态拆开展示：NAS 更新节奏、平台数据质量、GitHub Pages 静态发布方式。部署成功不等于每个平台数据都完整；例如 B 站详情接口失败时，页面仍可发布，但对应平台会显示“部分可用”。
+页面会把 NAS 更新节奏、平台数据质量和内容参考图分开展示。部署成功不等于每个平台数据都完整；例如 B 站详情接口失败时，页面仍可发布，但对应平台会显示“部分可用”。
 
 ## 本地快速开始
 
@@ -46,11 +46,21 @@ start dashboard/output/index.html
 
 内容指标表按 `今日 / 昨日 / Δ / Δ%` 展示。平台只提供累计值时，项目会用 UTC+8 自然日边界和历史快照差值计算；历史不足、字段不可得或昨日值为 0 时显示 `--`，不会用估算值冒充真实值。
 
-## 评论洞察规划
+## 评论雷达
 
-评论洞察暂未接入主抓取链路。计划先从 B 站公开视频评论开始，小样本验证最新评论、高赞评论和高回复评论，再用规则评分筛选“需要回复 / 争议上升 / 选题机会 / 纠错提醒”等运营信号。实现前提和边界见 [`docs/COMMENT_INSIGHTS_PLAN.md`](docs/COMMENT_INSIGHTS_PLAN.md)。
+评论雷达已接入 B 站公开视频评论的小样本抓取。它会读取最新评论和高赞评论，按点赞、回复、发布时间和关键词筛出“需要回复 / 争议上升 / 选题机会 / 纠错提醒”等运营信号。
 
-评论模块不会改变 NAS 当前更新频率，也不会做全量高频抓取；接口异常、风控、验证码或评论区关闭时，评论模块应停止本轮更新并让主看板继续生成。
+完整评论只写入本机或 NAS 的 `data/private/comments.json`，这个目录已被 Git 忽略。公开页面只展示脱敏后的短摘要、点赞数、回复数和评分，不展示用户名、原始评论 ID 或完整私有缓存。
+
+本地手动试抓：
+
+```bash
+export ENABLE_COMMENT_INSIGHTS=1
+python scripts/fetch_bilibili_comments.py
+python main.py --cache --no-feishu --no-bark
+```
+
+评论模块不会改变 NAS 当前更新频率，也不会做全量高频抓取；接口异常、风控、验证码或评论区关闭时，评论模块会记录日志并让主看板继续生成。
 
 ## 抖音 / 小红书数据源
 
@@ -299,6 +309,7 @@ scripts/install_nas_hourly_cron.sh
 `nas_update_dashboard.sh` 会：
 
 - 按 `DASHBOARD_MODE` 抓取数据并重新生成页面。
+- 默认在 NAS 流程中启用 `ENABLE_COMMENT_INSIGHTS=1`，抓取 B 站评论到 `data/private/comments.json`，再用缓存渲染模式把脱敏摘要写进静态页面。
 - 把页面写到 `dashboard/output/index.html`。
 - 如果配置了 `DASHBOARD_PUBLISH_DIR`，同步复制到 NAS Web 目录。
 - 写入 `data/logs/nas-update.log`，不输出 Cookie、token 或 Bark key。
@@ -335,6 +346,7 @@ command -v ssh
 - 如果确实要拉取三平台实时数据，可改为 `DASHBOARD_MODE=live`。
 - 如果缺少某个平台凭据，会自动降级到缓存、手动数据或 `--`，不会中断整个看板。
 - 默认不跑测试，避免定时任务消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
+- 默认启用评论雷达；如果想临时关闭评论抓取，设置 `ENABLE_COMMENT_FETCH=0`。如果想页面也不展示评论模块，设置 `ENABLE_COMMENT_INSIGHTS=0`。
 - 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
 - Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按每 30 分钟显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
@@ -343,7 +355,6 @@ command -v ssh
 可选项：
 
 - `DASHBOARD_PUBLISH_DIR=/volume1/web/bilibili-dashboard`：每次更新后把 `index.html` 复制到 NAS Web 目录，方便手机浏览。
-- `DASHBOARD_NAS_FINDER_URL=smb://192.168.31.68/0_视频制作总盘/1_懒狗小黑`：页面右上角“打开 NAS”按钮使用的访达地址；点击后由 macOS 用 Finder 打开 SMB 共享。
 - `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
@@ -356,6 +367,10 @@ command -v ssh
 - `DASHBOARD_MODE=bilibili-only`：只抓取 B 站，适合 NAS 本地看板低风险运行。
 - `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
 - `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。
+- `ENABLE_COMMENT_INSIGHTS=1`：渲染评论雷达；NAS 更新脚本默认开启。
+- `ENABLE_COMMENT_FETCH=1`：NAS 更新脚本在主看板生成后抓取评论；设置为 `0` 可只展示已有评论缓存。
+- `COMMENT_VIDEO_LIMIT=10`：每轮最多检查多少条 B 站视频评论。
+- `COMMENT_RANKED_VIDEO_LIMIT=3`：每轮额外抓取高赞评论的视频数量。
 
 如果不想公开真实数据，删除定时的 `nas_update_and_push_cloud.sh` 计划任务，改用 `nas_update_dashboard.sh` 本地输出即可。
 

@@ -11,6 +11,7 @@ __pycache__/
 *.token
 .DS_Store
 data/logs/
+data/private/
 data/secrets/*
 !data/secrets/.gitkeep
 !data/secrets/*.example

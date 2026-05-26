@@ -375,6 +375,11 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         history["source"] = "fixture"
         fixture_warnings = history.get("warnings", [])
         display_warnings = fixture_warnings if isinstance(fixture_warnings, list) else []
+    elif args.cache:
+        history, _ = _load_cache_or_fixture(settings, warnings)
+        cache_warnings = history.get("warnings", [])
+        display_warnings = cache_warnings if isinstance(cache_warnings, list) else []
+        bilibili_warnings = display_warnings
     else:
         should_live = args.live or bilibili_only or settings.enable_bilibili_fetch
         snapshot = None
@@ -419,8 +424,8 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         settings,
         live_snapshot,
         bilibili_warnings,
-        allow_platform_network=not args.fixture,
-        platforms_to_update={"bilibili"} if bilibili_only else None,
+        allow_platform_network=not (args.fixture or args.cache),
+        platforms_to_update=set() if args.cache else {"bilibili"} if bilibili_only else None,
         platform_fetch_timeout_seconds=platform_fetch_timeout,
     )
     history = repair_latest_content_thumbnails(history, settings.platform_content_limit)
@@ -460,6 +465,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--fixture", action="store_true", help="Use bundled fixture data and never touch the network.")
     mode.add_argument("--live", action="store_true", help="Try live Bilibili Creator Center fetch when credentials allow.")
+    mode.add_argument("--cache", action="store_true", help="Render from existing local history/cache without platform network requests.")
     parser.add_argument(
         "--bilibili-only",
         action="store_true",
@@ -479,8 +485,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Override the live snapshot date: today, yesterday, or YYYY-MM-DD.",
     )
     args = parser.parse_args(argv)
-    if args.fixture and args.bilibili_only:
-        parser.error("--bilibili-only cannot be combined with --fixture")
+    if args.bilibili_only and (args.fixture or args.cache):
+        parser.error("--bilibili-only cannot be combined with --fixture or --cache")
     return args
 
 

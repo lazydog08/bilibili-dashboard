@@ -93,3 +93,13 @@ def test_cron_installer_renders_ugreen_root_su_dry_run(tmp_path: Path) -> None:
     assert "*/30 * * * * /bin/su - '小黑' -c" in result.stdout
     assert "cd '\\''/home/小黑/bilibili-dashboard'\\'' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1" in result.stdout
     assert "# END bilibili-dashboard NAS update" in result.stdout
+
+
+def test_nas_update_script_fetches_comments_before_publish() -> None:
+    script = (REPO_ROOT / "scripts" / "nas_update_dashboard.sh").read_text(encoding="utf-8")
+
+    assert "ENABLE_COMMENT_INSIGHTS" in script
+    assert "scripts/fetch_bilibili_comments.py" in script
+    assert (REPO_ROOT / "scripts" / "fetch_bilibili_comments.py").exists()
+    assert '"$REPO_DIR/main.py" "--cache" "--no-feishu" "--no-bark"' in script
+    assert '"--cache" "--no-feishu" "--no-bark"' in script

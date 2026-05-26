@@ -18,6 +18,16 @@ def test_parse_args_rejects_bilibili_only_fixture_combo() -> None:
         parse_args(["--fixture", "--bilibili-only"])
 
 
+def test_parse_args_allows_cache_render_mode() -> None:
+    args = parse_args(["--cache"])
+    assert args.cache is True
+
+
+def test_parse_args_rejects_bilibili_only_cache_combo() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--cache", "--bilibili-only"])
+
+
 def test_fetch_with_retries_enforces_total_timeout() -> None:
     async def slow_fetch() -> dict:
         await asyncio.sleep(1)

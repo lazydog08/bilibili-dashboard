@@ -56,12 +56,9 @@ def build_operational_status(
     *,
     next_update_label: str,
     update_interval_minutes: int | None,
-    page_refresh_seconds: int,
 ) -> dict[str, Any]:
     interval = int(update_interval_minutes or 0)
-    refresh = int(page_refresh_seconds or 0)
     cadence_value = f"{interval} 分钟" if interval else "按固定时刻"
-    refresh_meta = f"页面自动刷新 {refresh // 60} 分钟" if refresh >= 60 else "页面自动刷新关闭"
 
     return {
         "cards": [
@@ -72,11 +69,5 @@ def build_operational_status(
                 "class": "is-positive",
             },
             _platform_quality(platform_cards),
-            {
-                "label": "发布方式",
-                "value": "静态页面",
-                "meta": f"GitHub Pages 部署 dashboard/output；{refresh_meta}",
-                "class": "is-positive",
-            },
         ]
     }

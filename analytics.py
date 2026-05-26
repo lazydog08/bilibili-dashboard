@@ -514,17 +514,18 @@ def derive_dashboard_context(
         badge_text = "飞书多维表格 提供技术支持"
     elif source == "fixture":
         badge_text = "本地示例模板"
-    elif source == "manual":
-        badge_text = "真实数据预填"
-    elif source == "cache":
-        badge_text = "缓存数据"
+    elif source in {"manual", "cache"}:
+        badge_text = "全平台运营数据"
     elif source == "live_partial":
-        badge_text = "B站创作中心数据（部分明细回退）"
+        badge_text = "全平台运营数据"
     else:
-        badge_text = "B站创作中心数据"
+        badge_text = "全平台运营数据"
+
+    from profile import build_brand_profile
 
     context = {
         "page_title": "【懒狗小黑】频道数据看板",
+        "brand_profile": build_brand_profile(config, _channel(latest).get("total_followers")),
         "section_title": "频道数据情况",
         "last_updated": format_update_time(history.get("last_updated") or latest.get("updated_at") or ""),
         "source": source,
@@ -553,7 +554,18 @@ def derive_dashboard_context(
         "snapshot_count": len(snapshots),
         "video_count": len(latest_videos),
     }
+    from comments import build_comment_context
     from platforms import derive_platform_context
+    from visual_context import build_visual_context, empty_visual_context
 
     context.update(derive_platform_context(history, config))
+    context["comment_insights"] = build_comment_context(config)
+    try:
+        context["visual_context"] = build_visual_context(
+            context.get("platform_cards", []),
+            context.get("follower_trend_chart", {}),
+            context.get("recent_videos", []),
+        )
+    except Exception as exc:  # noqa: BLE001 - reference charts must not block the static page.
+        context["visual_context"] = empty_visual_context(f"参考图数据生成失败：{type(exc).__name__}")
     return context
