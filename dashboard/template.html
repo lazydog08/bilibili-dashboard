@@ -177,6 +177,54 @@
       line-height: 1.65;
     }
 
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: -6px 0 24px;
+    }
+
+    .ops-card {
+      min-width: 0;
+      padding: 14px 16px;
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .ops-label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .ops-value {
+      margin-top: 6px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .ops-value.is-positive {
+      color: #9be68c;
+    }
+
+    .ops-value.is-warning {
+      color: #ffd166;
+    }
+
+    .ops-value.is-unavailable {
+      color: #ff9d8f;
+    }
+
+    .ops-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     .platform-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -952,6 +1000,10 @@
         grid-template-columns: 1fr;
       }
 
+      .ops-grid {
+        grid-template-columns: 1fr;
+      }
+
       .middle-grid,
       .bottom-grid {
         grid-template-columns: 1fr;
@@ -1112,6 +1164,16 @@
       {% endfor %}
     </section>
     {% endif %}
+
+    <section class="ops-grid" aria-label="运行状态">
+      {% for item in operational_status.cards %}
+      <article class="ops-card">
+        <div class="ops-label">{{ item.label }}</div>
+        <div class="ops-value {{ item.class }}">{{ item.value }}</div>
+        <div class="ops-meta">{{ item.meta }}</div>
+      </article>
+      {% endfor %}
+    </section>
 
     <section class="platform-grid" aria-label="三平台运营指标">
       {% for platform in platform_cards %}

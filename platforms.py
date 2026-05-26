@@ -22,6 +22,7 @@ from analytics import (
     safe_minutes,
     safe_ratio,
 )
+from health import build_operational_status
 
 
 PLATFORM_META = {
@@ -1661,6 +1662,13 @@ def next_update_label(
 def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict[str, Any]:
     platforms = ["bilibili", "douyin", "xiaohongshu"]
     cards = [_build_platform_card(history, platform, config) for platform in platforms]
+    update_interval_minutes = getattr(config, "update_interval_minutes", None)
+    page_refresh_seconds = int(getattr(config, "page_refresh_seconds", 0) or 0)
+    next_update = next_update_label(
+        list(getattr(config, "update_times", []) or ["12:30", "20:00"]),
+        str(getattr(config, "timezone", DEFAULT_TIMEZONE)),
+        update_interval_minutes,
+    )
     labels: list[str] = []
     series: list[dict[str, Any]] = []
     trend_rows = {platform: _trend_snapshots(history, platform, config) for platform in platforms}
@@ -1704,10 +1712,12 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
             for card in cards
             if card["key"] != "bilibili"
         },
-        "next_update_label": next_update_label(
-            list(getattr(config, "update_times", []) or ["12:30", "20:00"]),
-            str(getattr(config, "timezone", DEFAULT_TIMEZONE)),
-            getattr(config, "update_interval_minutes", None),
+        "next_update_label": next_update,
+        "page_refresh_seconds": page_refresh_seconds,
+        "operational_status": build_operational_status(
+            cards,
+            next_update_label=next_update,
+            update_interval_minutes=update_interval_minutes,
+            page_refresh_seconds=page_refresh_seconds,
         ),
-        "page_refresh_seconds": int(getattr(config, "page_refresh_seconds", 0) or 0),
     }

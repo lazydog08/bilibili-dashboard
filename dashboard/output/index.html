@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta http-equiv="refresh" content="3600">
+  <meta http-equiv="refresh" content="1800">
 
   <title>【懒狗小黑】频道数据看板</title>
   <style>
@@ -175,6 +175,54 @@
       color: #ffd9cf;
       font-size: 14px;
       line-height: 1.65;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: -6px 0 24px;
+    }
+
+    .ops-card {
+      min-width: 0;
+      padding: 14px 16px;
+      border: 1px solid var(--panel-line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .ops-label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .ops-value {
+      margin-top: 6px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .ops-value.is-positive {
+      color: #9be68c;
+    }
+
+    .ops-value.is-warning {
+      color: #ffd166;
+    }
+
+    .ops-value.is-unavailable {
+      color: #ff9d8f;
+    }
+
+    .ops-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
     }
 
     .platform-grid {
@@ -952,6 +1000,10 @@
         grid-template-columns: 1fr;
       }
 
+      .ops-grid {
+        grid-template-columns: 1fr;
+      }
+
       .middle-grid,
       .bottom-grid {
         grid-template-columns: 1fr;
@@ -1101,7 +1153,7 @@
 
         </div>
         <div class="updated">最后更新：2026-05-26 12:32</div>
-        <div class="updated">下次更新：今天 13:00（约 0小时27分钟）</div>
+        <div class="updated">下次更新：今天 13:00（约 0小时3分钟）</div>
       </div>
     </header>
 
@@ -1122,6 +1174,28 @@
 
     </section>
 
+
+    <section class="ops-grid" aria-label="运行状态">
+
+      <article class="ops-card">
+        <div class="ops-label">NAS 更新节奏</div>
+        <div class="ops-value is-positive">30 分钟</div>
+        <div class="ops-meta">下次更新：今天 13:00（约 0小时3分钟）</div>
+      </article>
+
+      <article class="ops-card">
+        <div class="ops-label">平台数据质量</div>
+        <div class="ops-value is-warning">2 成功 / 1 部分可用</div>
+        <div class="ops-meta">B 站：部分可用</div>
+      </article>
+
+      <article class="ops-card">
+        <div class="ops-label">发布方式</div>
+        <div class="ops-value is-positive">静态页面</div>
+        <div class="ops-meta">GitHub Pages 部署 dashboard/output；页面自动刷新 30 分钟</div>
+      </article>
+
+    </section>
 
     <section class="platform-grid" aria-label="三平台运营指标">
 
