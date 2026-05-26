@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -66,6 +67,129 @@ def test_cloud_update_script_corrects_existing_remote_url(tmp_path: Path) -> Non
     remote = run_checked([git, "remote", "get-url", "origin"], cwd=repo).stdout.strip()
     assert remote == expected_remote
     assert "does not match configured cloud remote" in log_text
+
+
+def test_cloud_update_script_pushes_public_nas_status(tmp_path: Path) -> None:
+    bash = require_tool("bash")
+    git = require_tool("git")
+    remote = tmp_path / "remote.git"
+    repo = tmp_path / "repo"
+    run_checked([git, "init", "--bare", "--initial-branch=main", str(remote)], cwd=tmp_path)
+    run_checked([git, "init", "--initial-branch=main", str(repo)], cwd=tmp_path)
+    (repo / "data").mkdir()
+    (repo / "dashboard" / "output").mkdir(parents=True)
+    (repo / "data" / "history.json").write_text('{"snapshots": []}\n', encoding="utf-8")
+    (repo / "data" / "nas_status.json").write_text('{"last_run_at": "old"}\n', encoding="utf-8")
+    (repo / "dashboard" / "output" / "nas_status.json").write_text('{"last_run_at": "old"}\n', encoding="utf-8")
+    (repo / "dashboard" / "output" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+
+    run_checked([git, "config", "user.email", "test@example.com"], cwd=repo)
+    run_checked([git, "config", "user.name", "Test Bot"], cwd=repo)
+    run_checked([git, "remote", "add", "origin", str(remote)], cwd=repo)
+    run_checked(
+        [git, "add", "data/history.json", "data/nas_status.json", "dashboard/output/index.html", "dashboard/output/nas_status.json"],
+        cwd=repo,
+    )
+    run_checked([git, "commit", "-m", "initial"], cwd=repo)
+    run_checked([git, "push", "-u", "origin", "main"], cwd=repo)
+
+    (repo / "data" / "nas_status.json").write_text('{"last_run_at": "new"}\n', encoding="utf-8")
+    (repo / "dashboard" / "output" / "nas_status.json").write_text('{"last_run_at": "new"}\n', encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_ENV_FILE": str(tmp_path / "missing.env"),
+            "DASHBOARD_UPDATE_LOG": str(tmp_path / "nas-update.log"),
+            "DASHBOARD_CLOUD_LOCK_DIR": str(tmp_path / "nas-cloud-update.lock"),
+            "DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH": "0",
+        }
+    )
+
+    result = subprocess.run(
+        [bash, str(REPO_ROOT / "scripts" / "nas_update_and_push_cloud.sh")],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    log_text = (tmp_path / "nas-update.log").read_text(encoding="utf-8")
+    assert result.returncode == 0, result.stderr + log_text
+    pushed_status = run_checked([git, "show", "origin/main:data/nas_status.json"], cwd=repo).stdout
+    pushed_pages_status = run_checked([git, "show", "origin/main:dashboard/output/nas_status.json"], cwd=repo).stdout
+    assert '"last_run_at": "new"' in pushed_status
+    assert '"last_run_at": "new"' in pushed_pages_status
+
+
+def test_write_nas_status_creates_public_heartbeat(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_NAS_STATUS_PATH": "data/nas_status.json",
+            "DASHBOARD_NAS_RUNNER_ID": "ugreen-nas",
+        }
+    )
+
+    result = subprocess.run(
+        [
+            python,
+            str(REPO_ROOT / "scripts" / "write_nas_status.py"),
+            "--mode",
+            "cache",
+            "--dashboard-exit-code",
+            "0",
+            "--comment-fetch-status",
+            "skipped",
+            "--comment-render-status",
+            "skipped",
+        ],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads((repo / "data" / "nas_status.json").read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 1
+    assert payload["runner_id"] == "ugreen-nas"
+    assert payload["mode"] == "cache"
+    assert payload["dashboard_status"] == "success"
+    assert payload["comment_fetch_status"] == "skipped"
+    assert payload["status_path"] == "data/nas_status.json"
+    assert "repo_dir" not in payload
+    assert "cookie" not in json.dumps(payload).lower()
+
+
+def test_write_nas_status_rejects_paths_outside_repo(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside_path = tmp_path / "outside" / "nas_status.json"
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_NAS_STATUS_PATH": str(outside_path),
+        }
+    )
+
+    result = subprocess.run(
+        [python, str(REPO_ROOT / "scripts" / "write_nas_status.py")],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 2
+    assert "must stay inside the repository" in result.stderr
+    assert not outside_path.exists()
 
 
 def test_cron_installer_renders_ugreen_root_su_dry_run(tmp_path: Path) -> None:

@@ -37,6 +37,11 @@ fi
 trap 'rm -rf "$LOCK_DIR"' EXIT
 
 log "Dashboard update started."
+COMMENT_FETCH_STATUS="skipped"
+COMMENT_RENDER_STATUS="skipped"
+TESTS_STATUS="skipped"
+PUBLISH_STATUS="skipped"
+STATUS_HEARTBEAT_WRITTEN="0"
 
 PYTHON_BIN="${PYTHON_BIN:-}"
 if [[ -z "$PYTHON_BIN" ]]; then
@@ -122,34 +127,88 @@ ENABLE_COMMENT_FETCH="${ENABLE_COMMENT_FETCH:-$ENABLE_COMMENT_INSIGHTS}"
 if [[ "$UPDATE_STATUS" == "0" && "$MODE" != "fixture" && "$ENABLE_COMMENT_FETCH" == "1" ]]; then
   log "Fetching Bilibili comments."
   if "$PYTHON_BIN" "$REPO_DIR/scripts/fetch_bilibili_comments.py" >> "$LOG_FILE" 2>&1; then
+    COMMENT_FETCH_STATUS="success"
     log "Comment fetch completed."
   else
+    COMMENT_FETCH_STATUS="failed"
     log "Comment fetch failed; rendering with the latest available comment cache."
   fi
 
   log "Rendering dashboard with comment cache."
   if ENABLE_BILIBILI_FETCH=0 "$PYTHON_BIN" "$REPO_DIR/main.py" "--cache" "--no-feishu" "--no-bark" >> "$LOG_FILE" 2>&1; then
+    COMMENT_RENDER_STATUS="success"
     log "Dashboard comment render completed."
   else
-    COMMENT_RENDER_STATUS=$?
-    log "Dashboard comment render failed with exit code $COMMENT_RENDER_STATUS; keeping the primary dashboard output."
+    COMMENT_RENDER_EXIT_CODE=$?
+    COMMENT_RENDER_STATUS="failed"
+    log "Dashboard comment render failed with exit code $COMMENT_RENDER_EXIT_CODE; keeping the primary dashboard output."
   fi
 fi
 
 if [[ "${RUN_DASHBOARD_TESTS:-0}" == "1" ]]; then
   log "Running tests."
-  "$PYTHON_BIN" -m pytest >> "$LOG_FILE" 2>&1 || log "Tests failed; dashboard output was still left in place."
+  if "$PYTHON_BIN" -m pytest >> "$LOG_FILE" 2>&1; then
+    TESTS_STATUS="success"
+  else
+    TESTS_STATUS="failed"
+    log "Tests failed; dashboard output was still left in place."
+  fi
 fi
 
 if [[ -n "${DASHBOARD_PUBLISH_DIR:-}" && -f "$REPO_DIR/dashboard/output/index.html" ]]; then
   mkdir -p "$DASHBOARD_PUBLISH_DIR"
   cp "$REPO_DIR/dashboard/output/index.html" "$DASHBOARD_PUBLISH_DIR/index.html"
+  PUBLISH_STATUS="success"
   log "Copied dashboard output to publish directory."
 fi
 
+STATUS_GIT_PATH="${DASHBOARD_NAS_STATUS_PATH:-data/nas_status.json}"
+if [[ "${DASHBOARD_NAS_STATUS_ENABLED:-1}" == "1" ]]; then
+  log "Writing NAS status heartbeat."
+  if "$PYTHON_BIN" "$REPO_DIR/scripts/write_nas_status.py" \
+    --mode "$MODE" \
+    --dashboard-exit-code "$UPDATE_STATUS" \
+    --timezone "$TIMEZONE" \
+    --comment-fetch-status "$COMMENT_FETCH_STATUS" \
+    --comment-render-status "$COMMENT_RENDER_STATUS" \
+    --tests-status "$TESTS_STATUS" \
+    --publish-status "$PUBLISH_STATUS" >> "$LOG_FILE" 2>&1; then
+    STATUS_HEARTBEAT_WRITTEN="1"
+    log "NAS status heartbeat written."
+  else
+    STATUS_HEARTBEAT_WRITTEN="0"
+    log "NAS status heartbeat failed."
+  fi
+fi
+
+if [[ "$STATUS_HEARTBEAT_WRITTEN" == "1" && "$STATUS_GIT_PATH" != /* && -f "$REPO_DIR/$STATUS_GIT_PATH" && -d "$REPO_DIR/dashboard/output" ]]; then
+  cp "$REPO_DIR/$STATUS_GIT_PATH" "$REPO_DIR/dashboard/output/nas_status.json"
+  log "Copied NAS status heartbeat to dashboard output."
+fi
+
+if [[ "$STATUS_HEARTBEAT_WRITTEN" == "1" && -n "${DASHBOARD_PUBLISH_DIR:-}" && -f "$REPO_DIR/dashboard/output/nas_status.json" ]]; then
+  cp "$REPO_DIR/dashboard/output/nas_status.json" "$DASHBOARD_PUBLISH_DIR/nas_status.json"
+  log "Copied NAS status heartbeat to publish directory."
+fi
+
 if [[ "${DASHBOARD_GIT_PUSH:-0}" == "1" ]] && command -v git >/dev/null 2>&1 && [[ -d "$REPO_DIR/.git" ]]; then
-  if ! git diff --quiet -- data/history.json dashboard/output/index.html; then
-    git add data/history.json dashboard/output/index.html
+  GIT_ADD_PATHS=()
+  if [[ -f "$REPO_DIR/data/history.json" ]]; then
+    GIT_ADD_PATHS+=(data/history.json)
+  fi
+  if [[ -f "$REPO_DIR/dashboard/output/index.html" ]]; then
+    GIT_ADD_PATHS+=(dashboard/output/index.html)
+  fi
+  if [[ "$STATUS_HEARTBEAT_WRITTEN" == "1" && "$STATUS_GIT_PATH" != /* && -f "$REPO_DIR/$STATUS_GIT_PATH" ]]; then
+    GIT_ADD_PATHS+=("$STATUS_GIT_PATH")
+  fi
+  if [[ "$STATUS_HEARTBEAT_WRITTEN" == "1" && -f "$REPO_DIR/dashboard/output/nas_status.json" ]]; then
+    GIT_ADD_PATHS+=(dashboard/output/nas_status.json)
+  fi
+  if (( ${#GIT_ADD_PATHS[@]} > 0 )); then
+    git add "${GIT_ADD_PATHS[@]}"
+  fi
+  if (( ${#GIT_ADD_PATHS[@]} > 0 )) && ! git diff --staged --quiet; then
     git commit -m "chore: update dashboard $(TZ="$TIMEZONE" date '+%Y-%m-%d %H:%M')" >> "$LOG_FILE" 2>&1 || true
     git push >> "$LOG_FILE" 2>&1 || log "Git push failed."
   else

@@ -312,6 +312,7 @@ scripts/install_nas_hourly_cron.sh
 - 默认在 NAS 流程中启用 `ENABLE_COMMENT_INSIGHTS=1`，抓取 B 站评论到 `data/private/comments.json`，再用缓存渲染模式把脱敏摘要写进静态页面。
 - 把页面写到 `dashboard/output/index.html`。
 - 如果配置了 `DASHBOARD_PUBLISH_DIR`，同步复制到 NAS Web 目录。
+- 写入公开心跳 `data/nas_status.json`，并同步到 `dashboard/output/nas_status.json`，用于从 GitHub 仓库或 GitHub Pages 判断 NAS 最近一次是否真的跑过。
 - 写入 `data/logs/nas-update.log`，不输出 Cookie、token 或 Bark key。
 
 `nas_update_and_push_cloud.sh` 会：
@@ -320,8 +321,16 @@ scripts/install_nas_hourly_cron.sh
 - 拉取远端最新状态，避免覆盖 GitHub 上的数据。
 - 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。
 - 默认按 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1` 先调用 `nas_update_dashboard.sh` 抓取并生成最新页面。
-- 提交并推送到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
+- 提交并推送 `data/history.json`、`data/nas_status.json`、`dashboard/output/index.html` 和 `dashboard/output/nas_status.json` 到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
 - 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
+
+公开心跳可以直接检查：
+
+```text
+https://lazydog08.github.io/bilibili-dashboard/nas_status.json
+```
+
+它只包含运行时间、模式、渲染/评论状态、Git 分支和短 SHA，不包含 Cookie、token、评论私有缓存或原始平台响应。只要 NAS 定时任务正常推送，即使业务数据没有变化，这个文件也会刷新并形成一条 Git 提交记录。
 
 云端推送主路径依赖 NAS 宿主机提供 `git` 和 SSH。部署前先检查：
 
@@ -351,6 +360,7 @@ command -v ssh
 - Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按每 30 分钟显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
 - `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
+- `DASHBOARD_NAS_STATUS_ENABLED=1` 会写入公开心跳文件；默认开启，用来验证 NAS cron 是否真实运行。
 
 可选项：
 
@@ -364,6 +374,8 @@ command -v ssh
 - `DASHBOARD_ENV_FILE=/path/to/dashboard.env`：指定仓库外部的真实配置文件；默认是 `~/.config/bilibili-dashboard/dashboard.env`。
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30`：页面显示下一次每 30 分钟刷新时间。
 - `DASHBOARD_PAGE_REFRESH_SECONDS=1800`：页面自动刷新间隔；设置为 `0` 可关闭自动刷新。
+- `DASHBOARD_NAS_STATUS_PATH=data/nas_status.json`：公开心跳在仓库内的源文件路径；保持默认即可。
+- `DASHBOARD_NAS_RUNNER_ID=nas`：公开心跳里的运行器标识，可改为 `ugreen-nas` 这类不含隐私的名字。
 - `DASHBOARD_MODE=bilibili-only`：只抓取 B 站，适合 NAS 本地看板低风险运行。
 - `DASHBOARD_MODE=cache`：只用本地缓存刷新页面，不请求平台网络。
 - `DASHBOARD_MODE=fixture`：只用示例数据测试脚本。

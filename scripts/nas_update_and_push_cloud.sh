@@ -115,7 +115,14 @@ if [[ ! -f "$REPO_DIR/data/history.json" || ! -f "$REPO_DIR/dashboard/output/ind
   exit 1
 fi
 
+STATUS_GIT_PATH="${DASHBOARD_NAS_STATUS_PATH:-data/nas_status.json}"
 git add data/history.json dashboard/output/index.html
+if [[ "$STATUS_GIT_PATH" != /* && -f "$REPO_DIR/$STATUS_GIT_PATH" ]]; then
+  git add "$STATUS_GIT_PATH"
+fi
+if [[ -f "$REPO_DIR/dashboard/output/nas_status.json" ]]; then
+  git add dashboard/output/nas_status.json
+fi
 if git diff --staged --quiet; then
   log "No dashboard changes to push."
   log "NAS cloud update finished."
