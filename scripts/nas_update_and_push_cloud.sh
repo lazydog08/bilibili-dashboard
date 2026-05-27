@@ -85,6 +85,67 @@ ensure_cloud_remote
 git config user.email "${DASHBOARD_GIT_EMAIL:-nas-dashboard@local}" >> "$LOG_FILE" 2>&1
 git config user.name "${DASHBOARD_GIT_NAME:-UGREEN NAS Dashboard Bot}" >> "$LOG_FILE" 2>&1
 
+is_generated_publish_path() {
+  case "$1" in
+    data/history.json|data/nas_status.json|dashboard/output/index.html|dashboard/output/nas_status.json)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+commit_touches_only_generated_publish_paths() {
+  local commit="$1"
+  local path
+  local touched=0
+
+  while IFS= read -r path; do
+    [[ -z "$path" ]] && continue
+    touched=1
+    if ! is_generated_publish_path "$path"; then
+      return 1
+    fi
+  done < <(git diff-tree --no-commit-id --name-only -r "$commit")
+
+  [[ "$touched" == "1" ]]
+}
+
+recover_generated_rebase_conflict() {
+  local conflict_commit
+  local conflict_short
+  local backup_branch
+
+  if [[ "${DASHBOARD_GENERATED_REBASE_RECOVERY:-1}" != "1" ]]; then
+    return 1
+  fi
+
+  conflict_commit="$(git rev-parse --verify REBASE_HEAD 2>/dev/null || true)"
+  if [[ -z "$conflict_commit" ]]; then
+    log "Git rebase recovery skipped: no REBASE_HEAD found."
+    return 1
+  fi
+
+  if ! commit_touches_only_generated_publish_paths "$conflict_commit"; then
+    log "Git rebase recovery skipped: conflict commit touches non-generated files."
+    return 1
+  fi
+
+  conflict_short="$(git rev-parse --short "$conflict_commit")"
+  backup_branch="backup/nas-generated-conflict-$(TZ="$TIMEZONE" date '+%Y%m%d-%H%M%S')-$conflict_short"
+  git branch "$backup_branch" HEAD >> "$LOG_FILE" 2>&1 || {
+    log "Git rebase recovery failed: could not create backup branch $backup_branch."
+    return 1
+  }
+
+  log "Skipping stale generated-only NAS commit $conflict_short; backup branch: $backup_branch."
+  git rebase --skip >> "$LOG_FILE" 2>&1 || {
+    log "Git rebase recovery failed while skipping $conflict_short."
+    return 1
+  }
+}
+
 sync_cloud_state() {
   log "Synchronizing latest cloud repository state."
   git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1 || {
@@ -93,6 +154,9 @@ sync_cloud_state() {
   }
   if git rev-parse --verify "refs/remotes/$REMOTE_NAME/$BRANCH" >/dev/null 2>&1; then
     git -c rebase.autoStash=true rebase "refs/remotes/$REMOTE_NAME/$BRANCH" >> "$LOG_FILE" 2>&1 || {
+      if recover_generated_rebase_conflict; then
+        return
+      fi
       log "Git rebase failed; aborting to avoid overwriting cloud data."
       git rebase --abort >> "$LOG_FILE" 2>&1 || true
       exit 1

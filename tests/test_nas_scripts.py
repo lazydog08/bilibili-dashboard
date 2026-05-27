@@ -122,6 +122,68 @@ def test_cloud_update_script_pushes_public_nas_status(tmp_path: Path) -> None:
     assert '"last_run_at": "new"' in pushed_pages_status
 
 
+def test_cloud_update_script_skips_stale_generated_commit_after_remote_conflict(tmp_path: Path) -> None:
+    bash = require_tool("bash")
+    git = require_tool("git")
+    remote = tmp_path / "remote.git"
+    upstream = tmp_path / "upstream"
+    repo = tmp_path / "repo"
+    run_checked([git, "init", "--bare", "--initial-branch=main", str(remote)], cwd=tmp_path)
+    run_checked([git, "init", "--initial-branch=main", str(upstream)], cwd=tmp_path)
+    (upstream / "data").mkdir()
+    (upstream / "dashboard" / "output").mkdir(parents=True)
+    (upstream / "data" / "history.json").write_text('{"snapshots": ["base"]}\n', encoding="utf-8")
+    (upstream / "dashboard" / "output" / "index.html").write_text("base\n", encoding="utf-8")
+    run_checked([git, "config", "user.email", "test@example.com"], cwd=upstream)
+    run_checked([git, "config", "user.name", "Test Bot"], cwd=upstream)
+    run_checked([git, "remote", "add", "origin", str(remote)], cwd=upstream)
+    run_checked([git, "add", "data/history.json", "dashboard/output/index.html"], cwd=upstream)
+    run_checked([git, "commit", "-m", "initial"], cwd=upstream)
+    run_checked([git, "push", "-u", "origin", "main"], cwd=upstream)
+
+    run_checked([git, "clone", str(remote), str(repo)], cwd=tmp_path)
+    run_checked([git, "config", "user.email", "test@example.com"], cwd=repo)
+    run_checked([git, "config", "user.name", "Test Bot"], cwd=repo)
+    (repo / "data" / "history.json").write_text('{"snapshots": ["nas-stale"]}\n', encoding="utf-8")
+    (repo / "dashboard" / "output" / "index.html").write_text("nas-stale\n", encoding="utf-8")
+    run_checked([git, "add", "data/history.json", "dashboard/output/index.html"], cwd=repo)
+    run_checked([git, "commit", "-m", "chore: update dashboard from NAS stale"], cwd=repo)
+
+    (upstream / "data" / "history.json").write_text('{"snapshots": ["remote-ui"]}\n', encoding="utf-8")
+    (upstream / "dashboard" / "output" / "index.html").write_text("remote-ui\n", encoding="utf-8")
+    run_checked([git, "add", "data/history.json", "dashboard/output/index.html"], cwd=upstream)
+    run_checked([git, "commit", "-m", "feat: remote UI update"], cwd=upstream)
+    run_checked([git, "push", "origin", "main"], cwd=upstream)
+
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_ENV_FILE": str(tmp_path / "missing.env"),
+            "DASHBOARD_UPDATE_LOG": str(tmp_path / "nas-update.log"),
+            "DASHBOARD_CLOUD_LOCK_DIR": str(tmp_path / "nas-cloud-update.lock"),
+            "DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH": "0",
+        }
+    )
+
+    result = subprocess.run(
+        [bash, str(REPO_ROOT / "scripts" / "nas_update_and_push_cloud.sh")],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    log_text = (tmp_path / "nas-update.log").read_text(encoding="utf-8")
+    assert result.returncode == 0, result.stderr + log_text
+    assert "Skipping stale generated-only NAS commit" in log_text
+    assert "backup/nas-generated-conflict-" in log_text
+    assert run_checked([git, "rev-list", "--left-right", "--count", "main...origin/main"], cwd=repo).stdout.strip() == "0\t0"
+    assert (repo / "data" / "history.json").read_text(encoding="utf-8") == '{"snapshots": ["remote-ui"]}\n'
+    backup_refs = run_checked([git, "for-each-ref", "--format=%(refname:short)", "refs/heads/backup/"], cwd=repo).stdout
+    assert "backup/nas-generated-conflict-" in backup_refs
+
+
 def test_write_nas_status_creates_public_heartbeat(tmp_path: Path) -> None:
     python = require_tool("python3")
     repo = tmp_path / "repo"
