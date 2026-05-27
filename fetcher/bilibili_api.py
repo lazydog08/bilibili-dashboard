@@ -102,6 +102,21 @@ def pick_minutes(obj: Any, keys: list[str], default: float = 0.0) -> float:
     return safe_minutes(pick_value(obj, keys, default), default)
 
 
+def _has_channel_fan_metrics(overview: Any) -> bool:
+    return bool(
+        pick_number(
+            overview,
+            ["total_fans", "fans", "fan", "follower", "followers", "total_followers"],
+            0,
+        )
+        and pick_number(
+            overview,
+            ["incr_fans", "follower_delta_7d", "increase", "incr", "fan_add", "fans_add"],
+            0,
+        )
+    )
+
+
 def pick_bilibili_percent(obj: Any, keys: list[str], default: float = 0.0) -> float:
     value = pick_value(obj, keys, default)
     if isinstance(value, str) and value.strip().endswith("%"):
@@ -474,17 +489,18 @@ class BilibiliClient:
             await asyncio.sleep(random.uniform(0.8, 1.8))
             video_payloads = await self._fetch_video_payloads(client, timestamp)
             await asyncio.sleep(random.uniform(0.8, 1.8))
-            try:
-                fan_detail = await self._request_first_json(
-                    client,
-                    [self._creator_url(FAN_DETAIL_URL), self._creator_url(FAN_SIMPLE_URL)],
-                    "fan detail",
-                )
-            except BilibiliAuthOrRiskError:
-                raise
-            except BilibiliAPIError as exc:
-                self.warnings.append(f"粉丝明细获取失败，已使用 0 回退：{exc}")
-                fan_detail = {}
+            fan_detail = {}
+            if not _has_channel_fan_metrics(overview):
+                try:
+                    fan_detail = await self._request_first_json(
+                        client,
+                        [self._creator_url(FAN_DETAIL_URL), self._creator_url(FAN_SIMPLE_URL)],
+                        "fan detail",
+                    )
+                except BilibiliAuthOrRiskError:
+                    raise
+                except BilibiliAPIError as exc:
+                    self.warnings.append(f"粉丝明细获取失败，已使用 0 回退：{exc}")
             videos = _merge_video_items(*[_find_video_items(payload) for payload in video_payloads], limit=30)
 
             details: dict[str, Any] = {}

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from analytics import (
     format_number,
     normalize_thumbnail_url,
@@ -108,3 +110,59 @@ def test_bilibili_public_archive_stat_only_increases_counters() -> None:
     assert video["favorites"] == 230
     assert video["shares"] == 31
     assert video["replies"] == 21
+
+
+def test_bilibili_snapshot_skips_fan_detail_when_overview_has_fan_metrics(monkeypatch) -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+
+    async def fake_request_first_json(self, http_client, urls, label):  # noqa: ANN001, ARG001
+        if label == "overview":
+            return {
+                "total_fans": 170_888,
+                "incr_fans": 42,
+                "total_click": 123_456,
+                "total_like": 789,
+            }
+        if label == "fan detail":
+            raise AssertionError("fan detail should not be requested when overview already has fan metrics")
+        return {}
+
+    async def fake_fetch_video_payloads(self, http_client, timestamp):  # noqa: ANN001, ARG001
+        return [
+            [
+                {
+                    "bvid": "BVtest",
+                    "title": "测试视频",
+                    "cover": "http://i0.hdslb.com/bfs/archive/test.jpg",
+                    "ptime": 1779624225,
+                    "duration": 60,
+                    "view": 100,
+                    "like": 10,
+                    "coin": 2,
+                    "favorite": 3,
+                    "share": 1,
+                    "reply": 4,
+                    "tm_rate": 100,
+                    "full_play_ratio": 5000,
+                    "avg_play_time": 30,
+                    "total_new_attention_cnt": 5,
+                }
+            ]
+        ]
+
+    async def fake_request_json(self, http_client, url):  # noqa: ANN001, ARG001
+        return {}
+
+    async def fake_enrich_public_stats(self, channel, videos):  # noqa: ANN001, ARG001
+        return None
+
+    monkeypatch.setattr(BilibiliClient, "_request_first_json", fake_request_first_json)
+    monkeypatch.setattr(BilibiliClient, "_fetch_video_payloads", fake_fetch_video_payloads)
+    monkeypatch.setattr(BilibiliClient, "_request_json", fake_request_json)
+    monkeypatch.setattr(BilibiliClient, "_enrich_public_stats", fake_enrich_public_stats)
+
+    snapshot = asyncio.run(client.fetch_snapshot())
+
+    assert snapshot["channel"]["total_followers"] == 170_888
+    assert snapshot["channel"]["follower_delta_7d"] == 42
+    assert not any("粉丝明细获取失败" in warning for warning in snapshot["warnings"])
