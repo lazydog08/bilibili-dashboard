@@ -102,6 +102,16 @@ def pick_minutes(obj: Any, keys: list[str], default: float = 0.0) -> float:
     return safe_minutes(pick_value(obj, keys, default), default)
 
 
+def bilibili_duration_minutes(value: Any, default: float = 0.0) -> float:
+    if isinstance(value, (int, float)):
+        return max(float(value), 0.0) / 60.0
+    if isinstance(value, str):
+        text = value.strip()
+        if text.replace(".", "", 1).isdigit():
+            return max(float(text), 0.0) / 60.0
+    return safe_minutes(value, default)
+
+
 def _has_channel_fan_metrics(overview: Any) -> bool:
     return bool(
         pick_number(
@@ -341,10 +351,6 @@ class BilibiliClient:
                 raise
             self.warnings.append(f"数据中心视频列表获取失败，已使用稿件管理列表回退：{exc}")
 
-        manager_count = len(_find_video_items(manager_payload)) if manager_payload is not None else 0
-        data_count = len(_find_video_items(data_payload)) if data_payload is not None else 0
-        if manager_count and manager_count >= data_count:
-            self.warnings.append("已用稿件管理接口补充最新 B 站投稿。")
         if not payloads:
             raise BilibiliAPIError("video list failed: no usable payload")
         return payloads
@@ -438,16 +444,9 @@ class BilibiliClient:
         )
         avd = pick_minutes(detail_or_item, ["avg_play_time", "avd", "avg_view_duration", "avg_play_duration"], 0.0)
         if not avd:
-            duration_minutes = safe_minutes(pick_value(item, ["duration"], 0), 0.0)
+            duration_minutes = bilibili_duration_minutes(pick_value(item, ["duration"], 0), 0.0)
             if duration_minutes and avp:
                 avd = duration_minutes * avp
-        if not ctr:
-            self.warnings.append(f"视频 {bvid or title[:12]} 缺少 CTR 字段，已使用 0。")
-        if not avd:
-            self.warnings.append(f"视频 {bvid or title[:12]} 缺少 AVD 字段，已使用 0。")
-        if not avp:
-            self.warnings.append(f"视频 {bvid or title[:12]} 缺少 AVP 字段，已使用 0。")
-
         return {
             "bvid": bvid,
             "title": title,
@@ -503,41 +502,10 @@ class BilibiliClient:
                     self.warnings.append(f"粉丝明细获取失败，已使用 0 回退：{exc}")
             videos = _merge_video_items(*[_find_video_items(payload) for payload in video_payloads], limit=30)
 
-            details: dict[str, Any] = {}
-            for index in range(0, len(videos), 2):
-                group = videos[index : index + 2]
-
-                async def fetch_one(item: dict[str, Any]) -> tuple[str, Any | None]:
-                    bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
-                    if not bvid:
-                        return "", None
-                    try:
-                        detail = await self._request_json(
-                            client,
-                            self._creator_url(VIDEO_DETAIL_URL.format(bvid=bvid)),
-                        )
-                    except BilibiliAuthOrRiskError:
-                        raise
-                    except Exception as exc:  # noqa: BLE001 - keep one failed detail from breaking rendering.
-                        self._detail_failure_count += 1
-                        return bvid, None
-                    return bvid, detail
-
-                for bvid, detail in await asyncio.gather(*(fetch_one(item) for item in group)):
-                    if bvid:
-                        details[bvid] = detail
-                if index + 2 < len(videos):
-                    await asyncio.sleep(random.uniform(0.8, 1.8))
-            if self._detail_failure_count:
-                self.warnings.append(
-                    f"{self._detail_failure_count} 个视频明细接口不可用，已使用列表数据回退。"
-                )
-
         now = datetime.now(ZoneInfo(DEFAULT_TIMEZONE))
         parsed_videos = []
         for item in videos:
-            bvid = str(pick_value(item, ["bvid", "bv_id", "bvid_str"], "") or "")
-            parsed_videos.append(self._parse_video(item, details.get(bvid)))
+            parsed_videos.append(self._parse_video(item))
         channel = self._parse_channel_with_video_fallback(overview, fan_detail, parsed_videos)
         await self._enrich_public_stats(channel, parsed_videos)
 

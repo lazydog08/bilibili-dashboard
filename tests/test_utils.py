@@ -70,6 +70,35 @@ def test_bilibili_archive_manager_item_maps_to_video() -> None:
     assert video["likes"] == 2248
 
 
+def test_bilibili_missing_optional_depth_metrics_do_not_mark_snapshot_partial() -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+
+    video = client._parse_video(
+        {
+            "Archive": {
+                "bvid": "BVnew",
+                "title": "刚发布的新视频",
+                "cover": "http://i0.hdslb.com/bfs/archive/new.jpg",
+                "ptime": 1779624225,
+                "duration": 60,
+            },
+            "stat": {
+                "view": 100,
+                "like": 10,
+                "coin": 2,
+                "favorite": 3,
+                "share": 1,
+                "reply": 4,
+            },
+        }
+    )
+
+    assert video["ctr"] == 0.0
+    assert video["avd_minutes"] == 0.0
+    assert video["avp_percent"] == 0.0
+    assert client.warnings == []
+
+
 def test_bilibili_public_follower_stat_refreshes_channel() -> None:
     client = BilibiliClient(cookie="DedeUserID=516185777")
     channel = {"total_followers": 170_048}
@@ -166,3 +195,94 @@ def test_bilibili_snapshot_skips_fan_detail_when_overview_has_fan_metrics(monkey
     assert snapshot["channel"]["total_followers"] == 170_888
     assert snapshot["channel"]["follower_delta_7d"] == 42
     assert not any("粉丝明细获取失败" in warning for warning in snapshot["warnings"])
+
+
+def test_bilibili_snapshot_does_not_use_obsolete_video_detail_when_compare_has_metrics(monkeypatch) -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+
+    async def fake_request_first_json(self, http_client, urls, label):  # noqa: ANN001, ARG001
+        if label == "overview":
+            return {
+                "total_fans": 170_888,
+                "incr_fans": 42,
+                "total_click": 123_456,
+                "total_like": 789,
+            }
+        return {}
+
+    async def fake_fetch_video_payloads(self, http_client, timestamp):  # noqa: ANN001, ARG001
+        return [
+            [
+                {
+                    "Archive": {
+                        "bvid": "BVtest",
+                        "title": "测试视频",
+                        "cover": "http://i0.hdslb.com/bfs/archive/test.jpg",
+                        "ptime": 1779624225,
+                        "duration": 60,
+                    },
+                    "stat": {
+                        "view": 100,
+                        "like": 10,
+                        "coin": 2,
+                        "favorite": 3,
+                        "share": 1,
+                        "reply": 4,
+                    },
+                }
+            ],
+            [
+                {
+                    "bvid": "BVtest",
+                    "stat": {
+                        "tm_rate": 100,
+                        "full_play_ratio": 5000,
+                    },
+                }
+            ],
+        ]
+
+    async def fake_request_json(self, http_client, url):  # noqa: ANN001, ARG001
+        if "article/detail" in url:
+            raise AssertionError("obsolete video detail endpoint should not be requested")
+        return {}
+
+    async def fake_enrich_public_stats(self, channel, videos):  # noqa: ANN001, ARG001
+        return None
+
+    monkeypatch.setattr(BilibiliClient, "_request_first_json", fake_request_first_json)
+    monkeypatch.setattr(BilibiliClient, "_fetch_video_payloads", fake_fetch_video_payloads)
+    monkeypatch.setattr(BilibiliClient, "_request_json", fake_request_json)
+    monkeypatch.setattr(BilibiliClient, "_enrich_public_stats", fake_enrich_public_stats)
+
+    snapshot = asyncio.run(client.fetch_snapshot())
+
+    assert snapshot["warnings"] == []
+    assert snapshot["videos"][0]["ctr"] == 0.01
+    assert snapshot["videos"][0]["avp_percent"] == 0.5
+    assert snapshot["videos"][0]["avd_minutes"] == 0.5
+
+
+def test_bilibili_video_list_normal_merge_is_not_a_warning(monkeypatch) -> None:
+    client = BilibiliClient(cookie="DedeUserID=516185777")
+
+    async def fake_request_json(self, http_client, url):  # noqa: ANN001, ARG001
+        return {
+            "archives": [
+                {
+                    "Archive": {"bvid": "BVtest", "title": "测试视频", "ptime": 1779624225},
+                    "stat": {"view": 100},
+                }
+            ]
+        }
+
+    async def fake_request_first_json(self, http_client, urls, label):  # noqa: ANN001, ARG001
+        return {"list": [{"bvid": "BVtest", "stat": {"tm_rate": 100}}]}
+
+    monkeypatch.setattr(BilibiliClient, "_request_json", fake_request_json)
+    monkeypatch.setattr(BilibiliClient, "_request_first_json", fake_request_first_json)
+
+    payloads = asyncio.run(client._fetch_video_payloads(object(), 1779624225000))
+
+    assert len(payloads) == 2
+    assert client.warnings == []
