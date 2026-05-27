@@ -1271,6 +1271,32 @@
       margin: 0;
     }
 
+    .content-quality {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .content-quality-badge {
+      min-width: 0;
+      max-width: 100%;
+      padding: 4px 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+    }
+
+    .content-quality-badge.is-warning {
+      background: rgba(242, 201, 76, .13);
+      color: #ffe5a6;
+      box-shadow: inset 0 0 0 1px rgba(242, 201, 76, .26);
+    }
+
     .content-metrics {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2239,6 +2265,19 @@
               <div class="content-body">
                 <h3 class="content-title" title="{{ item.title }}">{{ item.short_title }}</h3>
                 <div class="content-time">发布时间：{{ item.publish_time }}</div>
+                {%- if item.data_source or item.metric_scope or item.metric_warning %}
+                <div class="content-quality">
+                  {%- if item.data_source %}
+                  <span class="content-quality-badge">{{ item.data_source }}</span>
+                  {%- endif %}
+                  {%- if item.metric_scope %}
+                  <span class="content-quality-badge{% if item.metric_warning %} is-warning{% endif %}">{{ item.metric_scope }}</span>
+                  {%- endif %}
+                  {%- if item.metric_warning %}
+                  <span class="content-quality-badge is-warning">{{ item.metric_warning }}</span>
+                  {%- endif %}
+                </div>
+                {%- endif %}
                 <div class="content-metrics">
                   {%- for metric in item.metrics %}
                   <div class="content-metric"><span>{{ metric.label }}</span>{{ metric.value }}</div>

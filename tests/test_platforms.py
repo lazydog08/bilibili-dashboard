@@ -516,3 +516,56 @@ def test_xhs_summary_url_reports_stale_content_fallback(monkeypatch) -> None:
     assert snapshot["contentItems"] == []
     assert "作品列表未更新" in snapshot["sourceStatus"]["message"]
     assert "XIAOHONGSHU_CONTENT_DATA_URL" in snapshot["sourceStatus"]["message"]
+
+
+def test_xhs_latest_note_rejects_detail_metrics_with_pre_publish_activity(monkeypatch) -> None:
+    import fetcher.xiaohongshu_api as xhs_api
+
+    async def fake_xhs_get_json(url, cookie, *, extra_headers=None, referer=""):  # noqa: ANN001
+        if "latest_note_data" in url:
+            return {
+                "success": True,
+                "data": {
+                    "noteInfo": {
+                        "id": "note-new",
+                        "title": "清闲pro到底好不好？给大家踩踩坑",
+                        "coverUrl": "https://example.com/cover.jpg",
+                        "postTime": 1779882644000,
+                    }
+                },
+            }
+        if "note_detail_new" in url:
+            return {
+                "success": True,
+                "data": {
+                    "seven": {
+                        "view_count": 8217,
+                        "like_count": 274,
+                        "collect_count": 92,
+                        "comment_count": 15,
+                        "share_count": 48,
+                        "view_time_avg": 479997,
+                        "view_list": [
+                            {"date": 1779206400000, "count": 511},
+                            {"date": 1779881600000, "count": 7706},
+                        ],
+                    },
+                    "analyse_infos": [{"quota": "readFeed", "count": 8217.0}],
+                },
+            }
+        raise RuntimeError("content list is unavailable")
+
+    monkeypatch.setattr(xhs_api, "_authorized_xhs_get_json", fake_xhs_get_json)
+    monkeypatch.setenv("XIAOHONGSHU_COOKIE", "configured-cookie")
+    source = xhs_api.XiaohongshuCookieSource(account_id="xhs-1")
+    items, message = asyncio.run(
+        source._fetch_latest_note_item("configured-cookie", "Asia/Shanghai", {})
+    )
+
+    assert "未通过发布时间校验" in message
+    assert items[0]["title"] == "清闲pro到底好不好？给大家踩踩坑"
+    assert items[0]["publish_time"] == "2026-05-27 19:50"
+    assert items[0]["views"] is None
+    assert items[0]["likes"] is None
+    assert items[0]["metric_scope"] == "待核验"
+    assert "发布前日期" in items[0]["metric_warning"]

@@ -139,13 +139,20 @@ def _note_info_from_payload(payload: Any) -> dict[str, Any]:
     return note_info if isinstance(note_info, dict) else {}
 
 
-def _post_time_label(value: Any, timezone_name: str) -> str:
+def _datetime_from_platform_timestamp(value: Any, timezone_name: str) -> datetime | None:
     timestamp = _safe_int(value)
     if timestamp is None:
-        return "--"
+        return None
     if timestamp > 10_000_000_000:
         timestamp = timestamp // 1000
-    return datetime.fromtimestamp(timestamp, tz=ZoneInfo(timezone_name)).strftime("%Y-%m-%d %H:%M")
+    return datetime.fromtimestamp(timestamp, tz=ZoneInfo(timezone_name))
+
+
+def _post_time_label(value: Any, timezone_name: str) -> str:
+    parsed = _datetime_from_platform_timestamp(value, timezone_name)
+    if parsed is None:
+        return "--"
+    return parsed.strftime("%Y-%m-%d %H:%M")
 
 
 def _seconds_label(value: Any) -> str | None:
@@ -155,6 +162,37 @@ def _seconds_label(value: Any) -> str | None:
     if number > 1000:
         number = number / 1000.0
     return f"{number:.1f}秒"
+
+
+def _detail_metrics_have_pre_publish_activity(
+    detail: dict[str, Any],
+    post_time: Any,
+    timezone_name: str,
+) -> bool:
+    published_at = _datetime_from_platform_timestamp(post_time, timezone_name)
+    if not published_at:
+        return False
+    period = _period_data(detail, "seven")
+    for key in (
+        "view_list",
+        "like_list",
+        "collect_list",
+        "comment_list",
+        "danmaku_list",
+        "share_list",
+        "rise_fans_list",
+    ):
+        rows = period.get(key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            row_time = _datetime_from_platform_timestamp(row.get("date"), timezone_name)
+            count = _safe_int(row.get("count"))
+            if row_time and row_time.date() < published_at.date() and count and count > 0:
+                return True
+    return False
 
 
 def _latest_note_item_from_payload(
@@ -169,12 +207,12 @@ def _latest_note_item_from_payload(
         return None
     detail = _payload_data(detail_payload)
     seven = _period_data(detail, "seven")
-    return {
-        "id": note_id,
-        "note_id": note_id,
-        "title": title or "未命名内容",
-        "publish_time": _post_time_label(note_info.get("postTime"), timezone_name),
-        "thumbnail": note_info.get("coverUrl"),
+    metrics_are_verified = not _detail_metrics_have_pre_publish_activity(
+        detail,
+        note_info.get("postTime"),
+        timezone_name,
+    )
+    metrics = {
         "views": _safe_int(seven.get("view_count")),
         "likes": _safe_int(seven.get("like_count")),
         "favorites": _safe_int(seven.get("collect_count")),
@@ -182,6 +220,21 @@ def _latest_note_item_from_payload(
         "shares": _safe_int(seven.get("share_count")),
         "avd": _seconds_label(seven.get("view_time_avg")),
         "danmaku": _safe_int(seven.get("danmaku_count")),
+    }
+    if not metrics_are_verified:
+        metrics = {key: None for key in metrics}
+    return {
+        "id": note_id,
+        "note_id": note_id,
+        "title": title or "未命名内容",
+        "publish_time": _post_time_label(note_info.get("postTime"), timezone_name),
+        "thumbnail": note_info.get("coverUrl"),
+        **metrics,
+        "data_source": "小红书最新笔记详情",
+        "metric_scope": "近7日后台明细" if metrics_are_verified else "待核验",
+        "metric_warning": ""
+        if metrics_are_verified
+        else "最新笔记详情接口返回了发布前日期的非零播放/互动，未展示为真实视频数据。",
     }
 
 
@@ -335,6 +388,8 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
         item = _latest_note_item_from_payload(latest_payload, detail_payload, timezone_name)
         if not item:
             return [], "latest_note_data: 未识别到最新笔记"
+        if item.get("metric_warning"):
+            return [item], "最新笔记已读取 1 条，明细数值未通过发布时间校验。"
         return [item], "最新笔记已读取 1 条。"
 
     async def _fetch_content_items(

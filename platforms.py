@@ -809,6 +809,9 @@ def _normalize_content_item(item: dict[str, Any]) -> dict[str, Any]:
         "avp": item.get("avp"),
         "danmaku": item.get("danmaku"),
         "thumbnail_note": item.get("thumbnail_note"),
+        "data_source": item.get("data_source"),
+        "metric_scope": item.get("metric_scope"),
+        "metric_warning": item.get("metric_warning"),
     }
     for key in ("id", "item_id", "aweme_id", "note_id", "bvid"):
         if item.get(key):
@@ -839,6 +842,9 @@ def _merge_content_pair(base: dict[str, Any], incoming: dict[str, Any]) -> dict[
         "avp",
         "danmaku",
         "thumbnail_note",
+        "data_source",
+        "metric_scope",
+        "metric_warning",
         "id",
         "item_id",
         "aweme_id",
@@ -992,6 +998,9 @@ def _content_items(history: dict[str, Any], platform: str, snapshot: dict[str, A
                 "publish_time": str(item.get("publish_time") or "--"),
                 "thumbnail": str(item.get("thumbnail") or ""),
                 "thumbnail_note": str(item.get("thumbnail_note") or ""),
+                "data_source": str(item.get("data_source") or ""),
+                "metric_scope": str(item.get("metric_scope") or ""),
+                "metric_warning": str(item.get("metric_warning") or ""),
                 "metrics": [
                     {"label": "播放 / 阅读", "value": _fmt_content_value(item.get("views"))},
                     {"label": "点赞", "value": _fmt_content_value(item.get("likes"))},
