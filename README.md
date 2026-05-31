@@ -316,6 +316,30 @@ scripts/install_nas_hourly_cron.sh
 - 提交并推送 `data/history.json`、`data/nas_status.json`、`dashboard/output/index.html` 和 `dashboard/output/nas_status.json` 到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
 - 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
 
+## 每日中午自检和自动修复
+
+`scripts/noon_watchdog.py` 是每日 12:00 的自检脚本。它会读取公开页面和 `nas_status.json`，如果网页数据时间或 NAS 心跳超过 `DASHBOARD_WATCHDOG_MAX_AGE_MINUTES=90` 分钟没有更新，就自动执行 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh` 修复；如果状态正常，就发送“看板更新正常”的 Bark 通知。
+
+安装到 NAS root crontab，并在执行时切回 `小黑` 用户：
+
+```bash
+DASHBOARD_NAS_CRON_MODE=root-su DASHBOARD_NAS_RUN_AS_USER='小黑' DASHBOARD_REPO_DIR='/home/小黑/bilibili-dashboard' scripts/install_nas_noon_watchdog_cron.sh
+```
+
+默认 cron 是每天 `12:00`：
+
+```cron
+0 12 * * * /bin/su - '小黑' -c 'cd '\''/home/小黑/bilibili-dashboard'\'' && mkdir -p data/logs && python3 scripts/noon_watchdog.py >> '\''/home/小黑/bilibili-dashboard/data/logs/noon-watchdog.log'\'' 2>&1'
+```
+
+可选项：
+
+- `DASHBOARD_WATCHDOG_MAX_AGE_MINUTES=90`：超过这个分钟数没有更新就视为异常。
+- `DASHBOARD_WATCHDOG_REPAIR_COMMAND='DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh'`：异常时执行的修复命令。
+- `DASHBOARD_WATCHDOG_VERIFY_DELAY=30`：修复命令返回后等待多少秒再检查线上页面。
+- `DASHBOARD_NAS_WATCHDOG_CRON_SCHEDULE='0 12 * * *'`：自检 cron 时间。
+- `BARK_DEVICE_KEY`：配置后正常、已修复、修复失败都会推送 Bark。
+
 公开心跳可以直接检查：
 
 ```text

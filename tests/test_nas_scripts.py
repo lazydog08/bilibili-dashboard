@@ -4,9 +4,12 @@ import json
 import os
 import shutil
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
 import pytest
+
+from scripts.noon_watchdog import assess_freshness, build_bark_message
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -447,3 +450,78 @@ def test_nas_update_script_fetches_comments_before_publish() -> None:
     assert (REPO_ROOT / "scripts" / "fetch_bilibili_comments.py").exists()
     assert '"$REPO_DIR/main.py" "--cache" "--no-feishu" "--no-bark"' in script
     assert '"--cache" "--no-feishu" "--no-bark"' in script
+
+
+def test_noon_watchdog_marks_recent_page_and_heartbeat_as_normal() -> None:
+    page_html = '<div data-dashboard-updated="2026-05-31T11:30:00+08:00">最后更新</div>'
+    nas_status = {"last_run_at": "2026-05-31T03:30:00+00:00"}
+
+    result = assess_freshness(
+        page_html=page_html,
+        nas_status=nas_status,
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+    )
+
+    assert result.ok is True
+    assert result.page_age_minutes == 30
+    assert result.heartbeat_age_minutes == 30
+    assert result.reasons == []
+
+
+def test_noon_watchdog_marks_stale_page_as_abnormal() -> None:
+    page_html = '<div data-dashboard-updated="2026-05-31T09:59:00+08:00">最后更新</div>'
+    nas_status = {"last_run_at": "2026-05-31T03:45:00+00:00"}
+
+    result = assess_freshness(
+        page_html=page_html,
+        nas_status=nas_status,
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+    )
+
+    assert result.ok is False
+    assert result.page_age_minutes == 121
+    assert "page_stale" in result.reasons
+
+
+def test_noon_watchdog_bark_message_reports_normal_status() -> None:
+    result = assess_freshness(
+        page_html='<div data-dashboard-updated="2026-05-31T11:50:00+08:00">最后更新</div>',
+        nas_status={"last_run_at": "2026-05-31T03:50:00+00:00"},
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+    )
+
+    title, body = build_bark_message("normal", result)
+
+    assert title == "Bilibili 看板更新正常"
+    assert "网页数据：2026-05-31T11:50:00+08:00" in body
+    assert "NAS 心跳：2026-05-31T03:50:00+00:00" in body
+
+
+def test_noon_watchdog_cron_installer_renders_root_su_dry_run(tmp_path: Path) -> None:
+    bash = require_tool("bash")
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_NAS_WATCHDOG_CRON_DRY_RUN": "1",
+            "DASHBOARD_NAS_CRON_MODE": "root-su",
+            "DASHBOARD_NAS_RUN_AS_USER": "小黑",
+            "DASHBOARD_REPO_DIR": "/home/小黑/bilibili-dashboard",
+        }
+    )
+
+    result = subprocess.run(
+        [bash, str(REPO_ROOT / "scripts" / "install_nas_noon_watchdog_cron.sh")],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "# BEGIN bilibili-dashboard noon watchdog" in result.stdout
+    assert "0 12 * * * /bin/su - '小黑' -c" in result.stdout
+    assert "python3 scripts/noon_watchdog.py" in result.stdout
+    assert "data/logs/noon-watchdog.log" in result.stdout
