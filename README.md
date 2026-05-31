@@ -218,9 +218,9 @@ export FEISHU_DATE_FORMAT='iso'
 
 ## 自动更新工作流
 
-`.github/workflows/daily_fetch.yml` 是云端兜底流程。当前主路径仍然是由 NAS 定时抓取和渲染，再推送到 GitHub；GitHub Pages 只负责部署静态页面。为了避免 NAS 停止推送后页面长期静默过期，GitHub Actions 也会每 3 小时跑一次备用刷新。
+`.github/workflows/daily_fetch.yml` 是云端兜底流程。当前主路径仍然是由 NAS 定时抓取和渲染，再推送到 GitHub；GitHub Pages 只负责部署静态页面。为了避免 NAS 停止推送后页面长期静默过期，GitHub Actions 会每 30 分钟醒一次，先检查公开数据时间；只有超过约 60 分钟没有更新时才抓取和发布。
 
-云端兜底或手动备用流程会：
+需要刷新时，云端兜底或手动备用流程会：
 
 - 安装依赖。
 - 运行 `python main.py --live --snapshot-date yesterday`，把当天抓到的可用数据写入前一天日期，并刷新三平台统一看板。
@@ -236,7 +236,7 @@ NAS 侧负责抓取和提交，GitHub 侧只负责静态部署。按仓库名推
 https://lazydog08.github.io/bilibili-dashboard/
 ```
 
-`daily_fetch.yml` 当前的备用计划是 `17 */3 * * *`，GitHub Actions 的 `schedule` 使用 UTC。它不是替代 NAS 的主路径，而是防止 NAS 计划任务、SSH 推送或本地锁异常后，公开页面一直停在旧 HTML。
+`daily_fetch.yml` 当前的备用计划是 `12,42 * * * *`，GitHub Actions 的 `schedule` 使用 UTC。它不是替代 NAS 的主路径，而是一个看门狗：NAS 正常推送时会跳过平台抓取；NAS 计划任务、SSH 推送或本地锁异常导致页面超过 `DASHBOARD_CLOUD_STALE_MINUTES=60` 分钟未更新时，才由 GitHub Actions 接管刷新。
 
 本地手动更新：
 

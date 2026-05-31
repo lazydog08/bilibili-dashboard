@@ -2,8 +2,8 @@ name: Daily Bilibili Dashboard Update
 
 on:
   schedule:
-    # Cloud fallback: NAS remains primary, but GitHub should refresh if NAS stops pushing.
-    - cron: '17 */3 * * *'
+    # Cloud watchdog: wake twice an hour, but fetch only when NAS has not pushed recently.
+    - cron: '12,42 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -29,10 +29,18 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Check whether cloud fallback is needed
+        id: freshness
+        env:
+          DASHBOARD_CLOUD_STALE_MINUTES: "60"
+        run: python scripts/check_dashboard_freshness.py
+
       - name: Install dependencies
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         run: pip install -r requirements.txt
 
       - name: Build dashboard
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         env:
           ENABLE_BILIBILI_FETCH: "1"
           BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
@@ -44,9 +52,11 @@ jobs:
         run: python main.py --live --snapshot-date yesterday
 
       - name: Run tests
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         run: python -m pytest
 
       - name: Commit updated data
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -55,13 +65,16 @@ jobs:
           git push
 
       - name: Configure Pages
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dashboard/output
 
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'workflow_dispatch' || steps.freshness.outputs.should_refresh == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

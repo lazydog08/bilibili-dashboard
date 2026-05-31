@@ -281,8 +281,109 @@ def test_daily_fetch_workflow_has_scheduled_cloud_fallback() -> None:
     workflow = (REPO_ROOT / ".github" / "workflows" / "daily_fetch.yml").read_text(encoding="utf-8")
 
     assert "schedule:" in workflow
-    assert "cron:" in workflow
+    assert "cron: '12,42 * * * *'" in workflow
+    assert "DASHBOARD_CLOUD_STALE_MINUTES" in workflow
+    assert "id: freshness" in workflow
+    assert workflow.count("steps.freshness.outputs.should_refresh == 'true'") >= 7
     assert "workflow_dispatch:" in workflow
+
+
+def test_check_dashboard_freshness_skips_recent_history(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    history = repo / "history.json"
+    output = tmp_path / "github-output.txt"
+    history.write_text('{"last_updated": "2026-05-31T15:23:14+08:00"}\n', encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        {
+            "GITHUB_OUTPUT": str(output),
+            "DASHBOARD_FRESHNESS_NOW": "2026-05-31T15:55:00+08:00",
+        }
+    )
+
+    result = subprocess.run(
+        [
+            python,
+            str(REPO_ROOT / "scripts" / "check_dashboard_freshness.py"),
+            "--history-path",
+            str(history),
+            "--stale-minutes",
+            "60",
+        ],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "should_refresh=false" in output.read_text(encoding="utf-8")
+    assert "fresh" in result.stdout
+
+
+def test_check_dashboard_freshness_uses_env_default_and_refreshes_missing_history(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    output = tmp_path / "github-output.txt"
+    env = os.environ.copy()
+    env.update(
+        {
+            "GITHUB_OUTPUT": str(output),
+            "DASHBOARD_CLOUD_STALE_MINUTES": "60",
+        }
+    )
+
+    result = subprocess.run(
+        [python, str(REPO_ROOT / "scripts" / "check_dashboard_freshness.py")],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    output_text = output.read_text(encoding="utf-8")
+    assert "should_refresh=true" in output_text
+    assert "reason=missing_history" in output_text
+    assert "missing_history" in result.stdout
+
+
+def test_check_dashboard_freshness_refreshes_stale_history(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    history = repo / "history.json"
+    output = tmp_path / "github-output.txt"
+    history.write_text('{"last_updated": "2026-05-31T14:20:00+08:00"}\n', encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        {
+            "GITHUB_OUTPUT": str(output),
+            "DASHBOARD_FRESHNESS_NOW": "2026-05-31T15:55:00+08:00",
+        }
+    )
+
+    result = subprocess.run(
+        [
+            python,
+            str(REPO_ROOT / "scripts" / "check_dashboard_freshness.py"),
+            "--history-path",
+            str(history),
+            "--stale-minutes",
+            "60",
+        ],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    output_text = output.read_text(encoding="utf-8")
+    assert "should_refresh=true" in output_text
+    assert "age_minutes=95" in output_text
+    assert "stale" in result.stdout
 
 
 def test_write_nas_status_rejects_paths_outside_repo(tmp_path: Path) -> None:
