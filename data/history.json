@@ -2,7 +2,9 @@
   "schema_version": 1,
   "last_updated": "2026-06-01T05:30:45+08:00",
   "source": "cache",
-  "warnings": [],
+  "warnings": [
+    "实时获取失败，已使用缓存或示例数据：video list failed: Bilibili request failed: All connection attempts failed"
+  ],
   "snapshots": [
     {
       "date": "2026-04-24",
@@ -5338,22 +5340,22 @@
       "metrics": {},
       "customMetrics": {},
       "dailyMetrics": {
-        "shares": {
+        "likes": {
           "today": {
-            "value": 363,
+            "value": 2407,
             "status": "available",
             "source": "manual_import"
           },
           "yesterday": {
-            "value": 400,
+            "value": 2121,
             "status": "available",
             "source": "manual_import"
           }
         },
-        "comments": {
+        "favorites": {
           "today": {
-            "value": 9,
-            "status": "available",
+            "value": null,
+            "status": "missing",
             "source": "manual_import"
           },
           "yesterday": {
@@ -5374,22 +5376,22 @@
             "source": "manual_import"
           }
         },
-        "likes": {
+        "shares": {
           "today": {
-            "value": 2407,
+            "value": 363,
             "status": "available",
             "source": "manual_import"
           },
           "yesterday": {
-            "value": 2121,
+            "value": 400,
             "status": "available",
             "source": "manual_import"
           }
         },
-        "favorites": {
+        "comments": {
           "today": {
-            "value": null,
-            "status": "missing",
+            "value": 9,
+            "status": "available",
             "source": "manual_import"
           },
           "yesterday": {
@@ -5473,9 +5475,9 @@
       "metrics": {},
       "customMetrics": {},
       "dailyMetrics": {
-        "shares": {
+        "likes": {
           "today": {
-            "value": 22,
+            "value": 47,
             "status": "available",
             "source": "manual_import"
           },
@@ -5485,9 +5487,9 @@
             "source": "manual_import"
           }
         },
-        "comments": {
+        "favorites": {
           "today": {
-            "value": 0,
+            "value": 19,
             "status": "available",
             "source": "manual_import"
           },
@@ -5509,9 +5511,9 @@
             "source": "manual_import"
           }
         },
-        "likes": {
+        "shares": {
           "today": {
-            "value": 47,
+            "value": 22,
             "status": "available",
             "source": "manual_import"
           },
@@ -5521,9 +5523,9 @@
             "source": "manual_import"
           }
         },
-        "favorites": {
+        "comments": {
           "today": {
-            "value": 19,
+            "value": 0,
             "status": "available",
             "source": "manual_import"
           },
@@ -77165,7 +77167,7 @@
         "previous": "上次累计"
       },
       "sourceStatus": {
-        "status": "success",
+        "status": "partial",
         "message": "",
         "source": "bilibili_live"
       },
@@ -80247,6 +80249,24 @@
       "platform": "xiaohongshu",
       "status": "success",
       "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，明细数值未通过发布时间校验。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。"
+    },
+    {
+      "capturedAt": "2026-06-01T06:01:15+08:00",
+      "platform": "bilibili",
+      "status": "partial",
+      "message": ""
+    },
+    {
+      "capturedAt": "2026-06-01T06:01:17+08:00",
+      "platform": "douyin",
+      "status": "manual",
+      "message": "抖音后台手动导入真实数据，作为自动数据源不可用时的兜底。"
+    },
+    {
+      "capturedAt": "2026-06-01T06:01:17+08:00",
+      "platform": "xiaohongshu",
+      "status": "manual",
+      "message": "小红书后台可见汇总和笔记管理首页明细。"
     }
   ],
   "latest_content": {
