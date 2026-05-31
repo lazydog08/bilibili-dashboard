@@ -22,7 +22,7 @@ from analytics import (
     safe_minutes,
     safe_ratio,
 )
-from health import build_operational_status
+from health import build_dashboard_freshness, build_operational_status
 
 
 PLATFORM_META = {
@@ -1687,6 +1687,11 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
         str(getattr(config, "timezone", DEFAULT_TIMEZONE)),
         update_interval_minutes,
     )
+    dashboard_freshness = build_dashboard_freshness(
+        history.get("last_updated"),
+        update_interval_minutes=update_interval_minutes,
+        timezone_name=str(getattr(config, "timezone", DEFAULT_TIMEZONE)),
+    )
     labels: list[str] = []
     series: list[dict[str, Any]] = []
     timezone_name = str(getattr(config, "timezone", DEFAULT_TIMEZONE))
@@ -1723,9 +1728,11 @@ def derive_platform_context(history: dict[str, Any], config: Any = None) -> dict
         },
         "next_update_label": next_update,
         "page_refresh_seconds": page_refresh_seconds,
+        "dashboard_freshness": dashboard_freshness,
         "operational_status": build_operational_status(
             cards,
             next_update_label=next_update,
             update_interval_minutes=update_interval_minutes,
+            freshness=dashboard_freshness,
         ),
     }

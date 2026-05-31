@@ -419,6 +419,7 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
             display_warnings = warnings
             bilibili_warnings = warnings
 
+    previous_last_updated = history.get("last_updated")
     history = await _collect_platform_snapshots(
         history,
         settings,
@@ -429,7 +430,8 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         platform_fetch_timeout_seconds=platform_fetch_timeout,
     )
     history = repair_latest_content_thumbnails(history, settings.platform_content_limit)
-    history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
+    if live_snapshot or args.fixture or not previous_last_updated:
+        history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
     save_history(history, settings.history_path)
     context = derive_dashboard_context(history, settings, display_warnings=display_warnings)
     output_path = render_dashboard(context, settings)

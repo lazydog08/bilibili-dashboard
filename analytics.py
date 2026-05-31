@@ -523,11 +523,13 @@ def derive_dashboard_context(
 
     from profile import build_brand_profile
 
+    raw_last_updated = history.get("last_updated") or latest.get("updated_at") or ""
     context = {
         "page_title": "【懒狗小黑】频道数据看板",
         "brand_profile": build_brand_profile(config, _channel(latest).get("total_followers")),
         "section_title": "频道数据情况",
-        "last_updated": format_update_time(history.get("last_updated") or latest.get("updated_at") or ""),
+        "last_updated": format_update_time(raw_last_updated),
+        "last_updated_iso": raw_last_updated,
         "source": source,
         "warnings": warnings,
         "badge_text": badge_text,

@@ -246,6 +246,11 @@
       text-align: right;
     }
 
+    .updated.is-stale {
+      color: var(--warn);
+      font-weight: 780;
+    }
+
     .warning-digest {
       margin: 0 0 18px;
       padding: 12px 14px;
@@ -1863,7 +1868,11 @@
         <div class="meta-actions">
           <div class="badge"><span class="badge-mark" aria-hidden="true"></span>{{ badge_text }}</div>
         </div>
-        <div class="updated">最后更新：{{ last_updated }}</div>
+        <div
+          class="updated"
+          data-dashboard-updated="{{ last_updated_iso }}"
+          data-dashboard-updated-label="{{ last_updated }}"
+        >最后更新：{{ last_updated }}</div>
       </div>
     </header>
 
@@ -1881,10 +1890,14 @@
 
     <section class="ops-grid" aria-label="运行状态">
       {% for item in operational_status.cards %}
-      <article class="ops-card">
+      <article
+        class="ops-card"
+        {% if item.key is defined %}data-ops-card="{{ item.key }}"{% endif %}
+        {% if item.key is defined and item.key == "nas_cadence" %}data-nas-cadence-card{% endif %}
+      >
         <div class="ops-label">{{ item.label }}</div>
-        <div class="ops-value {{ item.class }}">{{ item.value }}</div>
-        <div class="ops-meta">{{ item.meta }}</div>
+        <div class="ops-value {{ item.class }}" data-ops-value>{{ item.value }}</div>
+        <div class="ops-meta" data-ops-meta>{{ item.meta }}</div>
       </article>
       {% endfor %}
     </section>
@@ -2318,6 +2331,7 @@
     const platformContentCharts = {{ platform_content_charts|tojson }};
     const visualContext = {{ (visual_context|default({}))|tojson }};
     const commentInsights = {{ comment_insights|tojson }};
+    const dashboardFreshness = {{ dashboard_freshness|tojson }};
     const TEXT = '#f2e7d0';
     const GRID = 'rgba(242,201,76,.13)';
     const ACCENT = '#f2c94c';
@@ -2342,6 +2356,56 @@
         Array.isArray(item.data) && item.data.some(value => value !== null && value !== undefined)
       )));
     }
+
+    function formatFreshnessAge(totalMinutes) {
+      const minutes = Math.max(0, Math.floor(Number(totalMinutes) || 0));
+      const days = Math.floor(minutes / 1440);
+      const hours = Math.floor((minutes % 1440) / 60);
+      const minute = minutes % 60;
+      if (days) return `${days}天${hours}小时`;
+      if (hours) return `${hours}小时${minute}分钟`;
+      return `${minute}分钟`;
+    }
+
+    function installDashboardFreshnessGuard() {
+      const updated = document.querySelector('[data-dashboard-updated]');
+      const card = document.querySelector('[data-nas-cadence-card]');
+      const rawUpdated = dashboardFreshness.last_updated_iso || (updated && updated.dataset.dashboardUpdated);
+      if (!rawUpdated) return;
+
+      const lastUpdated = new Date(rawUpdated);
+      if (Number.isNaN(lastUpdated.getTime())) return;
+
+      const interval = Number(dashboardFreshness.update_interval_minutes) || 0;
+      const staleAfter = Number(dashboardFreshness.stale_after_minutes) || (interval ? Math.max(90, interval * 3) : 1440);
+      const ageMinutes = Math.max(0, Math.floor((Date.now() - lastUpdated.getTime()) / 60000));
+      if (ageMinutes < staleAfter) return;
+
+      const ageLabel = formatFreshnessAge(ageMinutes);
+      const severeAfter = Math.max(staleAfter * 4, 1440);
+      const statusClass = ageMinutes >= severeAfter ? 'is-unavailable' : 'is-warning';
+      const lastLabel = dashboardFreshness.last_updated_label || (updated && updated.dataset.dashboardUpdatedLabel) || '';
+      const cadenceLabel = interval ? `计划每 ${interval} 分钟更新` : '按固定时刻更新';
+
+      if (updated) {
+        updated.classList.add('is-stale');
+        updated.textContent = `最后更新：${lastLabel}（已停更 ${ageLabel}）`;
+      }
+      if (!card) return;
+
+      const value = card.querySelector('[data-ops-value]');
+      const meta = card.querySelector('[data-ops-meta]');
+      if (value) {
+        value.classList.remove('is-positive', 'is-warning', 'is-unavailable');
+        value.classList.add(statusClass);
+        value.textContent = `已停更 ${ageLabel}`;
+      }
+      if (meta) {
+        meta.textContent = `最近成功：${lastLabel}；${cadenceLabel}；请检查 NAS 计划任务和 GitHub 推送。`;
+      }
+    }
+
+    installDashboardFreshnessGuard();
 
     const followerReferenceData = visualContext.follower_reference_chart || { labels: [], series: [] };
     const followerReferenceChart = createChart('followerReferenceChart');

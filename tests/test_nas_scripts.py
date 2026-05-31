@@ -122,6 +122,55 @@ def test_cloud_update_script_pushes_public_nas_status(tmp_path: Path) -> None:
     assert '"last_run_at": "new"' in pushed_pages_status
 
 
+def test_cloud_update_script_recovers_stale_lock_dir(tmp_path: Path) -> None:
+    bash = require_tool("bash")
+    git = require_tool("git")
+    remote = tmp_path / "remote.git"
+    repo = tmp_path / "repo"
+    lock_dir = tmp_path / "stale.lock"
+    run_checked([git, "init", "--bare", "--initial-branch=main", str(remote)], cwd=tmp_path)
+    run_checked([git, "init", "--initial-branch=main", str(repo)], cwd=tmp_path)
+    (repo / "data").mkdir()
+    (repo / "dashboard" / "output").mkdir(parents=True)
+    (repo / "data" / "history.json").write_text('{"snapshots": []}\n', encoding="utf-8")
+    (repo / "dashboard" / "output" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+    run_checked([git, "config", "user.email", "test@example.com"], cwd=repo)
+    run_checked([git, "config", "user.name", "Test Bot"], cwd=repo)
+    run_checked([git, "remote", "add", "origin", str(remote)], cwd=repo)
+    run_checked([git, "add", "data/history.json", "dashboard/output/index.html"], cwd=repo)
+    run_checked([git, "commit", "-m", "initial"], cwd=repo)
+    run_checked([git, "push", "-u", "origin", "main"], cwd=repo)
+
+    lock_dir.mkdir()
+    (lock_dir / "pid").write_text("999999\n", encoding="utf-8")
+    os.utime(lock_dir, (1, 1))
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_ENV_FILE": str(tmp_path / "missing.env"),
+            "DASHBOARD_UPDATE_LOG": str(tmp_path / "nas-update.log"),
+            "DASHBOARD_CLOUD_LOCK_DIR": str(lock_dir),
+            "DASHBOARD_LOCK_MAX_AGE_SECONDS": "1",
+            "DASHBOARD_GIT_PULL_BEFORE_PUSH": "0",
+            "DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH": "0",
+        }
+    )
+
+    result = subprocess.run(
+        [bash, str(REPO_ROOT / "scripts" / "nas_update_and_push_cloud.sh")],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    log_text = (tmp_path / "nas-update.log").read_text(encoding="utf-8")
+    assert result.returncode == 0, result.stderr + log_text
+    assert "Removing stale NAS cloud update lock" in log_text
+    assert not lock_dir.exists()
+
+
 def test_cloud_update_script_skips_stale_generated_commit_after_remote_conflict(tmp_path: Path) -> None:
     bash = require_tool("bash")
     git = require_tool("git")
@@ -226,6 +275,14 @@ def test_write_nas_status_creates_public_heartbeat(tmp_path: Path) -> None:
     assert payload["status_path"] == "data/nas_status.json"
     assert "repo_dir" not in payload
     assert "cookie" not in json.dumps(payload).lower()
+
+
+def test_daily_fetch_workflow_has_scheduled_cloud_fallback() -> None:
+    workflow = (REPO_ROOT / ".github" / "workflows" / "daily_fetch.yml").read_text(encoding="utf-8")
+
+    assert "schedule:" in workflow
+    assert "cron:" in workflow
+    assert "workflow_dispatch:" in workflow
 
 
 def test_write_nas_status_rejects_paths_outside_repo(tmp_path: Path) -> None:

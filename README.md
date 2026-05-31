@@ -218,9 +218,9 @@ export FEISHU_DATE_FORMAT='iso'
 
 ## 自动更新工作流
 
-`.github/workflows/daily_fetch.yml` 保留为手动备用流程。当前推荐方案是由 NAS 定时抓取和渲染，再推送到 GitHub；GitHub Pages 只负责部署静态页面，不负责定时抓取平台数据。
+`.github/workflows/daily_fetch.yml` 是云端兜底流程。当前主路径仍然是由 NAS 定时抓取和渲染，再推送到 GitHub；GitHub Pages 只负责部署静态页面。为了避免 NAS 停止推送后页面长期静默过期，GitHub Actions 也会每 3 小时跑一次备用刷新。
 
-手动备用流程会：
+云端兜底或手动备用流程会：
 
 - 安装依赖。
 - 运行 `python main.py --live --snapshot-date yesterday`，把当天抓到的可用数据写入前一天日期，并刷新三平台统一看板。
@@ -236,17 +236,7 @@ NAS 侧负责抓取和提交，GitHub 侧只负责静态部署。按仓库名推
 https://lazydog08.github.io/bilibili-dashboard/
 ```
 
-如果后续还想把 GitHub Actions 也恢复成每天北京时间 12:00 和 20:00 自动抓取，可以给 `daily_fetch.yml` 加回下面的计划任务。GitHub Actions 的 `schedule` 使用 UTC：
-
-```yaml
-on:
-  schedule:
-    - cron: '0 4 * * *'
-    - cron: '0 12 * * *'
-  workflow_dispatch:
-```
-
-因为北京时间 12:00 是 UTC 04:00，北京时间 20:00 是 UTC 12:00。
+`daily_fetch.yml` 当前的备用计划是 `17 */3 * * *`，GitHub Actions 的 `schedule` 使用 UTC。它不是替代 NAS 的主路径，而是防止 NAS 计划任务、SSH 推送或本地锁异常后，公开页面一直停在旧 HTML。
 
 本地手动更新：
 
@@ -257,8 +247,10 @@ python main.py --live --no-feishu
 如果只是使用缓存刷新页面：
 
 ```bash
-python main.py --no-feishu
+python main.py --cache --no-feishu
 ```
+
+缓存渲染不会把旧数据伪装成刚更新。页面会保留已有数据时间，并在浏览器端按当前时间判断是否已经超过更新阈值。
 
 ## NAS 每 30 分钟自动更新
 
@@ -319,7 +311,7 @@ scripts/install_nas_hourly_cron.sh
 
 - 校验并维护 Git remote；如果配置了 `DASHBOARD_CLOUD_REMOTE_URL`，已有 remote 被同步成 HTTPS 或其他地址时会自动 `set-url` 回配置值。
 - 拉取远端最新状态，避免覆盖 GitHub 上的数据。
-- 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。
+- 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。锁会记录 PID，并在超过 `DASHBOARD_LOCK_MAX_AGE_SECONDS` 且 PID 已不存在时自动清理，避免 NAS 重启、断电或任务被杀后永久卡死。
 - 默认按 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1` 先调用 `nas_update_dashboard.sh` 抓取并生成最新页面。
 - 提交并推送 `data/history.json`、`data/nas_status.json`、`dashboard/output/index.html` 和 `dashboard/output/nas_status.json` 到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
 - 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
@@ -361,6 +353,7 @@ command -v ssh
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按每 30 分钟显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
 - `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
 - `DASHBOARD_NAS_STATUS_ENABLED=1` 会写入公开心跳文件；默认开启，用来验证 NAS cron 是否真实运行。
+- 静态页面会把数据时间写入 HTML，并在浏览器打开时重新计算新鲜度。超过约 3 个更新间隔后，顶部更新时间和“NAS 更新节奏”会自动降级为停更提示，即使旧 HTML 被反复刷新也不会继续显示绿色正常。
 
 可选项：
 
@@ -368,6 +361,7 @@ command -v ssh
 - `DASHBOARD_CLOUD_REMOTE_URL=git@github.com:lazydog08/bilibili-dashboard.git`：NAS 目录不是 Git 仓库时，用这个远端初始化推送。
 - `DASHBOARD_CLOUD_BRANCH=main`：推送到 GitHub 的分支。
 - `DASHBOARD_GIT_PULL_BEFORE_PUSH=1`：推送前先拉取远端，避免覆盖云端数据。
+- `DASHBOARD_LOCK_MAX_AGE_SECONDS=7200`：NAS 更新锁的最大存活时间。锁超时且 PID 不存在时会被自动清理。
 - `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1`：云端发布任务每 30 分钟先抓取最新数据，再推送 GitHub Pages。
 - `DASHBOARD_NAS_CRON_MODE=root-su`：安装 root crontab 时用 `su - $DASHBOARD_NAS_RUN_AS_USER -c ...` 切回 NAS 用户执行。
 - `DASHBOARD_NAS_RUN_AS_USER=小黑`：root-su cron 模式下实际运行项目的 NAS 用户。

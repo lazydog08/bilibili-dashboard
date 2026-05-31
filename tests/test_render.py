@@ -47,6 +47,10 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     assert 'src="assets/channel-avatar.jpg"' in html
     assert '<meta http-equiv="refresh" content="1800">' in html
     assert "打开 NAS" not in html
+    assert 'data-dashboard-updated="' in html
+    assert 'data-nas-cadence-card' in html
+    assert "const dashboardFreshness =" in html
+    assert "installDashboardFreshnessGuard" in html
     reach_start = html.find("reachChart.setOption({")
     interaction_start = html.find("interactionChart.setOption({", reach_start)
     assert reach_start != -1, "reach chart config is missing"

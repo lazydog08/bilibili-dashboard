@@ -1,6 +1,9 @@
 name: Daily Bilibili Dashboard Update
 
 on:
+  schedule:
+    # Cloud fallback: NAS remains primary, but GitHub should refresh if NAS stops pushing.
+    - cron: '17 */3 * * *'
   workflow_dispatch:
 
 permissions:

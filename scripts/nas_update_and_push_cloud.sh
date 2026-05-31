@@ -30,10 +30,61 @@ log() {
 }
 
 LOCK_DIR="${DASHBOARD_CLOUD_LOCK_DIR:-$REPO_DIR/data/logs/nas-cloud-update.lock}"
+LOCK_MAX_AGE_SECONDS="${DASHBOARD_LOCK_MAX_AGE_SECONDS:-7200}"
+case "$LOCK_MAX_AGE_SECONDS" in
+  ''|*[!0-9]*) LOCK_MAX_AGE_SECONDS=7200 ;;
+esac
+
+lock_mtime() {
+  if stat -c %Y "$1" >/dev/null 2>&1; then
+    stat -c %Y "$1"
+  else
+    stat -f %m "$1"
+  fi
+}
+
+lock_pid_is_running() {
+  local pid_file="$1/pid"
+  local pid
+  [[ -f "$pid_file" ]] || return 1
+  pid="$(tr -dc '0-9' < "$pid_file")"
+  [[ -n "$pid" ]] || return 1
+  kill -0 "$pid" 2>/dev/null
+}
+
+lock_is_stale() {
+  local modified
+  local now
+  local age
+  [[ -d "$LOCK_DIR" ]] || return 1
+  if lock_pid_is_running "$LOCK_DIR"; then
+    return 1
+  fi
+  modified="$(lock_mtime "$LOCK_DIR" 2>/dev/null || echo 0)"
+  now="$(date +%s)"
+  age=$((now - modified))
+  [[ "$age" -ge "$LOCK_MAX_AGE_SECONDS" ]]
+}
+
+write_lock_metadata() {
+  printf '%s\n' "$$" > "$LOCK_DIR/pid" 2>/dev/null || true
+  date -u '+%Y-%m-%dT%H:%M:%SZ' > "$LOCK_DIR/created_at" 2>/dev/null || true
+}
+
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-  log "Another NAS cloud update is already running; skipped."
-  exit 0
+  if lock_is_stale; then
+    log "Removing stale NAS cloud update lock: $LOCK_DIR"
+    rm -rf "$LOCK_DIR"
+    mkdir "$LOCK_DIR" 2>/dev/null || {
+      log "Another NAS cloud update is already running; skipped."
+      exit 0
+    }
+  else
+    log "Another NAS cloud update is already running; skipped."
+    exit 0
+  fi
 fi
+write_lock_metadata
 trap 'rm -rf "$LOCK_DIR"' EXIT
 
 BRANCH="${DASHBOARD_CLOUD_BRANCH:-main}"
