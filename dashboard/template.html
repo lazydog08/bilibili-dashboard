@@ -2367,6 +2367,23 @@
       return `${minute}分钟`;
     }
 
+    function formatNextUpdateLabel(intervalMinutes) {
+      const interval = Math.max(1, Math.floor(Number(intervalMinutes) || 0));
+      if (!interval) return '';
+      const now = new Date();
+      const dayStart = new Date(now);
+      dayStart.setHours(0, 0, 0, 0);
+      const elapsedMinutes = Math.floor((now.getTime() - dayStart.getTime()) / 60000);
+      const nextSlotMinutes = (Math.floor(elapsedMinutes / interval) + 1) * interval;
+      const target = new Date(dayStart.getTime() + nextSlotMinutes * 60000);
+      const deltaMinutes = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 60000));
+      const hours = Math.floor(deltaMinutes / 60);
+      const minutes = deltaMinutes % 60;
+      const dayLabel = target.getDate() === now.getDate() ? '今天' : '明天';
+      const time = `${String(target.getHours()).padStart(2, '0')}:${String(target.getMinutes()).padStart(2, '0')}`;
+      return `下次更新：${dayLabel} ${time}（约 ${hours}小时${minutes}分钟）`;
+    }
+
     function installDashboardFreshnessGuard() {
       const updated = document.querySelector('[data-dashboard-updated]');
       const card = document.querySelector('[data-nas-cadence-card]');
@@ -2379,7 +2396,12 @@
       const interval = Number(dashboardFreshness.update_interval_minutes) || 0;
       const staleAfter = Number(dashboardFreshness.stale_after_minutes) || (interval ? Math.max(90, interval * 3) : 1440);
       const ageMinutes = Math.max(0, Math.floor((Date.now() - lastUpdated.getTime()) / 60000));
-      if (ageMinutes < staleAfter) return;
+      if (ageMinutes < staleAfter) {
+        const meta = card && card.querySelector('[data-ops-meta]');
+        const nextLabel = interval ? formatNextUpdateLabel(interval) : '';
+        if (meta && nextLabel) meta.textContent = nextLabel;
+        return;
+      }
 
       const ageLabel = formatFreshnessAge(ageMinutes);
       const severeAfter = Math.max(staleAfter * 4, 1440);

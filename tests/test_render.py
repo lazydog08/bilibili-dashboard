@@ -50,6 +50,7 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
     assert 'data-dashboard-updated="' in html
     assert 'data-nas-cadence-card' in html
     assert "const dashboardFreshness =" in html
+    assert "formatNextUpdateLabel" in html
     assert "installDashboardFreshnessGuard" in html
     reach_start = html.find("reachChart.setOption({")
     interaction_start = html.find("interactionChart.setOption({", reach_start)
