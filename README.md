@@ -339,6 +339,7 @@ DASHBOARD_NAS_CRON_MODE=root-su DASHBOARD_NAS_RUN_AS_USER='小黑' DASHBOARD_REP
 - `DASHBOARD_WATCHDOG_VERIFY_DELAY=30`：修复命令返回后等待多少秒再检查线上页面。
 - `DASHBOARD_NAS_WATCHDOG_CRON_SCHEDULE='0 12 * * *'`：自检 cron 时间。
 - `BARK_DEVICE_KEY`：配置后正常、已修复、修复失败都会推送 Bark。
+- `DISABLE_BARK=1`：建议保持开启，避免每 30 分钟更新成功都推送；每日中午自检脚本仍会单独发送 Bark 汇报。
 
 公开心跳可以直接检查：
 
@@ -373,7 +374,7 @@ command -v ssh
 - 默认不跑测试，避免定时任务消耗 NAS 资源；需要时设置 `RUN_DASHBOARD_TESTS=1`。
 - 默认启用评论雷达；如果想临时关闭评论抓取，设置 `ENABLE_COMMENT_FETCH=0`。如果想页面也不展示评论模块，设置 `ENABLE_COMMENT_INSIGHTS=0`。
 - 默认不启用飞书；需要时设置 `ENABLE_FEISHU_SYNC=1` 并配置 `FEISHU_*`。
-- Bark 未配置会跳过；配置 `BARK_DEVICE_KEY` 后每次更新会推送三平台摘要。
+- 建议设置 `DISABLE_BARK=1`，让每 30 分钟更新只刷新页面和心跳，不发成功通知；每日中午自检脚本会统一推送运行情况。
 - `DASHBOARD_UPDATE_INTERVAL_MINUTES=30` 会让页面右上角“下次更新”按每 30 分钟显示。这个值只控制页面展示；真正执行频率由 NAS cron / 计划任务决定。
 - `DASHBOARD_PAGE_REFRESH_SECONDS=1800` 会让已经打开的静态页面每 30 分钟自动刷新一次，从而看到 NAS 刚生成的新 HTML。
 - `DASHBOARD_NAS_STATUS_ENABLED=1` 会写入公开心跳文件；默认开启，用来验证 NAS cron 是否真实运行。
