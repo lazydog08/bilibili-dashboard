@@ -90,6 +90,7 @@ trap 'rm -rf "$LOCK_DIR"' EXIT
 log "Dashboard update started."
 COMMENT_FETCH_STATUS="skipped"
 COMMENT_RENDER_STATUS="skipped"
+XHS_CREATOR_NOTES_STATUS="skipped"
 TESTS_STATUS="skipped"
 PUBLISH_STATUS="skipped"
 STATUS_HEARTBEAT_WRITTEN="0"
@@ -133,7 +134,44 @@ export ENABLE_BILIBILI_FETCH="${ENABLE_BILIBILI_FETCH:-1}"
 export ENABLE_COMMENT_INSIGHTS="${ENABLE_COMMENT_INSIGHTS:-1}"
 export DASHBOARD_TIMEZONE="$TIMEZONE"
 
+run_xhs_creator_notes_refresh() {
+  if [[ "${XHS_CREATOR_NOTES_REFRESH_ENABLED:-0}" != "1" ]]; then
+    return 0
+  fi
+
+  local input_path="${XHS_CREATOR_NOTES_INPUT_PATH:-}"
+  local limit="${XHS_CREATOR_NOTES_LIMIT:-50}"
+  local opencli_cmd="${XHS_CREATOR_NOTES_OPENCLI_CMD:-${OPENCLI_CMD:-opencli}}"
+  local fetch_timeout="${XHS_CREATOR_NOTES_PLATFORM_FETCH_TIMEOUT:-}"
+  local refresh_cmd=("$PYTHON_BIN" "$REPO_DIR/scripts/refresh_xhs_creator_notes.py")
+
+  if [[ -n "$input_path" ]]; then
+    refresh_cmd+=("--input" "$input_path")
+  else
+    refresh_cmd+=("--limit" "$limit" "--opencli-cmd" "$opencli_cmd")
+  fi
+
+  if [[ -n "$fetch_timeout" ]]; then
+    refresh_cmd+=("--platform-fetch-timeout" "$fetch_timeout")
+  fi
+
+  if [[ "${XHS_CREATOR_NOTES_SKIP_RENDER:-0}" == "1" ]]; then
+    refresh_cmd+=("--skip-render")
+  fi
+
+  log "Refreshing Xiaohongshu creator notes before dashboard render."
+  if "${refresh_cmd[@]}" >> "$LOG_FILE" 2>&1; then
+    XHS_CREATOR_NOTES_STATUS="success"
+    log "Xiaohongshu creator notes refresh completed."
+  else
+    XHS_CREATOR_NOTES_STATUS="failed"
+    log "Xiaohongshu creator notes refresh failed."
+  fi
+}
+
 MODE="${DASHBOARD_MODE:-live}"
+run_xhs_creator_notes_refresh
+
 CMD=("$PYTHON_BIN" "main.py")
 case "$MODE" in
   live)
@@ -166,7 +204,10 @@ if [[ -n "${SNAPSHOT_DATE:-}" ]]; then
   CMD+=("--snapshot-date" "$SNAPSHOT_DATE")
 fi
 
-if "${CMD[@]}" >> "$LOG_FILE" 2>&1; then
+if [[ "$XHS_CREATOR_NOTES_STATUS" == "failed" && "${XHS_CREATOR_NOTES_REQUIRED:-1}" == "1" ]]; then
+  UPDATE_STATUS=1
+  log "Dashboard render skipped because required Xiaohongshu creator notes refresh failed."
+elif "${CMD[@]}" >> "$LOG_FILE" 2>&1; then
   UPDATE_STATUS=0
   log "Dashboard render completed."
 else
@@ -222,6 +263,7 @@ if [[ "${DASHBOARD_NAS_STATUS_ENABLED:-1}" == "1" ]]; then
     --timezone "$TIMEZONE" \
     --comment-fetch-status "$COMMENT_FETCH_STATUS" \
     --comment-render-status "$COMMENT_RENDER_STATUS" \
+    --xhs-creator-notes-status "$XHS_CREATOR_NOTES_STATUS" \
     --tests-status "$TESTS_STATUS" \
     --publish-status "$PUBLISH_STATUS" >> "$LOG_FILE" 2>&1; then
     STATUS_HEARTBEAT_WRITTEN="1"

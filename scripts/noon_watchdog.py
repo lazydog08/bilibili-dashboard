@@ -92,6 +92,9 @@ def assess_freshness(
         except ValueError:
             reasons.append("heartbeat_invalid_updated_at")
 
+    if nas_status.get("xhs_creator_notes_status") == "failed":
+        reasons.append("xhs_creator_notes_failed")
+
     return WatchdogResult(
         ok=not reasons,
         page_updated_at=page_updated_at,

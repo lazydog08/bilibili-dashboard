@@ -113,6 +113,19 @@ python scripts/refresh_xhs_creator_notes.py --input /tmp/xhs-creator-notes.json
 
 导入脚本只替换 `data/manual_platform_metrics.json` 里的小红书 `contentItems`，不会写入 Cookie、token 或请求头，也不会改动抖音数据。
 
+NAS 日更可以把这一步接到主渲染之前。前提是执行 NAS 任务的机器有正在运行的 Chrome、已登录小红书创作者后台，并且 OpenCLI Browser Bridge 已连接：
+
+```bash
+XHS_CREATOR_NOTES_REFRESH_ENABLED=1
+XHS_CREATOR_NOTES_REQUIRED=1
+XHS_CREATOR_NOTES_OPENCLI_CMD='npx -y @jackwener/opencli'
+XHS_CREATOR_NOTES_LIMIT=50
+XHS_CREATOR_NOTES_PLATFORM_FETCH_TIMEOUT=60
+XHS_CREATOR_NOTES_SKIP_RENDER=0
+```
+
+`XHS_CREATOR_NOTES_REQUIRED=1` 会在作品采集失败时阻止发布新的页面，避免把旧小红书缓存伪装成实时数据；云端推送脚本会尽量把 `nas_status.json` 中的失败心跳推上去，中午 watchdog 也会把 `xhs_creator_notes_status=failed` 判定为异常并触发修复。NAS 默认的 `DASHBOARD_MODE=bilibili-only` 不会主动更新小红书历史，所以 `XHS_CREATOR_NOTES_SKIP_RENDER` 默认应保持 `0`。
+
 不要把官方令牌、Cookie、数据 URL 发到公开页面、提交记录、Issue、截图或日志里。
 
 手动导入方式：
@@ -318,6 +331,7 @@ scripts/install_nas_hourly_cron.sh
 `nas_update_dashboard.sh` 会：
 
 - 按 `DASHBOARD_MODE` 抓取数据并重新生成页面。
+- 如果启用 `XHS_CREATOR_NOTES_REFRESH_ENABLED=1`，先刷新小红书创作者后台作品明细；`XHS_CREATOR_NOTES_REQUIRED=1` 时采集失败会中止主渲染，防止发布旧缓存。
 - 默认在 NAS 流程中启用 `ENABLE_COMMENT_INSIGHTS=1`，抓取 B 站评论到 `data/private/comments.json`，再用缓存渲染模式把脱敏摘要写进静态页面。
 - 把页面写到 `dashboard/output/index.html`。
 - 如果配置了 `DASHBOARD_PUBLISH_DIR`，同步复制到 NAS Web 目录。
@@ -330,6 +344,7 @@ scripts/install_nas_hourly_cron.sh
 - 拉取远端最新状态，避免覆盖 GitHub 上的数据。
 - 给整个云端推送流程加锁；如果上一次还没跑完，本次会跳过。锁会记录 PID，并在超过 `DASHBOARD_LOCK_MAX_AGE_SECONDS` 且 PID 已不存在时自动清理，避免 NAS 重启、断电或任务被杀后永久卡死。
 - 默认按 `DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1` 先调用 `nas_update_dashboard.sh` 抓取并生成最新页面。
+- 如果主刷新失败但已经写入公开心跳，会尽量推送这次失败状态；脚本最终仍返回失败，便于 cron / watchdog 发现异常。
 - 提交并推送 `data/history.json`、`data/nas_status.json`、`dashboard/output/index.html` 和 `dashboard/output/nas_status.json` 到 GitHub 仓库的 `main` 分支；如果推送时远端刚好有新提交，会同步后重试一次。
 - 触发 `.github/workflows/pages_deploy.yml`，由 GitHub Pages 更新在线看板。
 
