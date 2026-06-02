@@ -1026,6 +1026,23 @@ def _content_items(history: dict[str, Any], platform: str, snapshot: dict[str, A
     return prepared
 
 
+def _content_source_note(items: list[dict[str, Any]]) -> str:
+    manual_items = [item for item in items if str(item.get("data_source") or "") == "手动导入缓存"]
+    if not manual_items:
+        return ""
+    live_count = max(len(items) - len(manual_items), 0)
+    import_labels: list[str] = []
+    for item in manual_items:
+        label = str(item.get("metric_scope") or "").strip()
+        if label.startswith("导入于") and label not in import_labels:
+            import_labels.append(label)
+    label_text = f"（{'、'.join(import_labels[:2])}）" if import_labels else ""
+    return (
+        f"作品明细：实时作品 {live_count} 条，手动缓存 {len(manual_items)} 条{label_text}；"
+        "缓存作品可能与平台当前前台/后台不一致。"
+    )
+
+
 def _content_chart(history: dict[str, Any], snapshot: dict[str, Any] | None, platform: str) -> dict[str, Any]:
     items = _latest_content_items(history, platform, snapshot)
     if not items:
@@ -1567,6 +1584,7 @@ def _build_platform_card(history: dict[str, Any], platform: str, config: Any = N
         status_message = (
             f"{status_message} 当前授权接口未返回粉丝总量，已沿用最近一次有粉丝值的快照。"
         ).strip()
+    content_items = _content_items(history, platform, latest_success)
     growth = [
         {
             "title": "相比昨日的涨粉",
@@ -1620,7 +1638,8 @@ def _build_platform_card(history: dict[str, Any], platform: str, config: Any = N
             _metric_row(successes, latest_success, key, label)
             for key, label in CUSTOM_METRICS.get(platform, [])
         ],
-        "content_items": _content_items(history, platform, latest_success),
+        "content_items": content_items,
+        "content_source_note": _content_source_note(content_items),
         "content_chart": _content_chart(history, latest_success, platform),
     }
 

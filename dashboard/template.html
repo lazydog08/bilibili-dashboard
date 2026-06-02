@@ -1105,6 +1105,17 @@
       margin-bottom: 16px;
     }
 
+    .content-source-note {
+      margin: 0 0 14px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: rgba(242, 201, 76, .11);
+      color: #ffe5a6;
+      font-size: 12px;
+      line-height: 1.5;
+      box-shadow: inset 0 0 0 1px rgba(242, 201, 76, .22);
+    }
+
     .content-chart-shell {
       padding: 12px 12px 4px;
       border-radius: 8px;
@@ -2239,6 +2250,9 @@
             <h2 class="panel-title">{{ platform.name }}作品表现</h2>
             <span class="panel-subtle">{{ platform.content_items|length }} 条</span>
           </div>
+          {% if platform.content_source_note %}
+          <div class="content-source-note">{{ platform.content_source_note }}</div>
+          {% endif %}
           {% if platform.content_items %}
           <div class="content-chart-grid">
             <section class="content-chart-shell is-reach">

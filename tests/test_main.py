@@ -112,3 +112,41 @@ def test_manual_content_fallback_marks_cached_item_source() -> None:
     assert cached_item["data_source"] == "手动导入缓存"
     assert cached_item["metric_scope"] == "导入于 2026-05-23"
     assert patched["contentItems"][0]["data_source"] == "小红书最新笔记详情"
+
+
+def test_manual_content_fallback_marks_snapshot_partial_and_counts_sources() -> None:
+    snapshot = {
+        "platform": "xiaohongshu",
+        "sourceStatus": {
+            "status": "success",
+            "source": "authorized_cookie",
+            "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条。",
+        },
+        "contentItems": [
+            {
+                "title": "清闲pro到底好不好？给大家踩踩坑",
+                "publish_time": "2026-05-27 19:50",
+                "views": 11822,
+                "data_source": "小红书最新笔记详情",
+            }
+        ],
+    }
+    manual_snapshot = {
+        "sourceStatus": {"importedAt": "2026-05-23T20:11:00+08:00"},
+        "contentItems": [
+            {
+                "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
+                "publish_time": "2026年04月22日 20:17",
+                "views": 119869,
+            }
+        ],
+    }
+
+    patched = _with_manual_content_fallback(snapshot, manual_snapshot)
+
+    assert patched["sourceStatus"]["status"] == "partial"
+    assert "实时作品 1 条" in patched["sourceStatus"]["message"]
+    assert "手动缓存 1 条" in patched["sourceStatus"]["message"]
+    assert "导入于 2026-05-23" in patched["sourceStatus"]["message"]
+    assert patched["raw"]["summary"]["live_content_count"] == 1
+    assert patched["raw"]["summary"]["manual_cached_content_count"] == 1

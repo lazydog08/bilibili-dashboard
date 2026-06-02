@@ -365,6 +365,44 @@ def test_merge_content_items_skips_unverified_blank_latest_note() -> None:
     assert [item["title"] for item in merged] == ["战争制裁下的俄罗斯，人们过着怎样的生活？"]
 
 
+def test_xhs_content_panel_reports_manual_cache_mix() -> None:
+    history = {
+        "platform_snapshots": [
+            build_platform_snapshot(
+                platform="xiaohongshu",
+                captured_at="2026-06-02T12:30:00+08:00",
+                fans=300,
+                metrics={"views": 1200},
+                status="partial",
+                source="authorized_cookie",
+                message="当前作品明细：实时作品 1 条，手动缓存 1 条（导入于 2026-05-23）。",
+                content_items=[
+                    {
+                        "title": "清闲pro到底好不好？给大家踩踩坑",
+                        "publish_time": "2026-05-27 19:50",
+                        "views": 11822,
+                        "data_source": "小红书最新笔记详情",
+                    },
+                    {
+                        "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
+                        "publish_time": "2026年04月22日 20:17",
+                        "views": 119869,
+                        "data_source": "手动导入缓存",
+                        "metric_scope": "导入于 2026-05-23",
+                    },
+                ],
+            )
+        ]
+    }
+
+    card = derive_platform_context(history, _settings())["platform_cards"][2]
+
+    assert card["status_label"] == "部分可用"
+    assert "实时作品 1 条" in card["content_source_note"]
+    assert "手动缓存 1 条" in card["content_source_note"]
+    assert "导入于 2026-05-23" in card["content_source_note"]
+
+
 def test_client_uses_manual_import_as_fallback_without_network() -> None:
     manual = build_platform_snapshot(
         platform="douyin",

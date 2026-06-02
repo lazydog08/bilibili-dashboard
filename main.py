@@ -219,6 +219,11 @@ def _annotated_manual_content_items(manual_snapshot: dict[str, Any], manual_item
     return annotated
 
 
+def _manual_cache_content_counts(items: list[dict[str, Any]]) -> tuple[int, int]:
+    manual_count = sum(1 for item in items if str(item.get("data_source") or "") == "手动导入缓存")
+    return max(len(items) - manual_count, 0), manual_count
+
+
 def _with_manual_content_fallback(
     snapshot: dict[str, Any],
     manual_snapshot: dict[str, Any] | None,
@@ -242,14 +247,24 @@ def _with_manual_content_fallback(
     if not isinstance(source_status, dict):
         source_status = {}
     message = str(source_status.get("message") or "")
-    suffix = "部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。"
+    live_count, manual_cache_count = _manual_cache_content_counts(merged_items)
+    import_label = _manual_content_import_label(manual_snapshot)
+    if manual_cache_count and str(source_status.get("status") or "") == "success":
+        source_status["status"] = "partial"
+    suffix = (
+        f"当前作品明细：实时作品 {live_count} 条，手动缓存 {manual_cache_count} 条（{import_label}）；"
+        "缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。"
+    )
     source_status["message"] = f"{message} {suffix}".strip()
     patched["sourceStatus"] = source_status
-    raw = patched.get("raw") if isinstance(patched.get("raw"), dict) else {}
+    raw = deepcopy(patched.get("raw")) if isinstance(patched.get("raw"), dict) else {}
     summary = raw.get("summary") if isinstance(raw.get("summary"), dict) else {}
     summary["manual_content_count"] = len(manual_items)
     summary["merged_content_count"] = len(merged_items)
-    patched["raw"] = {"summary": summary}
+    summary["live_content_count"] = live_count
+    summary["manual_cached_content_count"] = manual_cache_count
+    raw["summary"] = summary
+    patched["raw"] = raw
     return patched
 
 
