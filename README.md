@@ -99,8 +99,11 @@ python main.py --live --no-feishu
 小红书创作者后台的全量作品列表带动态签名，普通定时任务直接请求作品分析接口可能返回 406。若要刷新作品明细，可先在已登录小红书创作者后台的 Chrome 中用浏览器采集工具导出作品 JSON，再导入本项目：
 
 ```bash
+python scripts/refresh_xhs_creator_notes.py --check
 python scripts/refresh_xhs_creator_notes.py --limit 50
 ```
+
+如果 `opencli` 没有安装到 PATH，可用 `OPENCLI_CMD` 指向可执行命令，例如 `OPENCLI_CMD='npx -y @jackwener/opencli' python scripts/refresh_xhs_creator_notes.py --check`。
 
 如果你已经有 `creator-notes` JSON，也可以跳过采集，只导入并刷新看板：
 

@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import os
+import platform
 import shlex
 import subprocess
 import sys
@@ -36,6 +37,62 @@ def build_opencli_command(opencli_cmd: str, limit: int) -> list[str]:
         str(limit),
         "-f",
         "json",
+    ]
+
+
+def build_opencli_check_command(opencli_cmd: str) -> list[str]:
+    return [*shlex.split(opencli_cmd), "--version"]
+
+
+def build_chrome_running_command(system_name: str | None = None) -> list[str]:
+    current = system_name or platform.system()
+    if current == "Darwin":
+        return ["pgrep", "-x", "Google Chrome"]
+    if current == "Linux":
+        return ["pgrep", "-f", "google-chrome|chromium"]
+    return []
+
+
+def _run_status(
+    *,
+    name: str,
+    command: list[str],
+    success_message: str,
+    failure_message: str,
+    runner: Runner,
+) -> dict[str, Any]:
+    if not command:
+        return {"name": name, "ok": False, "message": "当前系统暂不支持自动检查。"}
+    try:
+        result = runner(command, text=True, capture_output=True, check=False)
+    except FileNotFoundError:
+        return {"name": name, "ok": False, "message": failure_message}
+    if result.returncode == 0:
+        return {"name": name, "ok": True, "message": success_message}
+    return {"name": name, "ok": False, "message": failure_message}
+
+
+def check_prerequisites(
+    *,
+    opencli_cmd: str,
+    runner: Runner = subprocess.run,
+    system_name: str | None = None,
+) -> list[dict[str, Any]]:
+    return [
+        _run_status(
+            name="opencli",
+            command=build_opencli_check_command(opencli_cmd),
+            success_message="opencli 可调用。",
+            failure_message="未找到可用 opencli；请安装 opencli，或用 --input 导入已采集 JSON。",
+            runner=runner,
+        ),
+        _run_status(
+            name="Chrome",
+            command=build_chrome_running_command(system_name),
+            success_message="Chrome 正在运行。",
+            failure_message="Chrome 未运行；需要启动 Chrome 并登录小红书创作者后台后才能采集全量作品。",
+            runner=runner,
+        ),
     ]
 
 
@@ -121,12 +178,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--imported-at", default="")
     parser.add_argument("--skip-render", action="store_true", help="Only update manual cache; do not render dashboard.")
     parser.add_argument("--dry-run", action="store_true", help="Capture/parse and report count without writing files.")
+    parser.add_argument("--check", action="store_true", help="Check whether OpenCLI and Chrome are ready for capture.")
     parser.add_argument("--platform-fetch-timeout", type=float, default=None)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.check:
+        results = check_prerequisites(opencli_cmd=args.opencli_cmd)
+        for item in results:
+            status = "OK" if item["ok"] else "FAIL"
+            print(f"{status} {item['name']}: {item['message']}")
+        return 0 if all(item["ok"] for item in results) else 1
     creator_payload = _load_json(args.input) if args.input else capture_creator_notes(opencli_cmd=args.opencli_cmd, limit=args.limit)
     manual_path = Path(args.manual_path)
     manual_payload = json.loads(manual_path.read_text(encoding="utf-8"))

@@ -6,7 +6,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.refresh_xhs_creator_notes import build_opencli_command, capture_creator_notes, refresh_manual_payload
+from scripts.refresh_xhs_creator_notes import (
+    build_opencli_command,
+    build_opencli_check_command,
+    capture_creator_notes,
+    check_prerequisites,
+    refresh_manual_payload,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +28,30 @@ def test_build_opencli_command_uses_json_output_and_limit() -> None:
         "-f",
         "json",
     ]
+
+
+def test_check_prerequisites_passes_when_opencli_and_chrome_are_ready() -> None:
+    def fake_runner(args, **kwargs):  # noqa: ANN001
+        return subprocess.CompletedProcess(args, 0, stdout="ok\n", stderr="")
+
+    results = check_prerequisites(opencli_cmd="opencli", runner=fake_runner, system_name="Darwin")
+
+    assert [item["name"] for item in results] == ["opencli", "Chrome"]
+    assert all(item["ok"] for item in results)
+    assert build_opencli_check_command("opencli") == ["opencli", "--version"]
+
+
+def test_check_prerequisites_reports_chrome_not_running() -> None:
+    def fake_runner(args, **kwargs):  # noqa: ANN001
+        if args[:2] == ["pgrep", "-x"]:
+            return subprocess.CompletedProcess(args, 1, stdout="", stderr="")
+        return subprocess.CompletedProcess(args, 0, stdout="ok\n", stderr="")
+
+    results = check_prerequisites(opencli_cmd="opencli", runner=fake_runner, system_name="Darwin")
+
+    chrome = next(item for item in results if item["name"] == "Chrome")
+    assert chrome["ok"] is False
+    assert "未运行" in chrome["message"]
 
 
 def test_capture_creator_notes_parses_opencli_stdout() -> None:
