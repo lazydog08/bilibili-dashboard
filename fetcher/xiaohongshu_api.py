@@ -207,7 +207,7 @@ def _latest_note_item_from_payload(
         return None
     detail = _payload_data(detail_payload)
     seven = _period_data(detail, "seven")
-    metrics_are_verified = not _detail_metrics_have_pre_publish_activity(
+    daily_buckets_have_pre_publish_activity = _detail_metrics_have_pre_publish_activity(
         detail,
         note_info.get("postTime"),
         timezone_name,
@@ -221,8 +221,6 @@ def _latest_note_item_from_payload(
         "avd": _seconds_label(seven.get("view_time_avg")),
         "danmaku": _safe_int(seven.get("danmaku_count")),
     }
-    if not metrics_are_verified:
-        metrics = {key: None for key in metrics}
     return {
         "id": note_id,
         "note_id": note_id,
@@ -231,10 +229,12 @@ def _latest_note_item_from_payload(
         "thumbnail": note_info.get("coverUrl"),
         **metrics,
         "data_source": "小红书最新笔记详情",
-        "metric_scope": "近7日后台明细" if metrics_are_verified else "待核验",
+        "metric_scope": "近7日后台汇总"
+        if daily_buckets_have_pre_publish_activity
+        else "近7日后台明细",
         "metric_warning": ""
-        if metrics_are_verified
-        else "最新笔记详情接口返回了发布前日期的非零播放/互动，未展示为真实视频数据。",
+        if not daily_buckets_have_pre_publish_activity
+        else "最新笔记详情接口的日拆分日期异常，已保留后台汇总指标，未使用日拆分趋势。",
     }
 
 
@@ -389,7 +389,7 @@ class XiaohongshuCookieSource(XiaohongshuBaseSource):
         if not item:
             return [], "latest_note_data: 未识别到最新笔记"
         if item.get("metric_warning"):
-            return [item], "最新笔记已读取 1 条，明细数值未通过发布时间校验。"
+            return [item], "最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。"
         return [item], "最新笔记已读取 1 条。"
 
     async def _fetch_content_items(

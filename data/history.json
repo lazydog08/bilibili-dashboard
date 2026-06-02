@@ -108068,6 +108068,244 @@
           "merged_content_count": 11
         }
       }
+    },
+    {
+      "platform": "xiaohongshu",
+      "accountId": "409476273",
+      "capturedAt": "2026-06-02T12:10:41+08:00",
+      "date": "2026-06-02",
+      "timezone": "Asia/Shanghai",
+      "fans": {
+        "value": 39505,
+        "status": "available",
+        "source": "authorized_cookie"
+      },
+      "metrics": {
+        "views": {
+          "value": 10317,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "likes": {
+          "value": 622,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "favorites": {
+          "value": 408,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "comments": {
+          "value": 38,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "shares": {
+          "value": 37,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "customMetrics": {
+        "note_impressions": {
+          "value": 115281,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "search_entries": {
+          "value": null,
+          "status": "missing",
+          "source": "authorized_cookie"
+        },
+        "cover_click_rate": {
+          "value": 4.7,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "avg_view_time": {
+          "value": 59.9,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "completion_rate": {
+          "value": 2.2,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "profile_visits": {
+          "value": 234,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "dailyMetrics": {
+        "views": {
+          "today": {
+            "value": 10317,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "likes": {
+          "today": {
+            "value": 622,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "favorites": {
+          "today": {
+            "value": 408,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "comments": {
+          "today": {
+            "value": 38,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "shares": {
+          "today": {
+            "value": 37,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "customDailyMetrics": {
+        "note_impressions": {
+          "today": {
+            "value": 115281,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "search_entries": {
+          "today": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "cover_click_rate": {
+          "today": {
+            "value": 4.7,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "avg_view_time": {
+          "today": {
+            "value": 59.9,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "completion_rate": {
+          "today": {
+            "value": 2.2,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "profile_visits": {
+          "today": {
+            "value": 234,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "manualGrowth": {
+        "7d": {
+          "value": 3,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "30d": {
+          "value": -32,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "metricColumns": {
+        "current": "近7日",
+        "previous": "对比期"
+      },
+      "sourceStatus": {
+        "status": "success",
+        "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。",
+        "source": "authorized_cookie"
+      },
+      "raw": {
+        "summary": {
+          "source": "authorized_cookie",
+          "personal_info": true,
+          "account_metrics": 79,
+          "content_count": 1,
+          "manual_content_count": 11,
+          "merged_content_count": 12
+        }
+      }
     }
   ],
   "fetch_logs": [
@@ -111814,6 +112052,12 @@
       "platform": "xiaohongshu",
       "status": "success",
       "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，明细数值未通过发布时间校验。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。"
+    },
+    {
+      "capturedAt": "2026-06-02T12:10:41+08:00",
+      "platform": "xiaohongshu",
+      "status": "success",
+      "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。 部分作品明细沿用手动导入缓存补齐，汇总指标仍来自当前授权后台。"
     }
   ],
   "latest_content": {
@@ -112060,11 +112304,31 @@
       ]
     },
     "xiaohongshu": {
-      "capturedAt": "2026-06-02T12:00:49+08:00",
+      "capturedAt": "2026-06-02T12:10:41+08:00",
       "timezone": "Asia/Shanghai",
       "source": "authorized_cookie",
       "importedAt": "",
       "items": [
+        {
+          "title": "清闲pro到底好不好？给大家踩踩坑",
+          "publish_time": "2026-05-27 19:50",
+          "thumbnail": "http://ci.xiaohongshu.com/1040g008320lvh60slk005no933g08br2rrd3720?imageView2/2/w/1080/format/jpg",
+          "views": 11822,
+          "likes": 687,
+          "favorites": 282,
+          "comments": 47,
+          "shares": 56,
+          "ctr": null,
+          "avd": "640.9秒",
+          "avp": null,
+          "danmaku": 0,
+          "thumbnail_note": null,
+          "data_source": "小红书最新笔记详情",
+          "metric_scope": "近7日后台汇总",
+          "metric_warning": "最新笔记详情接口的日拆分日期异常，已保留后台汇总指标，未使用日拆分趋势。",
+          "id": "6a16d4f500000000350320c3",
+          "note_id": "6a16d4f500000000350320c3"
+        },
         {
           "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
           "publish_time": "2026年04月22日 20:17",
@@ -112079,8 +112343,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112097,8 +112361,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112115,8 +112379,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112133,8 +112397,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112151,8 +112415,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112169,8 +112433,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112187,8 +112451,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112205,8 +112469,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112223,8 +112487,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112241,8 +112505,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         },
         {
@@ -112259,8 +112523,8 @@
           "avp": null,
           "danmaku": null,
           "thumbnail_note": null,
-          "data_source": null,
-          "metric_scope": null,
+          "data_source": "手动导入缓存",
+          "metric_scope": "导入于 2026-05-23",
           "metric_warning": null
         }
       ]

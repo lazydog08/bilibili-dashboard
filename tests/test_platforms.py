@@ -547,7 +547,7 @@ def test_xhs_summary_url_reports_stale_content_fallback(monkeypatch) -> None:
     assert "XIAOHONGSHU_CONTENT_DATA_URL" in snapshot["sourceStatus"]["message"]
 
 
-def test_xhs_latest_note_rejects_detail_metrics_with_pre_publish_activity(monkeypatch) -> None:
+def test_xhs_latest_note_keeps_aggregate_metrics_with_pre_publish_daily_buckets(monkeypatch) -> None:
     import fetcher.xiaohongshu_api as xhs_api
 
     async def fake_xhs_get_json(url, cookie, *, extra_headers=None, referer=""):  # noqa: ANN001
@@ -591,10 +591,13 @@ def test_xhs_latest_note_rejects_detail_metrics_with_pre_publish_activity(monkey
         source._fetch_latest_note_item("configured-cookie", "Asia/Shanghai", {})
     )
 
-    assert "未通过发布时间校验" in message
+    assert "日拆分日期异常" in message
     assert items[0]["title"] == "清闲pro到底好不好？给大家踩踩坑"
     assert items[0]["publish_time"] == "2026-05-27 19:50"
-    assert items[0]["views"] is None
-    assert items[0]["likes"] is None
-    assert items[0]["metric_scope"] == "待核验"
-    assert "发布前日期" in items[0]["metric_warning"]
+    assert items[0]["views"] == 8217
+    assert items[0]["likes"] == 274
+    assert items[0]["favorites"] == 92
+    assert items[0]["comments"] == 15
+    assert items[0]["shares"] == 48
+    assert items[0]["metric_scope"] == "近7日后台汇总"
+    assert "日拆分日期异常" in items[0]["metric_warning"]

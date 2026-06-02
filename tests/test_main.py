@@ -6,7 +6,7 @@ import json
 import pytest
 
 from config import PROJECT_ROOT, load_settings
-from main import _fetch_with_retries, build_dashboard, parse_args
+from main import _fetch_with_retries, _with_manual_content_fallback, build_dashboard, parse_args
 
 
 def test_parse_args_allows_bilibili_only_live_path() -> None:
@@ -72,3 +72,43 @@ def test_cache_render_preserves_existing_data_timestamp(tmp_path) -> None:
     saved = json.loads(history_path.read_text(encoding="utf-8"))
     assert saved["last_updated"] == old_timestamp
     assert result["context"]["last_updated_iso"] == old_timestamp
+
+
+def test_manual_content_fallback_marks_cached_item_source() -> None:
+    snapshot = {
+        "platform": "xiaohongshu",
+        "sourceStatus": {
+            "status": "success",
+            "source": "authorized_cookie",
+            "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条。",
+        },
+        "contentItems": [
+            {
+                "title": "清闲pro到底好不好？给大家踩踩坑",
+                "publish_time": "2026-05-27 19:50",
+                "views": 11822,
+                "data_source": "小红书最新笔记详情",
+                "metric_scope": "近7日后台汇总",
+            }
+        ],
+    }
+    manual_snapshot = {
+        "sourceStatus": {"importedAt": "2026-05-23T20:11:00+08:00"},
+        "contentItems": [
+            {
+                "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
+                "publish_time": "2026年04月22日 20:17",
+                "views": 119869,
+                "data_source": None,
+                "metric_scope": None,
+            }
+        ],
+    }
+
+    patched = _with_manual_content_fallback(snapshot, manual_snapshot)
+
+    cached_item = patched["contentItems"][1]
+    assert cached_item["title"] == "战争制裁下的俄罗斯，人们过着怎样的生活？"
+    assert cached_item["data_source"] == "手动导入缓存"
+    assert cached_item["metric_scope"] == "导入于 2026-05-23"
+    assert patched["contentItems"][0]["data_source"] == "小红书最新笔记详情"

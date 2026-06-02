@@ -193,6 +193,32 @@ def _manual_platform_snapshots(settings: Settings) -> dict[str, dict[str, Any]]:
     return result
 
 
+def _manual_content_import_label(manual_snapshot: dict[str, Any]) -> str:
+    source_status = manual_snapshot.get("sourceStatus")
+    imported_at = ""
+    if isinstance(source_status, dict):
+        imported_at = str(source_status.get("importedAt") or "")
+    imported_at = imported_at or str(manual_snapshot.get("importedAt") or manual_snapshot.get("capturedAt") or "")
+    if len(imported_at) >= 10:
+        return f"导入于 {imported_at[:10]}"
+    return "手动导入缓存"
+
+
+def _annotated_manual_content_items(manual_snapshot: dict[str, Any], manual_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    import_label = _manual_content_import_label(manual_snapshot)
+    annotated: list[dict[str, Any]] = []
+    for item in manual_items:
+        if not isinstance(item, dict):
+            continue
+        item_copy = deepcopy(item)
+        if not item_copy.get("data_source"):
+            item_copy["data_source"] = "手动导入缓存"
+        if not item_copy.get("metric_scope"):
+            item_copy["metric_scope"] = import_label
+        annotated.append(item_copy)
+    return annotated
+
+
 def _with_manual_content_fallback(
     snapshot: dict[str, Any],
     manual_snapshot: dict[str, Any] | None,
@@ -203,7 +229,11 @@ def _with_manual_content_fallback(
     if not isinstance(manual_items, list) or not manual_items:
         return snapshot
     current_items = snapshot.get("contentItems") if isinstance(snapshot.get("contentItems"), list) else []
-    merged_items = merge_content_items(current_items, manual_items, content_limit=60)
+    merged_items = merge_content_items(
+        current_items,
+        _annotated_manual_content_items(manual_snapshot, manual_items),
+        content_limit=60,
+    )
     if merged_items == current_items:
         return snapshot
     patched = deepcopy(snapshot)
