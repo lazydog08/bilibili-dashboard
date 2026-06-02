@@ -99,9 +99,13 @@ python main.py --live --no-feishu
 小红书创作者后台的全量作品列表带动态签名，普通定时任务直接请求作品分析接口可能返回 406。若要刷新作品明细，可先在已登录小红书创作者后台的 Chrome 中用浏览器采集工具导出作品 JSON，再导入本项目：
 
 ```bash
-opencli xiaohongshu creator-notes --limit 50 -f json > /tmp/xhs-creator-notes.json
-python scripts/import_xhs_creator_notes.py --input /tmp/xhs-creator-notes.json
-python main.py --live --no-feishu --no-bark
+python scripts/refresh_xhs_creator_notes.py --limit 50
+```
+
+如果你已经有 `creator-notes` JSON，也可以跳过采集，只导入并刷新看板：
+
+```bash
+python scripts/refresh_xhs_creator_notes.py --input /tmp/xhs-creator-notes.json
 ```
 
 导入脚本只替换 `data/manual_platform_metrics.json` 里的小红书 `contentItems`，不会写入 Cookie、token 或请求头，也不会改动抖音数据。
