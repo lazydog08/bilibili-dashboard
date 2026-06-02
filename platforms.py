@@ -740,6 +740,13 @@ def _content_metric_score(item: dict[str, Any]) -> int:
     return sum(1 for key in keys if _content_value_present(item.get(key)))
 
 
+def _is_unverified_blank_content_item(item: dict[str, Any]) -> bool:
+    if not _content_value_present(item.get("metric_warning")):
+        return False
+    metric_keys = ("views", "likes", "favorites", "comments", "shares", "ctr", "avd", "avp", "danmaku")
+    return not any(_content_value_present(item.get(key)) for key in metric_keys)
+
+
 def _publish_dates_close(left: dict[str, Any], right: dict[str, Any]) -> bool:
     left_dt = _content_datetime(left.get("publish_time"))
     right_dt = _content_datetime(right.get("publish_time"))
@@ -868,6 +875,8 @@ def merge_content_items(
         if not isinstance(item, dict):
             continue
         normalized = _normalize_content_item(item)
+        if _is_unverified_blank_content_item(normalized):
+            continue
         matched_index = None
         for index, existing in enumerate(merged):
             if _same_content_item(existing, normalized):

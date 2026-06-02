@@ -336,6 +336,35 @@ def test_merge_content_items_dedupes_similar_titles_and_sorts_by_publish_time() 
     assert merged[0]["likes"] == 50
 
 
+def test_merge_content_items_skips_unverified_blank_latest_note() -> None:
+    live_items = [
+        {
+            "title": "清闲pro到底好不好？给大家踩踩坑",
+            "publish_time": "2026-05-27 19:50",
+            "thumbnail": "https://example.com/xhs.jpg",
+            "views": None,
+            "likes": None,
+            "favorites": None,
+            "comments": None,
+            "shares": None,
+            "data_source": "小红书最新笔记详情",
+            "metric_scope": "待核验",
+            "metric_warning": "最新笔记详情接口返回了发布前日期的非零播放/互动，未展示为真实视频数据。",
+        }
+    ]
+    manual_items = [
+        {
+            "title": "战争制裁下的俄罗斯，人们过着怎样的生活？",
+            "publish_time": "2026年04月22日 20:17",
+            "views": 119869,
+        }
+    ]
+
+    merged = merge_content_items(live_items, manual_items)
+
+    assert [item["title"] for item in merged] == ["战争制裁下的俄罗斯，人们过着怎样的生活？"]
+
+
 def test_client_uses_manual_import_as_fallback_without_network() -> None:
     manual = build_platform_snapshot(
         platform="douyin",
