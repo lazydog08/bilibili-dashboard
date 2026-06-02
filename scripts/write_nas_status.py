@@ -84,6 +84,7 @@ def build_payload(args: argparse.Namespace, repo_dir: Path) -> dict[str, object]
         "dashboard_exit_code": args.dashboard_exit_code,
         "comment_fetch_status": args.comment_fetch_status,
         "comment_render_status": args.comment_render_status,
+        "xhs_creator_notes_status": args.xhs_creator_notes_status,
         "tests_status": args.tests_status,
         "publish_status": args.publish_status,
         "git_branch": _git_value(repo_dir, "branch", "--show-current"),
@@ -109,6 +110,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--comment-render-status",
+        default="skipped",
+        choices=["success", "failed", "skipped"],
+    )
+    parser.add_argument(
+        "--xhs-creator-notes-status",
         default="skipped",
         choices=["success", "failed", "skipped"],
     )

@@ -44,6 +44,10 @@ def build_opencli_check_command(opencli_cmd: str) -> list[str]:
     return [*shlex.split(opencli_cmd), "--version"]
 
 
+def build_opencli_doctor_command(opencli_cmd: str) -> list[str]:
+    return [*shlex.split(opencli_cmd), "doctor"]
+
+
 def build_chrome_running_command(system_name: str | None = None) -> list[str]:
     current = system_name or platform.system()
     if current == "Darwin":
@@ -72,6 +76,34 @@ def _run_status(
     return {"name": name, "ok": False, "message": failure_message}
 
 
+def _run_browser_bridge_status(*, opencli_cmd: str, runner: Runner) -> dict[str, Any]:
+    command = build_opencli_doctor_command(opencli_cmd)
+    try:
+        result = runner(command, text=True, capture_output=True, check=False)
+    except FileNotFoundError:
+        return {
+            "name": "Browser Bridge",
+            "ok": False,
+            "message": "OpenCLI Browser Bridge 未连接；请先安装并启用浏览器采集扩展。",
+        }
+    text = f"{result.stdout}\n{result.stderr}"
+    lowered = text.lower()
+    connected = (
+        result.returncode == 0
+        and "[fail]" not in lowered
+        and "[missing]" not in lowered
+        and "not connected" not in lowered
+        and ("connectivity" in lowered or "extension" in lowered)
+    )
+    if connected:
+        return {"name": "Browser Bridge", "ok": True, "message": "OpenCLI Browser Bridge 已连接。"}
+    return {
+        "name": "Browser Bridge",
+        "ok": False,
+        "message": "OpenCLI Browser Bridge 未连接；请在 Chrome 启用 Browser Bridge 扩展并保持创作者后台登录。",
+    }
+
+
 def check_prerequisites(
     *,
     opencli_cmd: str,
@@ -86,6 +118,7 @@ def check_prerequisites(
             failure_message="未找到可用 opencli；请安装 opencli，或用 --input 导入已采集 JSON。",
             runner=runner,
         ),
+        _run_browser_bridge_status(opencli_cmd=opencli_cmd, runner=runner),
         _run_status(
             name="Chrome",
             command=build_chrome_running_command(system_name),

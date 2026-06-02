@@ -9,6 +9,7 @@ from pathlib import Path
 from scripts.refresh_xhs_creator_notes import (
     build_opencli_command,
     build_opencli_check_command,
+    build_opencli_doctor_command,
     capture_creator_notes,
     check_prerequisites,
     refresh_manual_payload,
@@ -32,17 +33,22 @@ def test_build_opencli_command_uses_json_output_and_limit() -> None:
 
 def test_check_prerequisites_passes_when_opencli_and_chrome_are_ready() -> None:
     def fake_runner(args, **kwargs):  # noqa: ANN001
+        if args == ["opencli", "doctor"]:
+            return subprocess.CompletedProcess(args, 0, stdout="[OK] Extension: connected\n[OK] Connectivity: ok\n", stderr="")
         return subprocess.CompletedProcess(args, 0, stdout="ok\n", stderr="")
 
     results = check_prerequisites(opencli_cmd="opencli", runner=fake_runner, system_name="Darwin")
 
-    assert [item["name"] for item in results] == ["opencli", "Chrome"]
+    assert [item["name"] for item in results] == ["opencli", "Browser Bridge", "Chrome"]
     assert all(item["ok"] for item in results)
     assert build_opencli_check_command("opencli") == ["opencli", "--version"]
+    assert build_opencli_doctor_command("opencli") == ["opencli", "doctor"]
 
 
 def test_check_prerequisites_reports_chrome_not_running() -> None:
     def fake_runner(args, **kwargs):  # noqa: ANN001
+        if args == ["opencli", "doctor"]:
+            return subprocess.CompletedProcess(args, 0, stdout="[OK] Extension: connected\n[OK] Connectivity: ok\n", stderr="")
         if args[:2] == ["pgrep", "-x"]:
             return subprocess.CompletedProcess(args, 1, stdout="", stderr="")
         return subprocess.CompletedProcess(args, 0, stdout="ok\n", stderr="")
@@ -52,6 +58,24 @@ def test_check_prerequisites_reports_chrome_not_running() -> None:
     chrome = next(item for item in results if item["name"] == "Chrome")
     assert chrome["ok"] is False
     assert "未运行" in chrome["message"]
+
+
+def test_check_prerequisites_reports_browser_bridge_not_connected() -> None:
+    def fake_runner(args, **kwargs):  # noqa: ANN001
+        if args == ["opencli", "doctor"]:
+            return subprocess.CompletedProcess(
+                args,
+                0,
+                stdout="[MISSING] Extension: not connected\n[FAIL] Connectivity: failed\n",
+                stderr="",
+            )
+        return subprocess.CompletedProcess(args, 0, stdout="ok\n", stderr="")
+
+    results = check_prerequisites(opencli_cmd="opencli", runner=fake_runner, system_name="Darwin")
+
+    bridge = next(item for item in results if item["name"] == "Browser Bridge")
+    assert bridge["ok"] is False
+    assert "Browser Bridge" in bridge["message"]
 
 
 def test_capture_creator_notes_parses_opencli_stdout() -> None:

@@ -125,6 +125,14 @@ def test_cloud_update_script_pushes_public_nas_status(tmp_path: Path) -> None:
     assert '"last_run_at": "new"' in pushed_pages_status
 
 
+def test_cloud_update_script_can_publish_failure_heartbeat_after_refresh_failure() -> None:
+    script = (REPO_ROOT / "scripts" / "nas_update_and_push_cloud.sh").read_text(encoding="utf-8")
+
+    assert "DASHBOARD_REFRESH_STATUS" in script
+    assert "Dashboard refresh failed" in script
+    assert 'exit "$DASHBOARD_REFRESH_STATUS"' in script
+
+
 def test_cloud_update_script_recovers_stale_lock_dir(tmp_path: Path) -> None:
     bash = require_tool("bash")
     git = require_tool("git")
@@ -452,6 +460,45 @@ def test_nas_update_script_fetches_comments_before_publish() -> None:
     assert '"--cache" "--no-feishu" "--no-bark"' in script
 
 
+def test_nas_update_script_refreshes_xhs_creator_notes_before_main_render() -> None:
+    script = (REPO_ROOT / "scripts" / "nas_update_dashboard.sh").read_text(encoding="utf-8")
+
+    assert "XHS_CREATOR_NOTES_REFRESH_ENABLED" in script
+    assert "scripts/refresh_xhs_creator_notes.py" in script
+    assert '--xhs-creator-notes-status "$XHS_CREATOR_NOTES_STATUS"' in script
+    assert script.index("run_xhs_creator_notes_refresh") < script.index('CMD=("$PYTHON_BIN" "main.py")')
+
+
+def test_write_nas_status_records_xhs_creator_notes_status(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_NAS_STATUS_PATH": "data/nas_status.json",
+        }
+    )
+
+    result = subprocess.run(
+        [
+            python,
+            str(REPO_ROOT / "scripts" / "write_nas_status.py"),
+            "--xhs-creator-notes-status",
+            "failed",
+        ],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads((repo / "data" / "nas_status.json").read_text(encoding="utf-8"))
+    assert payload["xhs_creator_notes_status"] == "failed"
+
+
 def test_noon_watchdog_marks_recent_page_and_heartbeat_as_normal() -> None:
     page_html = '<div data-dashboard-updated="2026-05-31T11:30:00+08:00">最后更新</div>'
     nas_status = {"last_run_at": "2026-05-31T03:30:00+00:00"}
@@ -483,6 +530,24 @@ def test_noon_watchdog_marks_stale_page_as_abnormal() -> None:
     assert result.ok is False
     assert result.page_age_minutes == 121
     assert "page_stale" in result.reasons
+
+
+def test_noon_watchdog_marks_failed_xhs_creator_note_refresh_as_abnormal() -> None:
+    page_html = '<div data-dashboard-updated="2026-05-31T11:45:00+08:00">最后更新</div>'
+    nas_status = {
+        "last_run_at": "2026-05-31T03:45:00+00:00",
+        "xhs_creator_notes_status": "failed",
+    }
+
+    result = assess_freshness(
+        page_html=page_html,
+        nas_status=nas_status,
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+    )
+
+    assert result.ok is False
+    assert "xhs_creator_notes_failed" in result.reasons
 
 
 def test_noon_watchdog_bark_message_reports_normal_status() -> None:

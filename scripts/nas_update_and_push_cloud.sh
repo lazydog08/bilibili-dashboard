@@ -219,8 +219,14 @@ if [[ "${DASHBOARD_GIT_PULL_BEFORE_PUSH:-1}" == "1" ]]; then
   sync_cloud_state
 fi
 
+DASHBOARD_REFRESH_STATUS=0
 if [[ "${DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH:-1}" == "1" ]]; then
-  DASHBOARD_GIT_PUSH=0 "$SCRIPT_DIR/nas_update_dashboard.sh"
+  if DASHBOARD_GIT_PUSH=0 "$SCRIPT_DIR/nas_update_dashboard.sh"; then
+    DASHBOARD_REFRESH_STATUS=0
+  else
+    DASHBOARD_REFRESH_STATUS=$?
+    log "Dashboard refresh failed with exit code $DASHBOARD_REFRESH_STATUS; trying to publish NAS heartbeat."
+  fi
 else
   log "Skipping dashboard refresh before cloud push; using latest local output."
 fi
@@ -241,7 +247,7 @@ fi
 if git diff --staged --quiet; then
   log "No dashboard changes to push."
   log "NAS cloud update finished."
-  exit 0
+  exit "$DASHBOARD_REFRESH_STATUS"
 fi
 
 commit_time="$(TZ="$TIMEZONE" date '+%Y-%m-%d %H:%M')"
@@ -255,6 +261,11 @@ if ! git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1; then
     log "Git push failed after retry."
     exit 1
   }
+fi
+
+if [[ "$DASHBOARD_REFRESH_STATUS" != "0" ]]; then
+  log "NAS cloud update published failure heartbeat; exiting with dashboard refresh status $DASHBOARD_REFRESH_STATUS."
+  exit "$DASHBOARD_REFRESH_STATUS"
 fi
 
 log "NAS cloud update finished."
