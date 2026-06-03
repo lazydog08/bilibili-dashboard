@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_updated": "2026-06-04T04:00:45+08:00",
+  "last_updated": "2026-06-04T04:30:49+08:00",
   "source": "cache",
   "warnings": [],
   "snapshots": [
@@ -6307,7 +6307,7 @@
     },
     {
       "date": "2026-06-04",
-      "updated_at": "2026-06-04T04:00:09+08:00",
+      "updated_at": "2026-06-04T04:30:13+08:00",
       "channel": {
         "total_followers": 171390,
         "follower_delta_7d": 106,
@@ -6325,13 +6325,13 @@
           "title": "当年炒到 18 万一台的手机，现在怎么样了？",
           "thumbnail": "http://i0.hdslb.com/bfs/archive/86fa897e38469194869c0d236dfbdb9d8769d517.jpg",
           "publish_time": "2026-05-24",
-          "views": 161847,
+          "views": 161857,
           "likes": 11623,
           "coins": 2526,
           "favorites": 1695,
           "shares": 1094,
           "replies": 1072,
-          "ctr": 0.0664,
+          "ctr": 0.0166,
           "avd_minutes": 2.1647849999999997,
           "avp_percent": 0.3339,
           "follower_gain": 652,
@@ -6342,11 +6342,11 @@
           "title": "【年度大活】邀请9位UP主聊聊，他们2026年最喜欢的手机竟然是...?!",
           "thumbnail": "http://i2.hdslb.com/bfs/archive/2668885bcac83e2489d4f79f0830f1ec2f905548.jpg",
           "publish_time": "2026-05-22",
-          "views": 132297,
-          "likes": 5884,
-          "coins": 1828,
-          "favorites": 1264,
-          "shares": 305,
+          "views": 132315,
+          "likes": 5886,
+          "coins": 1830,
+          "favorites": 1265,
+          "shares": 306,
           "replies": 1699,
           "ctr": 0.0,
           "avd_minutes": 0.0,
@@ -6359,13 +6359,13 @@
           "title": "战争制裁下的俄罗斯，老百姓过着怎样的生活？",
           "thumbnail": "http://i2.hdslb.com/bfs/archive/0ee4ee2922159cd8a770f63a85bade712e844b63.jpg",
           "publish_time": "2026-04-22",
-          "views": 1358851,
+          "views": 1358856,
           "likes": 39802,
           "coins": 7283,
           "favorites": 14982,
           "shares": 2138,
           "replies": 372,
-          "ctr": 0.0264,
+          "ctr": 0.0066,
           "avd_minutes": 2.520373333333333,
           "avp_percent": 0.2512,
           "follower_gain": 162,
@@ -6393,13 +6393,13 @@
           "title": "我做了个离谱的充电站...",
           "thumbnail": "http://i0.hdslb.com/bfs/archive/f24a6d7b6bc6f8df85daa7356d06893855f0d385.jpg",
           "publish_time": "2026-03-27",
-          "views": 370646,
+          "views": 370648,
           "likes": 20868,
           "coins": 4968,
           "favorites": 8230,
           "shares": 1213,
           "replies": 1438,
-          "ctr": 0.0284,
+          "ctr": 0.0071,
           "avd_minutes": 1.8543450000000001,
           "avp_percent": 0.2049,
           "follower_gain": 1171,
@@ -6416,7 +6416,7 @@
           "favorites": 3668,
           "shares": 1014,
           "replies": 314,
-          "ctr": 0.0327,
+          "ctr": 0.0081,
           "avd_minutes": 0.72158,
           "avp_percent": 0.1324,
           "follower_gain": 224,
@@ -6427,13 +6427,13 @@
           "title": "花3000多租了栋惠州的别墅，我要后悔死了...",
           "thumbnail": "http://i0.hdslb.com/bfs/archive/4acc2bd7541bfd155750f3334bc8aec6f01da0d5.jpg",
           "publish_time": "2026-01-15",
-          "views": 1001243,
+          "views": 1001247,
           "likes": 32743,
           "coins": 6984,
           "favorites": 7364,
           "shares": 6311,
           "replies": 1490,
-          "ctr": 0.0469,
+          "ctr": 0.0117,
           "avd_minutes": 5.517675,
           "avp_percent": 0.3699,
           "follower_gain": 2154,
@@ -6450,7 +6450,7 @@
           "favorites": 1340,
           "shares": 337,
           "replies": 105,
-          "ctr": 0.0069,
+          "ctr": 0.0017,
           "avd_minutes": 0.8752199999999999,
           "avp_percent": 0.1006,
           "follower_gain": 42,
@@ -6461,13 +6461,13 @@
           "title": "迄今最恐怖的手机",
           "thumbnail": "http://i0.hdslb.com/bfs/archive/0c28a09aa120468beb729e99f5100293818379ea.jpg",
           "publish_time": "2025-12-08",
-          "views": 1567332,
+          "views": 1567336,
           "likes": 61704,
           "coins": 16278,
           "favorites": 20861,
           "shares": 31211,
           "replies": 8481,
-          "ctr": 0.0483,
+          "ctr": 0.012,
           "avd_minutes": 3.8600466666666664,
           "avp_percent": 0.4049,
           "follower_gain": 2784,
@@ -6484,7 +6484,7 @@
           "favorites": 2435,
           "shares": 1084,
           "replies": 198,
-          "ctr": 0.0078,
+          "ctr": 0.0019,
           "avd_minutes": 0.7799916666666665,
           "avp_percent": 0.1397,
           "follower_gain": 55,
@@ -6501,7 +6501,7 @@
           "favorites": 106236,
           "shares": 4487,
           "replies": 4866,
-          "ctr": 0.0391,
+          "ctr": 0.0097,
           "avd_minutes": 1.52312,
           "avp_percent": 0.1446,
           "follower_gain": 7773,
@@ -6518,7 +6518,7 @@
           "favorites": 1195,
           "shares": 54,
           "replies": 157,
-          "ctr": 0.0072,
+          "ctr": 0.0018,
           "avd_minutes": 2.0281233333333333,
           "avp_percent": 0.2066,
           "follower_gain": 67,
@@ -6535,7 +6535,7 @@
           "favorites": 16820,
           "shares": 586,
           "replies": 1091,
-          "ctr": 0.0492,
+          "ctr": 0.0123,
           "avd_minutes": 1.496985,
           "avp_percent": 0.3339,
           "follower_gain": 3355,
@@ -6552,7 +6552,7 @@
           "favorites": 537,
           "shares": 74,
           "replies": 173,
-          "ctr": 0.0302,
+          "ctr": 0.0075,
           "avd_minutes": 1.3065983333333333,
           "avp_percent": 0.2299,
           "follower_gain": 69,
@@ -6563,13 +6563,13 @@
           "title": "\"为什么有人宁愿买安卓平板也不买 iPad？\"",
           "thumbnail": "http://i1.hdslb.com/bfs/archive/1c60844153caaf77b00a5e666bb3c654c59f8d22.jpg",
           "publish_time": "2025-10-15",
-          "views": 1398825,
+          "views": 1398826,
           "likes": 39907,
           "coins": 3258,
           "favorites": 5279,
           "shares": 1136,
           "replies": 6501,
-          "ctr": 0.0468,
+          "ctr": 0.0117,
           "avd_minutes": 1.2909633333333332,
           "avp_percent": 0.1814,
           "follower_gain": 491,
@@ -6586,7 +6586,7 @@
           "favorites": 578,
           "shares": 315,
           "replies": 1896,
-          "ctr": 0.0668,
+          "ctr": 0.0167,
           "avd_minutes": 1.1692799999999999,
           "avp_percent": 0.1344,
           "follower_gain": 178,
@@ -6603,7 +6603,7 @@
           "favorites": 2292,
           "shares": 1833,
           "replies": 2139,
-          "ctr": 0.0394,
+          "ctr": 0.0098,
           "avd_minutes": 3.2419800000000003,
           "avp_percent": 0.5229,
           "follower_gain": 754,
@@ -6620,7 +6620,7 @@
           "favorites": 1501,
           "shares": 593,
           "replies": 699,
-          "ctr": 0.0526,
+          "ctr": 0.0131,
           "avd_minutes": 2.55132,
           "avp_percent": 0.4104,
           "follower_gain": 1049,
@@ -6637,7 +6637,7 @@
           "favorites": 4977,
           "shares": 2477,
           "replies": 462,
-          "ctr": 0.019,
+          "ctr": 0.0047,
           "avd_minutes": 4.117343333333333,
           "avp_percent": 0.3842,
           "follower_gain": 589,
@@ -6654,7 +6654,7 @@
           "favorites": 564,
           "shares": 100,
           "replies": 472,
-          "ctr": 0.0435,
+          "ctr": 0.0108,
           "avd_minutes": 0.6736366666666667,
           "avp_percent": 0.1129,
           "follower_gain": 61,
@@ -6671,7 +6671,7 @@
           "favorites": 492,
           "shares": 91,
           "replies": 371,
-          "ctr": 0.0076,
+          "ctr": 0.0019,
           "avd_minutes": 1.44228,
           "avp_percent": 0.1717,
           "follower_gain": 146,
@@ -6688,7 +6688,7 @@
           "favorites": 572,
           "shares": 109,
           "replies": 430,
-          "ctr": 0.0321,
+          "ctr": 0.008,
           "avd_minutes": 0.95356,
           "avp_percent": 0.1538,
           "follower_gain": 115,
@@ -6705,7 +6705,7 @@
           "favorites": 1502,
           "shares": 607,
           "replies": 3019,
-          "ctr": 0.0395,
+          "ctr": 0.0098,
           "avd_minutes": 2.2164616666666666,
           "avp_percent": 0.4801,
           "follower_gain": 354,
@@ -6722,7 +6722,7 @@
           "favorites": 1645,
           "shares": 87,
           "replies": 419,
-          "ctr": 0.008,
+          "ctr": 0.002,
           "avd_minutes": 2.13519,
           "avp_percent": 0.1854,
           "follower_gain": 287,
@@ -6739,7 +6739,7 @@
           "favorites": 4076,
           "shares": 375,
           "replies": 703,
-          "ctr": 0.0184,
+          "ctr": 0.0046,
           "avd_minutes": 1.3722666666666665,
           "avp_percent": 0.124,
           "follower_gain": 895,
@@ -6773,7 +6773,7 @@
           "favorites": 2102,
           "shares": 461,
           "replies": 1231,
-          "ctr": 0.0264,
+          "ctr": 0.0066,
           "avd_minutes": 1.71296,
           "avp_percent": 0.2544,
           "follower_gain": 303,
@@ -6807,7 +6807,7 @@
           "favorites": 913,
           "shares": 84,
           "replies": 251,
-          "ctr": 0.0207,
+          "ctr": 0.0051,
           "avd_minutes": 4.11628,
           "avp_percent": 0.3374,
           "follower_gain": 269,
@@ -6824,7 +6824,7 @@
           "favorites": 309,
           "shares": 45,
           "replies": 86,
-          "ctr": 0.0356,
+          "ctr": 0.0089,
           "avd_minutes": 1.6224249999999998,
           "avp_percent": 0.2667,
           "follower_gain": 95,
@@ -122209,6 +122209,509 @@
           "manual_cached_content_count": 11
         }
       }
+    },
+    {
+      "platform": "bilibili",
+      "accountId": "516185777",
+      "capturedAt": "2026-06-04T04:30:13+08:00",
+      "date": "2026-06-04",
+      "timezone": "Asia/Shanghai",
+      "fans": {
+        "value": 171390,
+        "status": "available",
+        "source": "bilibili_live"
+      },
+      "metrics": {
+        "views": {
+          "value": 43938779,
+          "status": "available",
+          "source": "bilibili_live"
+        },
+        "likes": {
+          "value": 1234595,
+          "status": "available",
+          "source": "bilibili_live"
+        },
+        "favorites": {
+          "value": 387529,
+          "status": "available",
+          "source": "bilibili_live"
+        },
+        "comments": {
+          "value": 104532,
+          "status": "available",
+          "source": "bilibili_live"
+        },
+        "shares": {
+          "value": 98532,
+          "status": "available",
+          "source": "bilibili_live"
+        }
+      },
+      "customMetrics": {
+        "coins": {
+          "value": 253302,
+          "status": "available",
+          "source": "bilibili_live"
+        },
+        "danmaku": {
+          "value": 87547,
+          "status": "available",
+          "source": "bilibili_live"
+        }
+      },
+      "dailyMetrics": {},
+      "customDailyMetrics": {},
+      "manualGrowth": {
+        "7d": {
+          "value": 106,
+          "status": "available",
+          "source": "bilibili_live"
+        }
+      },
+      "metricColumns": {
+        "current": "当前累计",
+        "previous": "上次累计"
+      },
+      "sourceStatus": {
+        "status": "success",
+        "message": "",
+        "source": "bilibili_live"
+      },
+      "raw": {
+        "summary": {
+          "videos_count": 30,
+          "source": "bilibili_live"
+        }
+      }
+    },
+    {
+      "platform": "douyin",
+      "accountId": "30688625993",
+      "capturedAt": "2026-06-04T04:30:48+08:00",
+      "date": "2026-06-04",
+      "timezone": "Asia/Shanghai",
+      "fans": {
+        "value": 91798,
+        "status": "available",
+        "source": "authorized_cookie"
+      },
+      "metrics": {
+        "views": {
+          "value": 105352,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "likes": {
+          "value": 2932,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "favorites": {
+          "value": null,
+          "status": "missing",
+          "source": "authorized_cookie"
+        },
+        "comments": {
+          "value": -1,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "shares": {
+          "value": 409,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "customMetrics": {
+        "profile_visits": {
+          "value": 2418,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "cover_click_ratio": {
+          "value": 6.97,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "completion_rate": {
+          "value": null,
+          "status": "missing",
+          "source": "authorized_cookie"
+        }
+      },
+      "dailyMetrics": {
+        "views": {
+          "today": {
+            "value": 105352,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 86286,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "likes": {
+          "today": {
+            "value": 2932,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 2475,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "comments": {
+          "today": {
+            "value": -1,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 30,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "shares": {
+          "today": {
+            "value": 409,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 349,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "favorites": {
+          "today": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "customDailyMetrics": {
+        "profile_visits": {
+          "today": {
+            "value": 2418,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 1980,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "cover_click_ratio": {
+          "today": {
+            "value": 6.97,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": 10.24,
+            "status": "available",
+            "source": "authorized_cookie"
+          }
+        },
+        "completion_rate": {
+          "today": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "manualGrowth": {
+        "7d": {
+          "value": 97,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "30d": {
+          "value": 173,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "metricColumns": {
+        "current": "近7日",
+        "previous": "前7日"
+      },
+      "sourceStatus": {
+        "status": "partial",
+        "message": "来自抖音本人账号授权后台数据中心。 当前作品明细：实时作品 1 条，手动缓存 12 条（导入于 2026-05-23）；缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。",
+        "source": "authorized_cookie"
+      },
+      "raw": {
+        "summary": {
+          "source": "authorized_cookie",
+          "dashboard_metrics": 9,
+          "content_count": 3,
+          "manual_content_count": 12,
+          "merged_content_count": 13,
+          "live_content_count": 1,
+          "manual_cached_content_count": 12
+        }
+      }
+    },
+    {
+      "platform": "xiaohongshu",
+      "accountId": "409476273",
+      "capturedAt": "2026-06-04T04:30:49+08:00",
+      "date": "2026-06-04",
+      "timezone": "Asia/Shanghai",
+      "fans": {
+        "value": 39500,
+        "status": "available",
+        "source": "authorized_cookie"
+      },
+      "metrics": {
+        "views": {
+          "value": 21917,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "likes": {
+          "value": 1212,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "favorites": {
+          "value": 548,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "comments": {
+          "value": 79,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "shares": {
+          "value": 38,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "customMetrics": {
+        "note_impressions": {
+          "value": 115864,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "search_entries": {
+          "value": null,
+          "status": "missing",
+          "source": "authorized_cookie"
+        },
+        "cover_click_rate": {
+          "value": 16.3,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "avg_view_time": {
+          "value": 61.8,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "completion_rate": {
+          "value": 1.1,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "profile_visits": {
+          "value": 232,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "dailyMetrics": {
+        "views": {
+          "today": {
+            "value": 21917,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "likes": {
+          "today": {
+            "value": 1212,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "favorites": {
+          "today": {
+            "value": 548,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "comments": {
+          "today": {
+            "value": 79,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "shares": {
+          "today": {
+            "value": 38,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "customDailyMetrics": {
+        "note_impressions": {
+          "today": {
+            "value": 115864,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "search_entries": {
+          "today": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "cover_click_rate": {
+          "today": {
+            "value": 16.3,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "avg_view_time": {
+          "today": {
+            "value": 61.8,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "completion_rate": {
+          "today": {
+            "value": 1.1,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        },
+        "profile_visits": {
+          "today": {
+            "value": 232,
+            "status": "available",
+            "source": "authorized_cookie"
+          },
+          "yesterday": {
+            "value": null,
+            "status": "missing",
+            "source": "authorized_cookie"
+          }
+        }
+      },
+      "manualGrowth": {
+        "7d": {
+          "value": 0,
+          "status": "available",
+          "source": "authorized_cookie"
+        },
+        "30d": {
+          "value": -33,
+          "status": "available",
+          "source": "authorized_cookie"
+        }
+      },
+      "metricColumns": {
+        "current": "近7日",
+        "previous": "对比期"
+      },
+      "sourceStatus": {
+        "status": "partial",
+        "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。 当前作品明细：实时作品 1 条，手动缓存 11 条（导入于 2026-05-23）；缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。",
+        "source": "authorized_cookie"
+      },
+      "raw": {
+        "summary": {
+          "source": "authorized_cookie",
+          "personal_info": true,
+          "account_metrics": 79,
+          "content_count": 1,
+          "manual_content_count": 11,
+          "merged_content_count": 12,
+          "live_content_count": 1,
+          "manual_cached_content_count": 11
+        }
+      }
     }
   ],
   "fetch_logs": [
@@ -126525,11 +127028,29 @@
       "platform": "xiaohongshu",
       "status": "partial",
       "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。 当前作品明细：实时作品 1 条，手动缓存 11 条（导入于 2026-05-23）；缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。"
+    },
+    {
+      "capturedAt": "2026-06-04T04:30:46+08:00",
+      "platform": "bilibili",
+      "status": "success",
+      "message": ""
+    },
+    {
+      "capturedAt": "2026-06-04T04:30:48+08:00",
+      "platform": "douyin",
+      "status": "partial",
+      "message": "来自抖音本人账号授权后台数据中心。 当前作品明细：实时作品 1 条，手动缓存 12 条（导入于 2026-05-23）；缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。"
+    },
+    {
+      "capturedAt": "2026-06-04T04:30:49+08:00",
+      "platform": "xiaohongshu",
+      "status": "partial",
+      "message": "来自小红书本人账号授权后台数据中心；最新笔记已读取 1 条，日拆分日期异常，已保留后台汇总指标。 当前作品明细：实时作品 1 条，手动缓存 11 条（导入于 2026-05-23）；缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。"
     }
   ],
   "latest_content": {
     "douyin": {
-      "capturedAt": "2026-06-04T04:00:44+08:00",
+      "capturedAt": "2026-06-04T04:30:48+08:00",
       "timezone": "Asia/Shanghai",
       "source": "authorized_cookie",
       "importedAt": "",
@@ -126537,15 +127058,15 @@
         {
           "title": "当年炒到 18 万一台的手机，现在怎么样了？",
           "publish_time": "2026-05-24",
-          "thumbnail": "https://p3-sign.douyinpic.com/tos-cn-i-dy/aba695a7a22f413eb962ea41ffb20062~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=88%2B%2FwD8uQz3XwfUJvOBRYKVT2qw%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=202606040400442B44B9A24C9584045E17",
-          "views": 22632,
+          "thumbnail": "https://p3-sign.douyinpic.com/tos-cn-i-dy/aba695a7a22f413eb962ea41ffb20062~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=88%2B%2FwD8uQz3XwfUJvOBRYKVT2qw%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=20260604043048B85941CE8620400210A8",
+          "views": 22639,
           "likes": 516,
           "favorites": 50,
           "comments": 38,
           "shares": 38,
           "ctr": "16.36%",
           "avd": "36.5秒",
-          "avp": "1.44%",
+          "avp": "1.43%",
           "danmaku": null,
           "thumbnail_note": null,
           "data_source": null,
@@ -126555,8 +127076,8 @@
         {
           "title": "战争制裁下的俄罗斯，老百姓过着怎样的生活？",
           "publish_time": "2026年04月22日 22:49",
-          "thumbnail": "https://p3-sign.douyinpic.com/tos-cn-i-dy/538aac5aa27941edae55c317c56998a3~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=622XOMBOSu4d46N89KDtmmgoSD4%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=202606040400431A06FE0719C560072214",
-          "views": 28470,
+          "thumbnail": "https://p3-sign.douyinpic.com/tos-cn-i-dy/538aac5aa27941edae55c317c56998a3~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=622XOMBOSu4d46N89KDtmmgoSD4%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=2026060404304759B72CFEFED9130666CC",
+          "views": 28472,
           "likes": 1803,
           "favorites": 61,
           "comments": 56,
@@ -126573,12 +127094,12 @@
         {
           "title": "我做了个离谱的充电器...",
           "publish_time": "2026年03月27日 22:28",
-          "thumbnail": "https://p9-sign.douyinpic.com/tos-cn-i-dy/cc0ad3da955241f9b90bed3b56ab7c47~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=PBkiozhMakZJmohoDokvP7CJ0T4%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=20260604040043E988A81F5CA1D3DA1364",
-          "views": 1279025,
-          "likes": 47312,
-          "favorites": 12997,
+          "thumbnail": "https://p9-sign.douyinpic.com/tos-cn-i-dy/cc0ad3da955241f9b90bed3b56ab7c47~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1781726400&x-signature=PBkiozhMakZJmohoDokvP7CJ0T4%3D&from=327834062&s=PackSourceEnum_PUBLISH&se=false&sc=cover&biz_tag=aweme_video&l=202606040430475ED5851B688C701097F0",
+          "views": 1279042,
+          "likes": 47313,
+          "favorites": 12998,
           "comments": 1045,
-          "shares": 5233,
+          "shares": 5236,
           "ctr": "9.83%",
           "avd": "33.8秒",
           "avp": "0.74%",
@@ -126771,7 +127292,7 @@
       ]
     },
     "xiaohongshu": {
-      "capturedAt": "2026-06-04T04:00:45+08:00",
+      "capturedAt": "2026-06-04T04:30:49+08:00",
       "timezone": "Asia/Shanghai",
       "source": "authorized_cookie",
       "importedAt": "",
