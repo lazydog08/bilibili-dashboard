@@ -550,6 +550,25 @@ def test_noon_watchdog_marks_failed_xhs_creator_note_refresh_as_abnormal() -> No
     assert "xhs_creator_notes_failed" in result.reasons
 
 
+def test_noon_watchdog_allows_failed_optional_xhs_creator_note_refresh() -> None:
+    page_html = '<div data-dashboard-updated="2026-05-31T11:45:00+08:00">最后更新</div>'
+    nas_status = {
+        "last_run_at": "2026-05-31T03:45:00+00:00",
+        "xhs_creator_notes_status": "failed",
+    }
+
+    result = assess_freshness(
+        page_html=page_html,
+        nas_status=nas_status,
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+        xhs_creator_notes_required=False,
+    )
+
+    assert result.ok is True
+    assert result.reasons == []
+
+
 def test_noon_watchdog_bark_message_reports_normal_status() -> None:
     result = assess_freshness(
         page_html='<div data-dashboard-updated="2026-05-31T11:50:00+08:00">最后更新</div>',

@@ -124,7 +124,7 @@ XHS_CREATOR_NOTES_PLATFORM_FETCH_TIMEOUT=60
 XHS_CREATOR_NOTES_SKIP_RENDER=0
 ```
 
-`XHS_CREATOR_NOTES_REQUIRED=1` 会在作品采集失败时阻止发布新的页面，避免把旧小红书缓存伪装成实时数据；云端推送脚本会尽量把 `nas_status.json` 中的失败心跳推上去，中午 watchdog 也会把 `xhs_creator_notes_status=failed` 判定为异常并触发修复。NAS 默认的 `DASHBOARD_MODE=bilibili-only` 不会主动更新小红书历史，所以 `XHS_CREATOR_NOTES_SKIP_RENDER` 默认应保持 `0`。
+`XHS_CREATOR_NOTES_REQUIRED=1` 会在作品采集失败时阻止发布新的页面，避免把旧小红书缓存伪装成实时数据；云端推送脚本会尽量把 `nas_status.json` 中的失败心跳推上去，中午 watchdog 也会把 `xhs_creator_notes_status=failed` 判定为异常并触发修复。`XHS_CREATOR_NOTES_REQUIRED=0` 则允许主看板继续抓取、渲染和发布，watchdog 不会仅因小红书作品采集失败触发修复。NAS 默认的 `DASHBOARD_MODE=bilibili-only` 不会主动更新小红书历史，所以 `XHS_CREATOR_NOTES_SKIP_RENDER` 默认应保持 `0`。
 
 不要把官方令牌、Cookie、数据 URL 发到公开页面、提交记录、Issue、截图或日志里。
 

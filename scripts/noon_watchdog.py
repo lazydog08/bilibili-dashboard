@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -65,6 +66,7 @@ def assess_freshness(
     nas_status: dict[str, object],
     now: datetime,
     max_age_minutes: int,
+    xhs_creator_notes_required: bool = True,
 ) -> WatchdogResult:
     reasons: list[str] = []
     page_updated_at = extract_page_updated_at(page_html)
@@ -92,7 +94,7 @@ def assess_freshness(
         except ValueError:
             reasons.append("heartbeat_invalid_updated_at")
 
-    if nas_status.get("xhs_creator_notes_status") == "failed":
+    if xhs_creator_notes_required and nas_status.get("xhs_creator_notes_status") == "failed":
         reasons.append("xhs_creator_notes_failed")
 
     return WatchdogResult(
@@ -131,6 +133,13 @@ def load_env_files(repo_dir: Path) -> None:
             key = key.strip().removeprefix("export ").strip()
             if key:
                 os.environ.setdefault(key, _clean_env_value(value))
+
+
+def env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def fetch_text(url: str, timeout_seconds: float) -> str:
@@ -208,6 +217,7 @@ def main() -> int:
 
     repo_dir = Path(__file__).resolve().parents[1]
     load_env_files(repo_dir)
+    xhs_creator_notes_required = env_flag("XHS_CREATOR_NOTES_REQUIRED", True)
     now = datetime.now(timezone.utc)
 
     try:
@@ -217,6 +227,7 @@ def main() -> int:
             nas_status=nas_status,
             now=now,
             max_age_minutes=args.max_age_minutes,
+            xhs_creator_notes_required=xhs_creator_notes_required,
         )
     except (OSError, URLError, ValueError, json.JSONDecodeError) as exc:
         result = WatchdogResult(ok=False, reasons=[f"fetch_failed_{exc.__class__.__name__}"])
@@ -245,6 +256,7 @@ def main() -> int:
                         nas_status=nas_status,
                         now=datetime.now(timezone.utc),
                         max_age_minutes=args.max_age_minutes,
+                        xhs_creator_notes_required=xhs_creator_notes_required,
                     )
                     status = "repaired" if result.ok else "failed"
                     exit_code = 0 if result.ok else 1
