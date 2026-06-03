@@ -468,6 +468,8 @@ def test_nas_update_script_refreshes_xhs_creator_notes_before_main_render() -> N
     assert "XHS_CREATOR_NOTES_REFRESH_ENABLED" in script
     assert 'XHS_CREATOR_NOTES_REQUIRED:-0' in script
     assert "scripts/refresh_xhs_creator_notes.py" in script
+    assert '"--check" "--opencli-cmd" "$opencli_cmd"' in script
+    assert "Skipping Xiaohongshu creator notes refresh because Browser Bridge/Chrome is not ready." in script
     assert '--xhs-creator-notes-status "$XHS_CREATOR_NOTES_STATUS"' in script
     assert script.index("run_xhs_creator_notes_refresh") < script.index('CMD=("$PYTHON_BIN" "main.py")')
 

@@ -54,7 +54,11 @@ def build_chrome_running_command(system_name: str | None = None) -> list[str]:
     if current == "Darwin":
         return ["pgrep", "-x", "Google Chrome"]
     if current == "Linux":
-        return ["pgrep", "-f", "google-chrome|chromium"]
+        return [
+            "sh",
+            "-c",
+            "ps -eo comm= | grep -Eq '^(google-chrome|chrome|chromium|chromium-browser)$'",
+        ]
     return []
 
 

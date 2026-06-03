@@ -113,10 +113,10 @@ python scripts/refresh_xhs_creator_notes.py --input /tmp/xhs-creator-notes.json
 
 导入脚本只替换 `data/manual_platform_metrics.json` 里的小红书 `contentItems`，不会写入 Cookie、token 或请求头，也不会改动抖音数据。
 
-NAS 日更可以把这一步接到主渲染之前。前提是执行 NAS 任务的机器有正在运行的 Chrome、已登录小红书创作者后台，并且 OpenCLI Browser Bridge 已连接：
+NAS 日更可以把这一步接到主渲染之前。前提是执行 NAS 任务的机器有正在运行的 Chrome、已登录小红书创作者后台，并且 OpenCLI Browser Bridge 已连接。无桌面或没有 Browser Bridge 的 NAS 应保持 `XHS_CREATOR_NOTES_REFRESH_ENABLED=0`；否则只会跳过作品补采，主看板仍会继续更新：
 
 ```bash
-XHS_CREATOR_NOTES_REFRESH_ENABLED=1
+XHS_CREATOR_NOTES_REFRESH_ENABLED=0
 XHS_CREATOR_NOTES_REQUIRED=0
 XHS_CREATOR_NOTES_OPENCLI_CMD='npx -y @jackwener/opencli'
 XHS_CREATOR_NOTES_LIMIT=50
@@ -124,7 +124,7 @@ XHS_CREATOR_NOTES_PLATFORM_FETCH_TIMEOUT=60
 XHS_CREATOR_NOTES_SKIP_RENDER=0
 ```
 
-`XHS_CREATOR_NOTES_REQUIRED=0` 是 NAS 默认建议值：作品采集失败时主看板仍会继续抓取、渲染和发布，watchdog 不会仅因小红书作品采集失败触发修复。`XHS_CREATOR_NOTES_REQUIRED=1` 会在作品采集失败时阻止发布新的页面，避免把旧小红书缓存伪装成实时数据；云端推送脚本会尽量把 `nas_status.json` 中的失败心跳推上去，中午 watchdog 也会把 `xhs_creator_notes_status=failed` 判定为异常并触发修复。NAS 默认的 `DASHBOARD_MODE=bilibili-only` 不会主动更新小红书历史，所以 `XHS_CREATOR_NOTES_SKIP_RENDER` 默认应保持 `0`。
+`XHS_CREATOR_NOTES_REQUIRED=0` 是 NAS 默认建议值：作品采集环境未就绪时主看板仍会继续抓取、渲染和发布，NAS 状态会记录为 skipped，watchdog 不会仅因小红书作品补采跳过触发修复。`XHS_CREATOR_NOTES_REQUIRED=1` 会在作品采集失败时阻止发布新的页面，避免把旧小红书缓存伪装成实时数据；云端推送脚本会尽量把 `nas_status.json` 中的失败心跳推上去，中午 watchdog 也会把 `xhs_creator_notes_status=failed` 判定为异常并触发修复。NAS 默认的 `DASHBOARD_MODE=bilibili-only` 不会主动更新小红书历史，所以真正启用作品补采时 `XHS_CREATOR_NOTES_SKIP_RENDER` 默认应保持 `0`。
 
 不要把官方令牌、Cookie、数据 URL 发到公开页面、提交记录、Issue、截图或日志里。
 

@@ -159,6 +159,16 @@ run_xhs_creator_notes_refresh() {
     refresh_cmd+=("--skip-render")
   fi
 
+  if [[ -z "$input_path" && "${XHS_CREATOR_NOTES_REQUIRED:-0}" != "1" ]]; then
+    local check_cmd=("$PYTHON_BIN" "$REPO_DIR/scripts/refresh_xhs_creator_notes.py" "--check" "--opencli-cmd" "$opencli_cmd")
+    log "Checking Xiaohongshu creator notes capture prerequisites."
+    if ! "${check_cmd[@]}" >> "$LOG_FILE" 2>&1; then
+      XHS_CREATOR_NOTES_STATUS="skipped"
+      log "Skipping Xiaohongshu creator notes refresh because Browser Bridge/Chrome is not ready."
+      return 0
+    fi
+  fi
+
   log "Refreshing Xiaohongshu creator notes before dashboard render."
   if "${refresh_cmd[@]}" >> "$LOG_FILE" 2>&1; then
     XHS_CREATOR_NOTES_STATUS="success"

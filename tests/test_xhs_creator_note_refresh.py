@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from scripts.refresh_xhs_creator_notes import (
+    build_chrome_running_command,
     build_opencli_command,
     build_opencli_check_command,
     build_opencli_doctor_command,
@@ -58,6 +59,14 @@ def test_check_prerequisites_reports_chrome_not_running() -> None:
     chrome = next(item for item in results if item["name"] == "Chrome")
     assert chrome["ok"] is False
     assert "未运行" in chrome["message"]
+
+
+def test_linux_chrome_check_uses_process_names_not_command_lines() -> None:
+    command = build_chrome_running_command("Linux")
+
+    assert command[:2] == ["sh", "-c"]
+    assert "ps -eo comm=" in command[2]
+    assert "pgrep -f" not in command[2]
 
 
 def test_check_prerequisites_reports_browser_bridge_not_connected() -> None:
