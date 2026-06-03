@@ -1,11 +1,11 @@
 # Recommended on UGREEN NAS when the normal user cannot write crontab:
 # install this in root crontab, then run the project as the NAS user.
-*/30 * * * * /bin/su - '小黑' -c 'cd '\''/home/小黑/bilibili-dashboard'\'' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1'
+*/30 * * * * /bin/su - '小黑' -c 'cd '\''/home/小黑/bilibili-dashboard'\'' && mkdir -p data/logs && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >> '\''/home/小黑/bilibili-dashboard/data/logs/cron-update.log'\'' 2>&1'
 
 # Generic Linux/NAS user crontab: fetch data, render the dashboard, then push
 # the latest output to GitHub Pages. Replace the path with the real project
 # directory on the NAS.
-*/30 * * * * cd '/path/to/bilibili-dashboard' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1
+*/30 * * * * cd '/path/to/bilibili-dashboard' && mkdir -p data/logs && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >> '/path/to/bilibili-dashboard/data/logs/cron-update.log' 2>&1
 
 # Local-only output, useful when you do not want to publish to GitHub Pages.
 # */30 * * * * cd '/path/to/bilibili-dashboard' && ./scripts/nas_update_dashboard.sh >/dev/null 2>&1

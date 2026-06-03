@@ -16,9 +16,10 @@ quote_sh() {
 }
 
 build_update_command() {
-  local repo_quoted
+  local repo_quoted log_quoted
   repo_quoted="$(quote_sh "$REPO_DIR")"
-  printf 'cd %s && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >/dev/null 2>&1' "$repo_quoted"
+  log_quoted="$(quote_sh "$REPO_DIR/data/logs/cron-update.log")"
+  printf 'cd %s && mkdir -p data/logs && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1 ./scripts/nas_update_and_push_cloud.sh >> %s 2>&1' "$repo_quoted" "$log_quoted"
 }
 
 build_cron_command() {

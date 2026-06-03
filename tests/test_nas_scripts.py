@@ -446,7 +446,9 @@ def test_cron_installer_renders_ugreen_root_su_dry_run(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert "# BEGIN bilibili-dashboard NAS update" in result.stdout
     assert "*/30 * * * * /bin/su - '小黑' -c" in result.stdout
-    assert "cd '\\''/home/小黑/bilibili-dashboard'\\'' && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1" in result.stdout
+    assert "cd '\\''/home/小黑/bilibili-dashboard'\\'' && mkdir -p data/logs && DASHBOARD_CLOUD_UPDATE_BEFORE_PUSH=1" in result.stdout
+    assert "data/logs/cron-update.log" in result.stdout
+    assert ">/dev/null 2>&1" not in result.stdout
     assert "# END bilibili-dashboard NAS update" in result.stdout
 
 
@@ -464,6 +466,7 @@ def test_nas_update_script_refreshes_xhs_creator_notes_before_main_render() -> N
     script = (REPO_ROOT / "scripts" / "nas_update_dashboard.sh").read_text(encoding="utf-8")
 
     assert "XHS_CREATOR_NOTES_REFRESH_ENABLED" in script
+    assert 'XHS_CREATOR_NOTES_REQUIRED:-0' in script
     assert "scripts/refresh_xhs_creator_notes.py" in script
     assert '--xhs-creator-notes-status "$XHS_CREATOR_NOTES_STATUS"' in script
     assert script.index("run_xhs_creator_notes_refresh") < script.index('CMD=("$PYTHON_BIN" "main.py")')
@@ -544,6 +547,7 @@ def test_noon_watchdog_marks_failed_xhs_creator_note_refresh_as_abnormal() -> No
         nas_status=nas_status,
         now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
         max_age_minutes=90,
+        xhs_creator_notes_required=True,
     )
 
     assert result.ok is False

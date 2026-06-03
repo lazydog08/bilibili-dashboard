@@ -66,7 +66,7 @@ def assess_freshness(
     nas_status: dict[str, object],
     now: datetime,
     max_age_minutes: int,
-    xhs_creator_notes_required: bool = True,
+    xhs_creator_notes_required: bool = False,
 ) -> WatchdogResult:
     reasons: list[str] = []
     page_updated_at = extract_page_updated_at(page_html)
@@ -217,7 +217,7 @@ def main() -> int:
 
     repo_dir = Path(__file__).resolve().parents[1]
     load_env_files(repo_dir)
-    xhs_creator_notes_required = env_flag("XHS_CREATOR_NOTES_REQUIRED", True)
+    xhs_creator_notes_required = env_flag("XHS_CREATOR_NOTES_REQUIRED", False)
     now = datetime.now(timezone.utc)
 
     try:

@@ -204,7 +204,7 @@ if [[ -n "${SNAPSHOT_DATE:-}" ]]; then
   CMD+=("--snapshot-date" "$SNAPSHOT_DATE")
 fi
 
-if [[ "$XHS_CREATOR_NOTES_STATUS" == "failed" && "${XHS_CREATOR_NOTES_REQUIRED:-1}" == "1" ]]; then
+if [[ "$XHS_CREATOR_NOTES_STATUS" == "failed" && "${XHS_CREATOR_NOTES_REQUIRED:-0}" == "1" ]]; then
   UPDATE_STATUS=1
   log "Dashboard render skipped because required Xiaohongshu creator notes refresh failed."
 elif "${CMD[@]}" >> "$LOG_FILE" 2>&1; then
