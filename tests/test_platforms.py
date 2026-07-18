@@ -15,6 +15,7 @@ from platforms import (
     merge_content_items,
     merge_platform_snapshot,
     next_update_label,
+    platform_snapshot_from_bilibili_public_fallback,
     repair_latest_content_thumbnails,
 )
 
@@ -30,6 +31,27 @@ def _settings() -> SimpleNamespace:
         xiaohongshu_enabled=True,
         xiaohongshu_account_id="",
     )
+
+
+def test_bilibili_public_fallback_only_refreshes_public_fans() -> None:
+    cached = {
+        "updated_at": "2026-07-01T15:00:00+08:00",
+        "channel": {"total_followers": 182_100, "total_views": 44_000_000},
+    }
+
+    snapshot = platform_snapshot_from_bilibili_public_fallback(
+        cached,
+        follower=188_901,
+        account_id="516185777",
+        message="Cookie失效",
+    )
+
+    assert snapshot["fans"]["value"] == 188_901
+    assert snapshot["metrics"]["views"]["value"] is None
+    assert snapshot["sourceStatus"]["source"] == "bilibili_public_fallback"
+    assert snapshot["sourceStatus"]["status"] == "partial"
+    assert "2026-07-01 15:00" in snapshot["sourceStatus"]["message"]
+    assert "未冒充实时数据" in snapshot["sourceStatus"]["message"]
 
 
 def test_platform_growth_deltas_and_insufficient_periods() -> None:

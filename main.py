@@ -32,6 +32,7 @@ from platforms import (
     merge_content_items,
     merge_platform_snapshot,
     platform_snapshot_from_bilibili,
+    platform_snapshot_from_bilibili_public_fallback,
     repair_latest_content_thumbnails,
     unavailable_platform_snapshot,
     write_update_log,
@@ -55,6 +56,30 @@ def _latest_snapshot(history: dict[str, Any]) -> dict[str, Any] | None:
         return None
     snapshots.sort(key=lambda item: str(item.get("date", "")))
     return snapshots[-1]
+
+
+def _latest_network_platform_capture(history: dict[str, Any]) -> str:
+    ignored_sources = {"", "unknown", "manual_import", "bilibili_cache", "fixture", "unavailable"}
+    candidates: list[tuple[datetime, str]] = []
+    for snapshot in history.get("platform_snapshots", []):
+        if not isinstance(snapshot, dict):
+            continue
+        source_status = snapshot.get("sourceStatus")
+        if not isinstance(source_status, dict):
+            continue
+        if str(source_status.get("status") or "") not in {"success", "partial"}:
+            continue
+        if str(source_status.get("source") or "") in ignored_sources:
+            continue
+        captured_at = str(snapshot.get("capturedAt") or "")
+        try:
+            parsed = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=ZoneInfo(str(snapshot.get("timezone") or "Asia/Shanghai")))
+        candidates.append((parsed, captured_at))
+    return max(candidates, key=lambda item: item[0])[1] if candidates else ""
 
 
 def _resolve_snapshot_date(value: str | None, timezone_name: str) -> str | None:
@@ -283,15 +308,32 @@ async def _collect_platform_snapshots(
         if settings.bilibili_enabled:
             latest = latest_bilibili_snapshot or _latest_snapshot(history)
             if latest:
-                status = "partial" if live_warnings else str(latest.get("source") or "success")
-                history = _record_platform_result(
-                    history,
-                    platform_snapshot_from_bilibili(
+                public_follower = 0
+                if live_warnings and allow_platform_network:
+                    try:
+                        public_follower = await BilibiliClient().fetch_public_follower(settings.bilibili_account_id)
+                    except Exception:  # noqa: BLE001 - stale cache remains available and clearly labelled.
+                        public_follower = 0
+                if public_follower:
+                    bilibili_snapshot = platform_snapshot_from_bilibili_public_fallback(
+                        latest,
+                        follower=public_follower,
+                        account_id=settings.bilibili_account_id,
+                        timezone_name=settings.timezone,
+                        message="; ".join(live_warnings[:2]),
+                    )
+                else:
+                    status = "partial" if live_warnings else str(latest.get("source") or "success")
+                    bilibili_snapshot = platform_snapshot_from_bilibili(
                         latest,
                         account_id=settings.bilibili_account_id,
                         timezone_name=settings.timezone,
                         status=status,
-                    ),
+                        message="; ".join(live_warnings[:2]) if live_warnings else None,
+                    )
+                history = _record_platform_result(
+                    history,
+                    bilibili_snapshot,
                     settings,
                 )
             elif live_warnings:
@@ -464,7 +506,6 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
             display_warnings = warnings
             bilibili_warnings = warnings
 
-    previous_last_updated = history.get("last_updated")
     history = await _collect_platform_snapshots(
         history,
         settings,
@@ -475,7 +516,12 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         platform_fetch_timeout_seconds=platform_fetch_timeout,
     )
     history = repair_latest_content_thumbnails(history, settings.platform_content_limit)
-    if live_snapshot or args.fixture or not previous_last_updated:
+    latest_network_capture = _latest_network_platform_capture(history)
+    if args.fixture:
+        history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
+    elif not args.cache and latest_network_capture:
+        history["last_updated"] = latest_network_capture
+    elif live_snapshot or not history.get("last_updated"):
         history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
     save_history(history, settings.history_path)
     context = derive_dashboard_context(history, settings, display_warnings=display_warnings)

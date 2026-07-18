@@ -29,6 +29,16 @@ log() {
   printf '[%s] %s\n' "$timestamp" "$*" >> "$LOG_FILE"
 }
 
+COLLECTOR_OWNER_FILE="$REPO_DIR/.collector-owner"
+COLLECTOR_OWNER="${DASHBOARD_COLLECTOR_OWNER:-}"
+if [[ -z "$COLLECTOR_OWNER" && -f "$COLLECTOR_OWNER_FILE" ]]; then
+  COLLECTOR_OWNER="$(tr -d '[:space:]' < "$COLLECTOR_OWNER_FILE")"
+fi
+if [[ "$COLLECTOR_OWNER" == "mac-mini" && "${DASHBOARD_ALLOW_NAS_COLLECTION:-0}" != "1" ]]; then
+  log "Platform collection is delegated to Mac mini; NAS collector skipped."
+  exit 0
+fi
+
 LOCK_DIR="${DASHBOARD_LOCK_DIR:-$REPO_DIR/data/logs/nas-update.lock}"
 LOCK_MAX_AGE_SECONDS="${DASHBOARD_LOCK_MAX_AGE_SECONDS:-7200}"
 case "$LOCK_MAX_AGE_SECONDS" in

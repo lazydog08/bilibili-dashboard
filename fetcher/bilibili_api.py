@@ -404,6 +404,18 @@ class BilibiliClient:
         channel["total_followers"] = follower
         return changed
 
+    async def fetch_public_follower(self, mid: str | None = None) -> int:
+        """Fetch the owner's public follower count without creator-center auth."""
+        account_id = str(mid or self._mid or "").strip()
+        if not account_id or not account_id.isdigit():
+            raise BilibiliAPIError("Bilibili public follower fetch requires a numeric account id")
+        async with httpx.AsyncClient(headers=self.public_headers, timeout=min(self.timeout, 12.0)) as client:
+            payload = await self._request_json(client, PUBLIC_RELATION_STAT_URL.format(mid=account_id))
+        follower = pick_number(payload, ["follower", "followers", "fans", "total_followers"], 0)
+        if follower <= 0:
+            raise BilibiliAPIError("Bilibili public follower response did not contain a usable value")
+        return follower
+
     def _apply_public_archive_stat(self, video: dict[str, Any], payload: Any) -> bool:
         changed = False
         fields = {

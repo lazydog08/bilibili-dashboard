@@ -28,6 +28,8 @@ class WatchdogResult:
     heartbeat_updated_at: str = ""
     page_age_minutes: int = -1
     heartbeat_age_minutes: int = -1
+    data_quality_status: str = "unknown"
+    required_stale_platforms: list[str] = field(default_factory=list)
     reasons: list[str] = field(default_factory=list)
 
 
@@ -97,12 +99,25 @@ def assess_freshness(
     if xhs_creator_notes_required and nas_status.get("xhs_creator_notes_status") == "failed":
         reasons.append("xhs_creator_notes_failed")
 
+    dashboard_status = str(nas_status.get("dashboard_status") or "")
+    data_quality_status = str(nas_status.get("data_quality_status") or "unknown")
+    stale_value = nas_status.get("required_stale_platforms")
+    required_stale_platforms = [str(item) for item in stale_value if str(item)] if isinstance(stale_value, list) else []
+    if dashboard_status == "failed" and "required_platforms_stale" not in reasons:
+        reasons.append("dashboard_failed")
+    if data_quality_status == "failed" and "data_quality_failed" not in reasons:
+        reasons.append("data_quality_failed")
+    if required_stale_platforms:
+        reasons.append("required_platforms_stale")
+
     return WatchdogResult(
         ok=not reasons,
         page_updated_at=page_updated_at,
         heartbeat_updated_at=heartbeat_updated_at,
         page_age_minutes=page_age,
         heartbeat_age_minutes=heartbeat_age,
+        data_quality_status=data_quality_status,
+        required_stale_platforms=required_stale_platforms,
         reasons=reasons,
     )
 
@@ -168,7 +183,10 @@ def build_bark_message(status: str, result: WatchdogResult, repair_summary: str 
         f"状态：{status}",
         f"网页数据：{result.page_updated_at or '未知'}（{result.page_age_minutes} 分钟前）",
         f"NAS 心跳：{result.heartbeat_updated_at or '未知'}（{result.heartbeat_age_minutes} 分钟前）",
+        f"数据质量：{result.data_quality_status}",
     ]
+    if result.required_stale_platforms:
+        lines.append(f"过期平台：{', '.join(result.required_stale_platforms)}")
     if result.reasons:
         lines.append(f"异常：{', '.join(result.reasons)}")
     if repair_summary:

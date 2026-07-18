@@ -487,6 +487,7 @@ def platform_snapshot_from_bilibili(
     account_id: str = "",
     timezone_name: str = DEFAULT_TIMEZONE,
     status: str | None = None,
+    message: str | None = None,
 ) -> dict[str, Any]:
     channel = snapshot.get("channel", {}) if isinstance(snapshot.get("channel"), dict) else {}
     warnings = snapshot.get("warnings", []) if isinstance(snapshot.get("warnings"), list) else []
@@ -515,9 +516,46 @@ def platform_snapshot_from_bilibili(
         manual_growth={"7d": channel.get("follower_delta_7d")},
         metric_columns={"current": "当前累计", "previous": "上次累计"},
         status=source_status if source_status in SUCCESS_STATUSES else "success",
-        message="; ".join(str(item) for item in warnings[:3]),
+        message=message if message is not None else "; ".join(str(item) for item in warnings[:3]),
         source="bilibili_live" if str(snapshot.get("source")) == "live" else "bilibili_cache",
         raw={"summary": {"videos_count": len(snapshot.get("videos", []) or [])}},
+    )
+
+
+def platform_snapshot_from_bilibili_public_fallback(
+    snapshot: dict[str, Any],
+    *,
+    follower: int,
+    account_id: str = "",
+    timezone_name: str = DEFAULT_TIMEZONE,
+    message: str = "",
+) -> dict[str, Any]:
+    cached_at = str(snapshot.get("updated_at") or snapshot.get("date") or "")
+    cache_label = cached_at[:16].replace("T", " ") if cached_at else "未知时间"
+    limitation = (
+        "B站创作中心授权不可用；已通过公开接口刷新粉丝数。"
+        f"播放、点赞、收藏等创作中心指标仍停留在 {cache_label}，未冒充实时数据。"
+    )
+    if message:
+        limitation = f"{limitation} 原因：{message}"
+    return build_platform_snapshot(
+        platform="bilibili",
+        account_id=account_id,
+        timezone_name=timezone_name,
+        fans=follower,
+        metrics={key: None for key, _ in COMMON_METRICS},
+        custom_metrics={key: None for key, _ in CUSTOM_METRICS.get("bilibili", [])},
+        manual_growth={"7d": None},
+        metric_columns={"current": "公开实时", "previous": "创作中心缓存"},
+        status="partial",
+        message=limitation,
+        source="bilibili_public_fallback",
+        raw={
+            "summary": {
+                "public_fields": ["fans"],
+                "creator_center_cached_at": cached_at,
+            }
+        },
     )
 
 
@@ -1516,6 +1554,7 @@ def _source_label(source: str) -> str:
         "authorized_cookie": "授权后台 Cookie",
         "manual_import": "手动导入",
         "bilibili_live": "B 站创作中心",
+        "bilibili_public_fallback": "B站公开数据降级",
         "bilibili_cache": "缓存数据",
         "unavailable": "暂不可用",
         "failed": "抓取失败",
@@ -1540,24 +1579,31 @@ def _latest_success_with_fans(snapshots: list[dict[str, Any]]) -> dict[str, Any]
     return None
 
 
-def _freshness_message(snapshot: dict[str, Any] | None) -> str:
+def _freshness_message(snapshot: dict[str, Any] | None, stale_after_minutes: int = 90) -> str:
     if not snapshot:
         return ""
     source = _snapshot_source(snapshot)
-    if source != "manual_import":
-        return ""
     source_status = snapshot.get("sourceStatus", {})
     imported_at = ""
     if isinstance(source_status, dict):
         imported_at = str(source_status.get("importedAt") or "")
     captured = _last_success_label(snapshot)
-    if imported_at:
+    if source == "manual_import" and imported_at:
         try:
             imported = _parse_dt(imported_at, str(snapshot.get("timezone") or DEFAULT_TIMEZONE)).strftime("%Y-%m-%d %H:%M")
         except Exception:  # noqa: BLE001
             imported = imported_at
         return f"最近手动更新时间：{imported}；数据采集时间：{captured}，可能不是实时数据。"
-    return f"手动导入数据；数据采集时间：{captured}，可能不是实时数据。"
+    if source == "manual_import":
+        return f"手动导入数据；数据采集时间：{captured}，可能不是实时数据。"
+    try:
+        captured_at = _parse_dt(snapshot.get("capturedAt"), str(snapshot.get("timezone") or DEFAULT_TIMEZONE))
+        age_minutes = max(0, int((datetime.now(captured_at.tzinfo) - captured_at).total_seconds() // 60))
+    except Exception:  # noqa: BLE001 - malformed cache timestamps should not break rendering.
+        return ""
+    if age_minutes > max(1, stale_after_minutes):
+        return f"最近真实数据更新时间：{captured}，已经超过计划更新窗口。"
+    return ""
 
 
 def _build_platform_card(history: dict[str, Any], platform: str, config: Any = None) -> dict[str, Any]:
@@ -1577,7 +1623,8 @@ def _build_platform_card(history: dict[str, Any], platform: str, config: Any = N
         metric_columns = {}
     source = _snapshot_source(latest_success or latest_any or {})
     status_message = _status_message(latest_any) or ("暂不可用" if not latest_success else "")
-    freshness_message = _freshness_message(latest_success)
+    update_interval = int(getattr(config, "update_interval_minutes", 30) or 30)
+    freshness_message = _freshness_message(latest_success, stale_after_minutes=max(90, update_interval * 3))
     if freshness_message:
         status_message = f"{status_message} {freshness_message}".strip()
     if latest_success and fans_snapshot and fans_snapshot is not latest_success:

@@ -109,6 +109,22 @@ def test_bilibili_public_follower_stat_refreshes_channel() -> None:
     assert channel["total_followers"] == 170_273
 
 
+def test_bilibili_public_follower_fetch_does_not_require_creator_cookie(monkeypatch) -> None:
+    client = BilibiliClient(cookie="")
+    seen: list[str] = []
+
+    async def fake_request_json(_http_client, url: str) -> dict[str, int]:
+        seen.append(url)
+        return {"mid": 516185777, "follower": 188_901}
+
+    monkeypatch.setattr(client, "_request_json", fake_request_json)
+
+    follower = asyncio.run(client.fetch_public_follower("516185777"))
+
+    assert follower == 188_901
+    assert seen == ["https://api.bilibili.com/x/relation/stat?vmid=516185777"]
+
+
 def test_bilibili_public_archive_stat_only_increases_counters() -> None:
     client = BilibiliClient(cookie="DedeUserID=516185777")
     video = {

@@ -6,13 +6,38 @@ import json
 import pytest
 
 from config import PROJECT_ROOT, load_settings
-from main import _fetch_with_retries, _with_manual_content_fallback, build_dashboard, parse_args
+from main import (
+    _fetch_with_retries,
+    _latest_network_platform_capture,
+    _with_manual_content_fallback,
+    build_dashboard,
+    parse_args,
+)
 
 
 def test_parse_args_allows_bilibili_only_live_path() -> None:
     args = parse_args(["--bilibili-only", "--snapshot-date", "yesterday"])
     assert args.bilibili_only is True
     assert args.snapshot_date == "yesterday"
+
+
+def test_latest_network_capture_ignores_newer_manual_snapshot() -> None:
+    history = {
+        "platform_snapshots": [
+            {
+                "platform": "douyin",
+                "capturedAt": "2026-07-18T14:00:00+08:00",
+                "sourceStatus": {"status": "success", "source": "authorized_cookie"},
+            },
+            {
+                "platform": "xiaohongshu",
+                "capturedAt": "2026-07-18T14:30:00+08:00",
+                "sourceStatus": {"status": "manual", "source": "manual_import"},
+            },
+        ]
+    }
+
+    assert _latest_network_platform_capture(history) == "2026-07-18T14:00:00+08:00"
 
 
 def test_parse_args_rejects_bilibili_only_fixture_combo() -> None:

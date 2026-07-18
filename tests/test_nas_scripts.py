@@ -254,6 +254,8 @@ def test_write_nas_status_creates_public_heartbeat(tmp_path: Path) -> None:
             "DASHBOARD_REPO_DIR": str(repo),
             "DASHBOARD_NAS_STATUS_PATH": "data/nas_status.json",
             "DASHBOARD_NAS_RUNNER_ID": "ugreen-nas",
+            "DASHBOARD_REQUIRED_FRESH_PLATFORMS": "bilibili,douyin",
+            "DASHBOARD_SOURCE_VERSION": "test-version",
         }
     )
 
@@ -280,12 +282,96 @@ def test_write_nas_status_creates_public_heartbeat(tmp_path: Path) -> None:
     payload = json.loads((repo / "data" / "nas_status.json").read_text(encoding="utf-8"))
     assert payload["schema_version"] == 1
     assert payload["runner_id"] == "ugreen-nas"
+    assert payload["source_version"] == "test-version"
     assert payload["mode"] == "cache"
-    assert payload["dashboard_status"] == "success"
+    assert payload["dashboard_status"] == "failed"
+    assert payload["data_quality_status"] == "failed"
+    assert payload["required_stale_platforms"] == ["bilibili", "douyin"]
     assert payload["comment_fetch_status"] == "skipped"
     assert payload["status_path"] == "data/nas_status.json"
     assert "repo_dir" not in payload
     assert "cookie" not in json.dumps(payload).lower()
+
+
+def test_write_nas_status_accepts_fresh_required_platforms_but_reports_optional_degradation(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    (repo / "data").mkdir(parents=True)
+    captured_at = datetime.now().astimezone().isoformat(timespec="seconds")
+    history = {
+        "platform_snapshots": [
+            {
+                "platform": "bilibili",
+                "capturedAt": captured_at,
+                "timezone": "Asia/Shanghai",
+                "sourceStatus": {"status": "partial", "source": "bilibili_public_fallback"},
+            },
+            {
+                "platform": "douyin",
+                "capturedAt": captured_at,
+                "timezone": "Asia/Shanghai",
+                "sourceStatus": {"status": "success", "source": "authorized_cookie"},
+            },
+        ]
+    }
+    (repo / "data" / "history.json").write_text(json.dumps(history), encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        {
+            "DASHBOARD_REPO_DIR": str(repo),
+            "DASHBOARD_REQUIRED_FRESH_PLATFORMS": "bilibili,douyin",
+        }
+    )
+
+    result = subprocess.run(
+        [python, str(REPO_ROOT / "scripts" / "write_nas_status.py"), "--dashboard-exit-code", "0"],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads((repo / "data" / "nas_status.json").read_text(encoding="utf-8"))
+    assert payload["dashboard_status"] == "degraded"
+    assert payload["data_quality_status"] == "degraded"
+    assert payload["required_stale_platforms"] == []
+    assert payload["platform_freshness"]["bilibili"]["fresh"] is True
+    assert payload["platform_freshness"]["douyin"]["fresh"] is True
+    assert payload["platform_freshness"]["xiaohongshu"]["fresh"] is False
+
+
+def test_write_nas_status_does_not_treat_manual_snapshot_as_fresh_required_network_data(tmp_path: Path) -> None:
+    python = require_tool("python3")
+    repo = tmp_path / "repo"
+    (repo / "data").mkdir(parents=True)
+    history = {
+        "platform_snapshots": [
+            {
+                "platform": "douyin",
+                "capturedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+                "timezone": "Asia/Shanghai",
+                "sourceStatus": {"status": "manual", "source": "manual_import"},
+            }
+        ]
+    }
+    (repo / "data" / "history.json").write_text(json.dumps(history), encoding="utf-8")
+    env = os.environ.copy()
+    env.update({"DASHBOARD_REPO_DIR": str(repo), "DASHBOARD_REQUIRED_FRESH_PLATFORMS": "douyin"})
+
+    result = subprocess.run(
+        [python, str(REPO_ROOT / "scripts" / "write_nas_status.py"), "--dashboard-exit-code", "0"],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads((repo / "data" / "nas_status.json").read_text(encoding="utf-8"))
+    assert payload["dashboard_status"] == "failed"
+    assert payload["required_stale_platforms"] == ["douyin"]
+    assert payload["platform_freshness"]["douyin"]["fresh"] is False
 
 
 def test_daily_fetch_workflow_has_scheduled_cloud_fallback() -> None:
@@ -573,6 +659,51 @@ def test_noon_watchdog_allows_failed_optional_xhs_creator_note_refresh() -> None
 
     assert result.ok is True
     assert result.reasons == []
+
+
+def test_noon_watchdog_rejects_fresh_heartbeat_with_stale_required_platform() -> None:
+    page_html = '<div data-dashboard-updated="2026-05-31T11:45:00+08:00">最后更新</div>'
+    nas_status = {
+        "last_run_at": "2026-05-31T03:45:00+00:00",
+        "dashboard_status": "failed",
+        "data_quality_status": "failed",
+        "required_stale_platforms": ["bilibili"],
+    }
+
+    result = assess_freshness(
+        page_html=page_html,
+        nas_status=nas_status,
+        now=datetime.fromisoformat("2026-05-31T12:00:00+08:00"),
+        max_age_minutes=90,
+    )
+
+    assert result.ok is False
+    assert "dashboard_failed" in result.reasons
+    assert "data_quality_failed" in result.reasons
+    assert "required_platforms_stale" in result.reasons
+
+
+def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -> None:
+    owner = (REPO_ROOT / ".collector-owner").read_text(encoding="utf-8").strip()
+    nas_script = (REPO_ROOT / "scripts" / "nas_update_dashboard.sh").read_text(encoding="utf-8")
+    mac_script = (REPO_ROOT / "scripts" / "mac_mini_update_and_sync.sh").read_text(encoding="utf-8")
+    installer = (REPO_ROOT / "scripts" / "install_mac_mini_collector.sh").read_text(encoding="utf-8")
+    plist = (REPO_ROOT / "launchd" / "com.lazydog.creator-data-dashboard.collector.plist").read_text(
+        encoding="utf-8"
+    )
+
+    assert owner == "mac-mini"
+    assert "Platform collection is delegated to Mac mini" in nas_script
+    assert "mac-mini-collector.lock" in mac_script
+    assert "atomic_copy" in mac_script
+    assert "data_quality_status" in mac_script
+    assert "launchctl bootstrap" in installer
+    assert "--exclude 'dashboard.env'" in installer
+    assert ".source-version" in installer
+    assert "com.lazydog.creator-data-dashboard.collector" in plist
+    assert "<integer>1800</integer>" in plist
+    assert "BILIBILI_COOKIE" not in plist
+    assert "BARK" not in plist
 
 
 def test_noon_watchdog_bark_message_reports_normal_status() -> None:
