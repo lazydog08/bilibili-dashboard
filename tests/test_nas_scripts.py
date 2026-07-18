@@ -696,6 +696,8 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "Platform collection is delegated to Mac mini" in nas_script
     assert "mac-mini-collector.lock" in mac_script
     assert "atomic_copy" in mac_script
+    assert 'cp -X "$source" "$temporary"' in mac_script
+    assert 'cp -p "$source" "$temporary"' not in mac_script
     assert "data_quality_status" in mac_script
     assert "launchctl bootstrap" in installer
     assert "--exclude 'dashboard.env'" in installer

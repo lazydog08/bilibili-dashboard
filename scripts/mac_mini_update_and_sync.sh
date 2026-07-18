@@ -105,7 +105,7 @@ atomic_copy() {
   [[ -f "$source" ]] || return 0
   mkdir -p "$(dirname -- "$destination")"
   local temporary="${destination}.tmp.$$"
-  cp -p "$source" "$temporary"
+  cp -X "$source" "$temporary"
   mv -f "$temporary" "$destination"
 }
 
