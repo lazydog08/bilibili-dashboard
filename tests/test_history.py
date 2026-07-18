@@ -207,3 +207,92 @@ def test_live_partial_source_uses_partial_badge() -> None:
     context = derive_dashboard_context(history, load_settings())
     assert context["badge_text"] == "全平台运营数据"
     assert context["recent_videos"][0]["title"] == "真实视频"
+
+
+def test_newer_public_partial_snapshot_overrides_older_creator_live_snapshot() -> None:
+    creator_snapshot = {
+        **_snapshot(1),
+        "date": "2026-07-01",
+        "updated_at": "2026-07-01T15:00:00+08:00",
+        "source": "live",
+        "videos": [{"bvid": "BVold", "title": "旧节目", "publish_time": "2026-06-15", "views": 100}],
+    }
+    public_snapshot = {
+        **_snapshot(18),
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T15:00:00+08:00",
+        "source": "public_partial",
+        "videos": [{"bvid": "BVnew", "title": "新节目", "publish_time": "2026-07-17", "views": 200}],
+    }
+    history = {
+        "schema_version": 1,
+        "source": "live_partial",
+        "last_updated": public_snapshot["updated_at"],
+        "warnings": [],
+        "snapshots": [creator_snapshot, public_snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+
+    assert [video["bvid"] for video in context["recent_videos"]] == ["BVnew"]
+
+
+def test_recent_program_grid_does_not_backfill_older_videos() -> None:
+    snapshot = _snapshot(23)
+    snapshot["date"] = "2026-07-18"
+    snapshot["updated_at"] = "2026-07-18T15:00:00+08:00"
+    snapshot["videos"] = [
+        {"bvid": "BVnew", "title": "近30天节目", "publish_time": "2026-07-18", "views": 100},
+        {"bvid": "BVold", "title": "31天前节目", "publish_time": "2026-06-17", "views": 200},
+    ]
+    history = {
+        "schema_version": 1,
+        "source": "live_partial",
+        "last_updated": snapshot["updated_at"],
+        "warnings": [],
+        "snapshots": [snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+
+    assert [video["bvid"] for video in context["recent_videos"]] == ["BVnew"]
+
+
+def test_missing_private_video_metrics_render_as_unavailable_and_leave_charts() -> None:
+    snapshot = _snapshot(23)
+    snapshot["date"] = "2026-07-18"
+    snapshot["updated_at"] = "2026-07-18T15:00:00+08:00"
+    snapshot["public_listing"] = {
+        "status": "complete_30d",
+        "message": "近30天节目范围可确认完整。",
+    }
+    snapshot["videos"] = [
+        {
+            "bvid": "BVnew",
+            "title": "公开节目",
+            "publish_time": "2026-07-18",
+            "views": 100,
+            "ctr": None,
+            "avd_minutes": None,
+            "avp_percent": None,
+            "follower_gain": None,
+        }
+    ]
+    history = {
+        "schema_version": 1,
+        "source": "live_partial",
+        "last_updated": snapshot["updated_at"],
+        "warnings": [],
+        "snapshots": [snapshot],
+    }
+
+    context = derive_dashboard_context(history, load_settings())
+    video = context["recent_videos"][0]
+
+    assert video["ctr_label"] == "--"
+    assert video["avd_label"] == "--"
+    assert video["avp_label"] == "--"
+    assert context["ctr_chart"]["labels"] == []
+    assert context["avd_avp_chart"]["labels"] == []
+    assert context["views_followers_chart"]["follower_gain"] == [None]
+    assert context["program_listing_note"] == "近30天节目范围可确认完整。"

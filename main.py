@@ -108,6 +108,104 @@ def _snapshot_has_videos(snapshot: dict[str, Any]) -> bool:
     return isinstance(videos, list) and bool(videos)
 
 
+PUBLIC_VIDEO_FIELDS = {
+    "bvid",
+    "title",
+    "thumbnail",
+    "publish_time",
+    "views",
+    "likes",
+    "coins",
+    "favorites",
+    "shares",
+    "replies",
+    "data_source",
+}
+
+
+def _merge_public_bilibili_snapshot(
+    base_snapshot: dict[str, Any] | None,
+    public_snapshot: dict[str, Any],
+    *,
+    creator_live: bool,
+    creator_warnings: list[str],
+    snapshot_date: str | None = None,
+) -> dict[str, Any]:
+    """Merge verified public fields without overwriting creator-only metrics."""
+    base = deepcopy(base_snapshot) if isinstance(base_snapshot, dict) else {}
+    public = deepcopy(public_snapshot)
+    creator_cached_at = str(base.get("updated_at") or base.get("date") or "")
+    base_channel = base.get("channel") if isinstance(base.get("channel"), dict) else {}
+    public_channel = public.get("channel") if isinstance(public.get("channel"), dict) else {}
+    follower = public_channel.get("total_followers")
+    if isinstance(follower, (int, float)) and follower > 0:
+        base_channel["total_followers"] = int(follower)
+    base["channel"] = base_channel
+
+    cached_videos = [item for item in base.get("videos", []) if isinstance(item, dict)]
+    merged_by_bvid = {
+        str(item.get("bvid") or ""): deepcopy(item)
+        for item in cached_videos
+        if str(item.get("bvid") or "")
+    }
+    anonymous = [deepcopy(item) for item in cached_videos if not str(item.get("bvid") or "")]
+    for public_video in public.get("videos", []):
+        if not isinstance(public_video, dict):
+            continue
+        bvid = str(public_video.get("bvid") or "").strip()
+        if not bvid:
+            continue
+        merged = merged_by_bvid.get(bvid, {})
+        for field in PUBLIC_VIDEO_FIELDS:
+            if field in public_video and public_video.get(field) is not None:
+                merged[field] = public_video[field]
+        for private_field in ("ctr", "avd_minutes", "avp_percent", "follower_gain", "impressions"):
+            if private_field not in merged:
+                merged[private_field] = None
+        merged_by_bvid[bvid] = merged
+    videos = [*merged_by_bvid.values(), *anonymous]
+    videos.sort(key=lambda item: str(item.get("publish_time") or ""), reverse=True)
+
+    public_warnings = public.get("warnings") if isinstance(public.get("warnings"), list) else []
+    warnings = [str(item) for item in [*creator_warnings, *public_warnings] if str(item).strip()]
+    if not creator_live:
+        warnings.append(
+            "B站创作中心授权不可用；节目标题、封面、发布时间和公开互动数来自公开接口，"
+            "CTR、平均播放时长、平均播放占比等私有指标使用历史值或显示“--”。"
+        )
+    base.update(
+        {
+            "date": snapshot_date or public.get("date"),
+            "updated_at": public.get("updated_at"),
+            "source": "live" if creator_live else "public_partial",
+            "videos": videos[:30],
+            "warnings": list(dict.fromkeys(warnings)),
+            "public_listing": deepcopy(public.get("public_listing", {})),
+            "creator_center_cached_at": creator_cached_at,
+        }
+    )
+    return base
+
+
+async def _try_public_bilibili_snapshot(settings: Settings) -> tuple[dict[str, Any] | None, list[str]]:
+    if not settings.bilibili_enabled:
+        return None, []
+    try:
+        client = BilibiliClient()
+        snapshot = await asyncio.wait_for(
+            client.fetch_public_snapshot(
+                settings.bilibili_account_id,
+                timezone_name=settings.timezone,
+            ),
+            timeout=min(settings.bilibili_fetch_timeout_seconds, 45.0),
+        )
+        return snapshot, []
+    except asyncio.TimeoutError:
+        return None, ["B站公开投稿交叉核验超时；本轮无法确认节目列表是否完整。"]
+    except Exception as exc:  # noqa: BLE001 - creator data may still be usable.
+        return None, [f"B站公开投稿交叉核验失败；本轮无法确认节目列表是否完整：{exc}"]
+
+
 async def _try_live_snapshot(
     settings: Settings,
     require_enable_flag: bool = True,
@@ -313,22 +411,32 @@ async def _collect_platform_snapshots(
         if settings.bilibili_enabled:
             latest = latest_bilibili_snapshot or _latest_snapshot(history)
             if latest:
-                public_follower = 0
-                if live_warnings and allow_platform_network:
+                latest_source = str(latest.get("source") or "")
+                creator_failed = bool(live_warnings) and (
+                    latest_bilibili_snapshot is None or latest_source == "public_partial"
+                )
+                channel = latest.get("channel") if isinstance(latest.get("channel"), dict) else {}
+                try:
+                    public_follower = int(channel.get("total_followers") or 0) if latest_source == "public_partial" else 0
+                except (TypeError, ValueError):
+                    public_follower = 0
+                if creator_failed and allow_platform_network:
                     try:
-                        public_follower = await BilibiliClient().fetch_public_follower(settings.bilibili_account_id)
+                        refreshed_follower = await BilibiliClient().fetch_public_follower(settings.bilibili_account_id)
+                        if refreshed_follower > 0:
+                            public_follower = refreshed_follower
                     except Exception:  # noqa: BLE001 - stale cache remains available and clearly labelled.
-                        public_follower = 0
-                if public_follower:
+                        pass
+                if creator_failed and public_follower:
                     bilibili_snapshot = platform_snapshot_from_bilibili_public_fallback(
                         latest,
                         follower=public_follower,
                         account_id=settings.bilibili_account_id,
                         timezone_name=settings.timezone,
-                        message="; ".join(live_warnings[:2]),
+                        message="; ".join(live_warnings[:1]),
                     )
                 else:
-                    status = "partial" if live_warnings else str(latest.get("source") or "success")
+                    status = "partial" if live_warnings else latest_source or "success"
                     bilibili_snapshot = platform_snapshot_from_bilibili(
                         latest,
                         account_id=settings.bilibili_account_id,
@@ -475,21 +583,43 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
     else:
         should_live = args.live or bilibili_only or settings.enable_bilibili_fetch
         snapshot = None
+        public_snapshot = None
+        public_warnings: list[str] = []
         if should_live:
             snapshot, warnings = await _try_live_snapshot(
                 settings,
                 require_enable_flag=not (args.live or bilibili_only),
             )
+            public_snapshot, public_warnings = await _try_public_bilibili_snapshot(settings)
+            warnings = [*warnings, *public_warnings]
         else:
             warnings.append("未启用实时获取，已使用缓存或示例数据。")
 
         if snapshot:
             snapshot = _apply_snapshot_date(snapshot, snapshot_date)
             snapshot["source"] = "live"
+            if public_snapshot:
+                snapshot = _merge_public_bilibili_snapshot(
+                    snapshot,
+                    public_snapshot,
+                    creator_live=True,
+                    creator_warnings=[
+                        *(
+                            snapshot.get("warnings", [])
+                            if isinstance(snapshot.get("warnings"), list)
+                            else []
+                        ),
+                        *public_warnings,
+                    ],
+                    snapshot_date=snapshot_date,
+                )
             live_snapshot = snapshot
             snapshot_warnings = snapshot.get("warnings", [])
             if not isinstance(snapshot_warnings, list):
                 snapshot_warnings = []
+            if not public_snapshot:
+                snapshot_warnings = [*snapshot_warnings, *public_warnings]
+                snapshot["warnings"] = snapshot_warnings
             bilibili_warnings = snapshot_warnings
             if _snapshot_has_videos(snapshot):
                 history = load_history(settings.history_path)
@@ -508,8 +638,38 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
                 bilibili_warnings = warnings
         else:
             history, _ = _load_cache_or_fixture(settings, warnings)
-            display_warnings = warnings
-            bilibili_warnings = warnings
+            cached_snapshot = _latest_snapshot(history)
+            if public_snapshot and cached_snapshot and history.get("source") != "fixture":
+                fallback_snapshot = _merge_public_bilibili_snapshot(
+                    cached_snapshot,
+                    public_snapshot,
+                    creator_live=False,
+                    creator_warnings=warnings,
+                    snapshot_date=snapshot_date,
+                )
+                history = merge_today_snapshot(history, fallback_snapshot)
+                history["source"] = "live_partial"
+                history["warnings"] = fallback_snapshot["warnings"]
+                live_snapshot = fallback_snapshot
+                display_warnings = fallback_snapshot["warnings"]
+                bilibili_warnings = fallback_snapshot["warnings"]
+            elif public_snapshot:
+                fallback_snapshot = _merge_public_bilibili_snapshot(
+                    None,
+                    public_snapshot,
+                    creator_live=False,
+                    creator_warnings=warnings,
+                    snapshot_date=snapshot_date,
+                )
+                history = merge_today_snapshot(history, fallback_snapshot)
+                history["source"] = "live_partial"
+                history["warnings"] = fallback_snapshot["warnings"]
+                live_snapshot = fallback_snapshot
+                display_warnings = fallback_snapshot["warnings"]
+                bilibili_warnings = fallback_snapshot["warnings"]
+            else:
+                display_warnings = warnings
+                bilibili_warnings = warnings
 
     history = await _collect_platform_snapshots(
         history,

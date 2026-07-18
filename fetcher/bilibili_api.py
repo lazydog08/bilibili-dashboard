@@ -5,7 +5,7 @@ import os
 import random
 import time
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
@@ -34,7 +34,9 @@ WEB_INDEX_STAT_URL = "https://member.bilibili.com/x/web/index/stat"
 WEB_ARCHIVE_COMPARE_URL = "https://member.bilibili.com/x/web/data/archive_diagnose/compare?size=30"
 WEB_ARCHIVES_URL = "https://member.bilibili.com/x/web/archives?status=is_pubed&pn=1&ps=30&coop=1&interactive=1"
 PUBLIC_RELATION_STAT_URL = "https://api.bilibili.com/x/relation/stat?vmid={mid}"
-PUBLIC_ARCHIVE_STAT_URL = "https://api.bilibili.com/x/web-interface/archive/stat?bvid={bvid}"
+PUBLIC_CARD_URL = "https://api.bilibili.com/x/web-interface/card?mid={mid}&photo=true"
+PUBLIC_SEARCH_URL = "https://api.bilibili.com/x/web-interface/search/all/v2"
+PUBLIC_VIEW_URL = "https://api.bilibili.com/x/web-interface/view?bvid={bvid}"
 
 
 class BilibiliAPIError(RuntimeError):
@@ -416,6 +418,163 @@ class BilibiliClient:
             raise BilibiliAPIError("Bilibili public follower response did not contain a usable value")
         return follower
 
+    @staticmethod
+    def _find_public_user_result(payload: Any, account_id: str, account_name: str) -> dict[str, Any] | None:
+        if not isinstance(payload, dict):
+            return None
+        groups = payload.get("result")
+        if not isinstance(groups, list):
+            return None
+        for group in groups:
+            if not isinstance(group, dict) or group.get("result_type") != "bili_user":
+                continue
+            rows = group.get("data")
+            if not isinstance(rows, list):
+                continue
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                if str(row.get("mid") or "") != account_id:
+                    continue
+                if str(row.get("uname") or "").strip() != account_name:
+                    continue
+                return row
+        return None
+
+    @staticmethod
+    def _parse_public_video(view_payload: Any, account_id: str) -> dict[str, Any] | None:
+        if not isinstance(view_payload, dict):
+            return None
+        owner = view_payload.get("owner")
+        if not isinstance(owner, dict) or str(owner.get("mid") or "") != account_id:
+            return None
+        bvid = str(view_payload.get("bvid") or "").strip()
+        title = str(view_payload.get("title") or "").strip()
+        if not bvid or not title:
+            return None
+        stat = view_payload.get("stat") if isinstance(view_payload.get("stat"), dict) else {}
+        return {
+            "bvid": bvid,
+            "title": title,
+            "thumbnail": normalize_thumbnail_url(view_payload.get("pic")),
+            "publish_time": parse_publish_time(view_payload.get("pubdate")),
+            "views": pick_number(stat, ["view"], 0),
+            "likes": pick_number(stat, ["like"], 0),
+            "coins": pick_number(stat, ["coin"], 0),
+            "favorites": pick_number(stat, ["favorite"], 0),
+            "shares": pick_number(stat, ["share"], 0),
+            "replies": pick_number(stat, ["reply"], 0),
+            "ctr": None,
+            "avd_minutes": None,
+            "avp_percent": None,
+            "follower_gain": None,
+            "impressions": None,
+            "metric_availability": {
+                "ctr": False,
+                "avd_minutes": False,
+                "avp_percent": False,
+                "follower_gain": False,
+                "impressions": False,
+            },
+            "data_source": "bilibili_public_verified",
+        }
+
+    async def fetch_public_snapshot(
+        self,
+        mid: str | None = None,
+        *,
+        timezone_name: str = DEFAULT_TIMEZONE,
+    ) -> dict[str, Any]:
+        """Fetch and strictly verify the account's newest public uploads.
+
+        Bilibili's public user search currently exposes three account uploads but
+        is not a documented full archive API. Therefore a normal account remains
+        partial even when the third returned upload is older than 30 days.
+        """
+        account_id = str(mid or self._mid or "").strip()
+        if not account_id or not account_id.isdigit():
+            raise BilibiliAPIError("Bilibili public snapshot requires a numeric account id")
+
+        async with httpx.AsyncClient(headers=self.public_headers, timeout=min(self.timeout, 15.0)) as client:
+            card_payload = await self._request_json(client, PUBLIC_CARD_URL.format(mid=account_id))
+            card = card_payload.get("card") if isinstance(card_payload, dict) else None
+            if not isinstance(card, dict) or str(card.get("mid") or "") != account_id:
+                raise BilibiliAPIError("Bilibili public card did not match the configured account id")
+            account_name = str(card.get("name") or "").strip()
+            if not account_name:
+                raise BilibiliAPIError("Bilibili public card did not contain an account name")
+            follower = pick_number(card_payload, ["follower"], 0)
+            archive_count = pick_number(card_payload, ["archive_count"], 0)
+
+            search_url = _with_query_params(PUBLIC_SEARCH_URL, {"keyword": account_name, "page": 1})
+            search_payload = await self._request_json(client, search_url)
+            user_result = self._find_public_user_result(search_payload, account_id, account_name)
+            raw_videos = user_result.get("res") if isinstance(user_result, dict) else None
+            if not isinstance(raw_videos, list) or not raw_videos:
+                raise BilibiliAPIError("Bilibili public search did not contain verified account uploads")
+
+            candidates: list[tuple[str, str]] = []
+            for item in raw_videos[:3]:
+                if not isinstance(item, dict):
+                    continue
+                bvid = str(item.get("bvid") or "").strip()
+                if bvid and bvid not in {candidate[0] for candidate in candidates}:
+                    candidates.append((bvid, PUBLIC_VIEW_URL.format(bvid=bvid)))
+
+            async def verify(candidate: tuple[str, str]) -> dict[str, Any] | None:
+                expected_bvid, url = candidate
+                try:
+                    view_payload = await self._request_json(client, url)
+                except BilibiliAPIError:
+                    return None
+                parsed = self._parse_public_video(view_payload, account_id)
+                if not parsed or parsed["bvid"] != expected_bvid:
+                    return None
+                return parsed
+
+            videos = [video for video in await asyncio.gather(*(verify(item) for item in candidates)) if video]
+
+        if follower <= 0:
+            follower = await self.fetch_public_follower(account_id)
+        videos.sort(key=lambda item: str(item.get("publish_time") or ""), reverse=True)
+        if not videos:
+            raise BilibiliAPIError("Bilibili public upload verification rejected every candidate")
+
+        now = datetime.now(ZoneInfo(timezone_name))
+        cutoff = (now - timedelta(days=30)).date().isoformat()
+        all_uploads_visible = archive_count > 0 and archive_count <= len(videos)
+        boundary_covered = len(videos) >= 3 and str(videos[-1].get("publish_time") or "") < cutoff
+        complete_30d = all_uploads_visible
+        listing_status = "complete_30d" if complete_30d else "partial"
+        if complete_30d:
+            listing_message = f"B站公开接口已核验账号全部 {len(videos)} 条投稿，近30天节目范围完整。"
+        elif boundary_covered:
+            listing_message = (
+                f"B站公开接口已核验返回的最近 {len(videos)} 条投稿，第 3 条早于近30天边界；"
+                "但该接口不是全量稿件接口，节目列表仍按部分可用处理。"
+            )
+        else:
+            listing_message = f"B站公开接口仅核验返回的最近 {len(videos)} 条投稿，近30天节目可能仍有遗漏。"
+        warnings = [] if complete_30d else [listing_message]
+        return {
+            "date": now.date().isoformat(),
+            "updated_at": now.isoformat(timespec="seconds"),
+            "source": "public_verified",
+            "channel": {
+                "total_followers": follower,
+                "archive_count": archive_count,
+            },
+            "videos": videos,
+            "public_listing": {
+                "status": listing_status,
+                "verified_count": len(videos),
+                "account_id": account_id,
+                "latest_bvid": videos[0]["bvid"],
+                "message": listing_message,
+            },
+            "warnings": warnings,
+        }
+
     def _apply_public_archive_stat(self, video: dict[str, Any], payload: Any) -> bool:
         changed = False
         fields = {
@@ -444,18 +603,14 @@ class BilibiliClient:
             pick_value(item, ["ptime", "publish_time", "pubtime", "pub_time", "ctime", "created_at", "created"], None)
         )
         detail_or_item = detail or item
-        ctr = pick_bilibili_percent(
-            detail_or_item,
-            ["tm_rate", "ctr", "click_rate", "show_click_rate", "impression_ctr"],
-            0.0,
-        )
-        avp = pick_bilibili_percent(
-            detail_or_item,
-            ["full_play_ratio", "avp", "completion_rate", "avg_view_percent", "avg_play_percent"],
-            0.0,
-        )
-        avd = pick_minutes(detail_or_item, ["avg_play_time", "avd", "avg_view_duration", "avg_play_duration"], 0.0)
-        if not avd:
+        ctr_keys = ["tm_rate", "ctr", "click_rate", "show_click_rate", "impression_ctr"]
+        avp_keys = ["full_play_ratio", "avp", "completion_rate", "avg_view_percent", "avg_play_percent"]
+        avd_keys = ["avg_play_time", "avd", "avg_view_duration", "avg_play_duration"]
+        follower_gain_keys = ["total_new_attention_cnt", "follower_gain", "fans_gain", "fan_gain"]
+        ctr = pick_bilibili_percent(detail_or_item, ctr_keys, 0.0) if pick_value(detail_or_item, ctr_keys) is not None else None
+        avp = pick_bilibili_percent(detail_or_item, avp_keys, 0.0) if pick_value(detail_or_item, avp_keys) is not None else None
+        avd = pick_minutes(detail_or_item, avd_keys, 0.0) if pick_value(detail_or_item, avd_keys) is not None else None
+        if not avd and avp is not None:
             duration_minutes = bilibili_duration_minutes(pick_value(item, ["duration"], 0), 0.0)
             if duration_minutes and avp:
                 avd = duration_minutes * avp
@@ -473,8 +628,25 @@ class BilibiliClient:
             "ctr": ctr,
             "avd_minutes": avd,
             "avp_percent": avp,
-            "follower_gain": pick_number(detail_or_item, ["total_new_attention_cnt", "follower_gain", "fans_gain", "fan_gain"], 0),
-            "impressions": pick_number(detail, ["impression", "impressions", "show", "shows"], 0),
+            "follower_gain": (
+                pick_number(detail_or_item, follower_gain_keys, 0)
+                if pick_value(detail_or_item, follower_gain_keys) is not None
+                else None
+            ),
+            "impressions": (
+                pick_number(detail, ["impression", "impressions", "show", "shows"], 0)
+                if pick_value(detail, ["impression", "impressions", "show", "shows"]) is not None
+                else None
+            ),
+            "metric_availability": {
+                "ctr": pick_value(detail_or_item, ctr_keys) is not None,
+                "avd_minutes": pick_value(detail_or_item, avd_keys) is not None or (
+                    pick_value(item, ["duration"]) is not None and pick_value(detail_or_item, avp_keys) is not None
+                ),
+                "avp_percent": pick_value(detail_or_item, avp_keys) is not None,
+                "follower_gain": pick_value(detail_or_item, follower_gain_keys) is not None,
+                "impressions": pick_value(detail, ["impression", "impressions", "show", "shows"]) is not None,
+            },
         }
 
     async def fetch_snapshot(self) -> dict[str, Any]:
@@ -552,7 +724,7 @@ class BilibiliClient:
                     try:
                         payload = await self._request_json(
                             client,
-                            PUBLIC_ARCHIVE_STAT_URL.format(bvid=bvid),
+                            PUBLIC_VIEW_URL.format(bvid=bvid),
                         )
                         return video, payload
                     except BilibiliAPIError:

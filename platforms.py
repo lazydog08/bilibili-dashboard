@@ -530,12 +530,22 @@ def platform_snapshot_from_bilibili_public_fallback(
     timezone_name: str = DEFAULT_TIMEZONE,
     message: str = "",
 ) -> dict[str, Any]:
-    cached_at = str(snapshot.get("updated_at") or snapshot.get("date") or "")
-    cache_label = cached_at[:16].replace("T", " ") if cached_at else "未知时间"
-    limitation = (
-        "B站创作中心授权不可用；已通过公开接口刷新粉丝数。"
-        f"播放、点赞、收藏等创作中心指标仍停留在 {cache_label}，未冒充实时数据。"
+    cached_at = str(
+        snapshot.get("creator_center_cached_at")
+        or snapshot.get("updated_at")
+        or snapshot.get("date")
+        or ""
     )
+    cache_label = cached_at[:16].replace("T", " ") if cached_at else "未知时间"
+    listing = snapshot.get("public_listing") if isinstance(snapshot.get("public_listing"), dict) else {}
+    listing_message = str(listing.get("message") or "").strip()
+    limitation = (
+        "B站创作中心授权不可用；已通过公开接口刷新粉丝数和核验最近节目。"
+        "平台卡片中的频道汇总播放、点赞、收藏等指标未刷新，显示“--”；"
+        f"主看板历史创作中心指标只保留到 {cache_label}，未冒充实时数据。"
+    )
+    if listing_message:
+        limitation = f"{limitation} {listing_message}"
     if message:
         limitation = f"{limitation} 原因：{message}"
     return build_platform_snapshot(
@@ -552,8 +562,10 @@ def platform_snapshot_from_bilibili_public_fallback(
         source="bilibili_public_fallback",
         raw={
             "summary": {
-                "public_fields": ["fans"],
+                "public_fields": ["fans", "recent_videos"],
                 "creator_center_cached_at": cached_at,
+                "public_listing_status": listing.get("status"),
+                "public_listing_verified_count": listing.get("verified_count"),
             }
         },
     )

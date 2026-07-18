@@ -1457,6 +1457,14 @@
       white-space: nowrap;
     }
 
+    .panel-note {
+      max-width: 58%;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
     .chart {
       width: 100%;
       height: 360px;
@@ -2192,8 +2200,10 @@
         <article class="panel">
           <div class="panel-header">
             <h2 class="panel-title">近三十天上线节目封面总览</h2>
+            <span class="panel-note">{{ program_listing_note }}</span>
           </div>
           <div class="thumbnail-grid">
+            {% if recent_videos %}
             {% for video in recent_videos %}
             <article class="video-card">
               <div class="thumb-wrap">
@@ -2220,6 +2230,11 @@
               </div>
             </article>
             {% endfor %}
+            {% else %}
+            <div class="empty-state">
+              当前没有可核验的近30天上线节目。页面不会用更早节目补位；请查看上方数据质量提醒。
+            </div>
+            {% endif %}
           </div>
         </article>
       </section>

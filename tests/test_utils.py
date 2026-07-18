@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+import pytest
 
 from analytics import (
     format_number,
@@ -8,7 +12,7 @@ from analytics import (
     parse_publish_time,
     safe_percent_change,
 )
-from fetcher.bilibili_api import BilibiliClient
+from fetcher.bilibili_api import BilibiliAPIError, BilibiliClient
 
 
 def test_normalize_thumbnail_url_variants() -> None:
@@ -93,9 +97,10 @@ def test_bilibili_missing_optional_depth_metrics_do_not_mark_snapshot_partial() 
         }
     )
 
-    assert video["ctr"] == 0.0
-    assert video["avd_minutes"] == 0.0
-    assert video["avp_percent"] == 0.0
+    assert video["ctr"] is None
+    assert video["avd_minutes"] is None
+    assert video["avp_percent"] is None
+    assert video["metric_availability"]["ctr"] is False
     assert client.warnings == []
 
 
@@ -123,6 +128,120 @@ def test_bilibili_public_follower_fetch_does_not_require_creator_cookie(monkeypa
 
     assert follower == 188_901
     assert seen == ["https://api.bilibili.com/x/relation/stat?vmid=516185777"]
+
+
+def test_bilibili_public_snapshot_strictly_verifies_owner_but_keeps_non_full_api_partial(monkeypatch) -> None:
+    client = BilibiliClient(cookie="")
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    publish_times = [now - timedelta(days=1), now - timedelta(days=12), now - timedelta(days=31)]
+    bvids = ["BVnew", "BVmiddle", "BVold"]
+
+    async def fake_request_json(_http_client, url: str):  # noqa: ANN001
+        if "/card?" in url:
+            return {
+                "card": {"mid": "516185777", "name": "懒狗小黑"},
+                "follower": 188_999,
+                "archive_count": 91,
+            }
+        if "/search/all/v2?" in url:
+            return {
+                "result": [
+                    {
+                        "result_type": "bili_user",
+                        "data": [
+                            {
+                                "mid": 516185777,
+                                "uname": "懒狗小黑",
+                                "res": [
+                                    {"bvid": bvid, "pubdate": int(published.timestamp())}
+                                    for bvid, published in zip(bvids, publish_times, strict=True)
+                                ],
+                            },
+                            {"mid": 1, "uname": "懒狗小黑", "res": [{"bvid": "BVwrong"}]},
+                        ],
+                    }
+                ]
+            }
+        bvid = url.rsplit("=", 1)[-1]
+        index = bvids.index(bvid)
+        return {
+            "bvid": bvid,
+            "title": f"节目 {index}",
+            "pubdate": int(publish_times[index].timestamp()),
+            "pic": "//i0.hdslb.com/test.jpg",
+            "owner": {"mid": 516185777, "name": "懒狗小黑"},
+            "stat": {"view": 100 + index, "like": 10, "reply": 1},
+        }
+
+    monkeypatch.setattr(client, "_request_json", fake_request_json)
+
+    snapshot = asyncio.run(client.fetch_public_snapshot("516185777"))
+
+    assert [video["bvid"] for video in snapshot["videos"]] == bvids
+    assert snapshot["videos"][0]["ctr"] is None
+    assert snapshot["public_listing"]["status"] == "partial"
+    assert "不是全量稿件接口" in snapshot["warnings"][0]
+
+
+def test_bilibili_public_snapshot_marks_recent_three_as_partial(monkeypatch) -> None:
+    client = BilibiliClient(cookie="")
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    bvids = ["BVa", "BVb", "BVc"]
+
+    async def fake_request_json(_http_client, url: str):  # noqa: ANN001
+        if "/card?" in url:
+            return {
+                "card": {"mid": 516185777, "name": "懒狗小黑"},
+                "follower": 188_999,
+                "archive_count": 91,
+            }
+        if "/search/all/v2?" in url:
+            return {
+                "result": [
+                    {
+                        "result_type": "bili_user",
+                        "data": [{"mid": 516185777, "uname": "懒狗小黑", "res": [{"bvid": item} for item in bvids]}],
+                    }
+                ]
+            }
+        bvid = url.rsplit("=", 1)[-1]
+        return {
+            "bvid": bvid,
+            "title": bvid,
+            "pubdate": int((now - timedelta(days=bvids.index(bvid) + 1)).timestamp()),
+            "owner": {"mid": 516185777},
+            "stat": {"view": 1},
+        }
+
+    monkeypatch.setattr(client, "_request_json", fake_request_json)
+
+    snapshot = asyncio.run(client.fetch_public_snapshot("516185777"))
+
+    assert snapshot["public_listing"]["status"] == "partial"
+    assert "可能仍有遗漏" in snapshot["warnings"][0]
+
+
+def test_bilibili_public_snapshot_rejects_view_from_wrong_owner(monkeypatch) -> None:
+    client = BilibiliClient(cookie="")
+
+    async def fake_request_json(_http_client, url: str):  # noqa: ANN001
+        if "/card?" in url:
+            return {"card": {"mid": 516185777, "name": "懒狗小黑"}, "follower": 1, "archive_count": 1}
+        if "/search/all/v2?" in url:
+            return {
+                "result": [
+                    {
+                        "result_type": "bili_user",
+                        "data": [{"mid": 516185777, "uname": "懒狗小黑", "res": [{"bvid": "BVwrong"}]}],
+                    }
+                ]
+            }
+        return {"bvid": "BVwrong", "title": "转载", "owner": {"mid": 123}, "stat": {"view": 99}}
+
+    monkeypatch.setattr(client, "_request_json", fake_request_json)
+
+    with pytest.raises(BilibiliAPIError, match="rejected every candidate"):
+        asyncio.run(client.fetch_public_snapshot("516185777"))
 
 
 def test_bilibili_public_archive_stat_only_increases_counters() -> None:

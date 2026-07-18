@@ -7,8 +7,10 @@ import pytest
 
 from config import PROJECT_ROOT, load_settings
 from main import (
+    _collect_platform_snapshots,
     _fetch_with_retries,
     _latest_network_platform_capture,
+    _merge_public_bilibili_snapshot,
     _with_manual_content_fallback,
     build_dashboard,
     parse_args,
@@ -97,6 +99,125 @@ def test_cache_render_preserves_existing_data_timestamp(tmp_path) -> None:
     saved = json.loads(history_path.read_text(encoding="utf-8"))
     assert saved["last_updated"] == old_timestamp
     assert result["context"]["last_updated_iso"] == old_timestamp
+
+
+def test_public_bilibili_merge_adds_new_upload_without_overwriting_private_metrics() -> None:
+    cached = {
+        "date": "2026-07-01",
+        "updated_at": "2026-07-01T15:00:00+08:00",
+        "channel": {"total_followers": 188_000, "total_views": 9_000_000},
+        "videos": [
+            {
+                "bvid": "BVexisting",
+                "title": "旧标题",
+                "publish_time": "2026-06-20",
+                "views": 100,
+                "ctr": 0.051,
+                "avd_minutes": 2.3,
+                "avp_percent": 0.4,
+            }
+        ],
+    }
+    public = {
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T15:00:00+08:00",
+        "channel": {"total_followers": 188_999},
+        "videos": [
+            {
+                "bvid": "BVnew",
+                "title": "今天的新节目",
+                "publish_time": "2026-07-18",
+                "views": 1_000,
+                "ctr": None,
+            },
+            {
+                "bvid": "BVexisting",
+                "title": "公开标题",
+                "publish_time": "2026-06-20",
+                "views": 200,
+                "ctr": None,
+            },
+        ],
+        "public_listing": {"status": "complete_30d", "verified_count": 2, "message": "完整"},
+        "warnings": [],
+    }
+
+    merged = _merge_public_bilibili_snapshot(
+        cached,
+        public,
+        creator_live=False,
+        creator_warnings=["创作中心失败"],
+    )
+
+    assert merged["source"] == "public_partial"
+    assert merged["channel"]["total_followers"] == 188_999
+    assert merged["channel"]["total_views"] == 9_000_000
+    assert [video["bvid"] for video in merged["videos"][:2]] == ["BVnew", "BVexisting"]
+    existing = next(video for video in merged["videos"] if video["bvid"] == "BVexisting")
+    assert existing["title"] == "公开标题"
+    assert existing["views"] == 200
+    assert existing["ctr"] == 0.051
+    assert existing["avd_minutes"] == 2.3
+    assert merged["creator_center_cached_at"] == "2026-07-01T15:00:00+08:00"
+
+
+def test_public_partial_snapshot_keeps_platform_card_in_public_fallback_mode(tmp_path) -> None:
+    settings = load_settings()
+    object.__setattr__(settings, "log_path", tmp_path / "update.log")
+    latest = {
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T15:00:00+08:00",
+        "source": "public_partial",
+        "creator_center_cached_at": "2026-07-01T15:00:00+08:00",
+        "channel": {"total_followers": 188_999, "total_views": 9_000_000},
+        "videos": [{"bvid": "BVnew", "publish_time": "2026-07-17"}],
+        "public_listing": {"status": "partial", "verified_count": 3, "message": "非全量"},
+    }
+
+    history = asyncio.run(
+        _collect_platform_snapshots(
+            {"snapshots": [latest]},
+            settings,
+            latest,
+            ["创作中心失败"],
+            allow_platform_network=False,
+            platforms_to_update={"bilibili"},
+        )
+    )
+
+    stored = history["platform_snapshots"][-1]
+    assert stored["sourceStatus"]["source"] == "bilibili_public_fallback"
+    assert stored["sourceStatus"]["status"] == "partial"
+    assert stored["metrics"]["views"]["value"] is None
+    assert stored["raw"]["summary"]["public_listing_status"] == "partial"
+
+
+def test_creator_live_snapshot_with_listing_warning_does_not_claim_creator_auth_failed(tmp_path) -> None:
+    settings = load_settings()
+    object.__setattr__(settings, "log_path", tmp_path / "update.log")
+    latest = {
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T15:00:00+08:00",
+        "source": "live",
+        "channel": {"total_followers": 188_999, "total_views": 9_000_000},
+        "videos": [{"bvid": "BVnew", "publish_time": "2026-07-17"}],
+    }
+
+    history = asyncio.run(
+        _collect_platform_snapshots(
+            {"snapshots": [latest]},
+            settings,
+            latest,
+            ["公开投稿列表不是全量接口"],
+            allow_platform_network=False,
+            platforms_to_update={"bilibili"},
+        )
+    )
+
+    stored = history["platform_snapshots"][-1]
+    assert stored["sourceStatus"]["source"] == "bilibili_live"
+    assert stored["sourceStatus"]["status"] == "partial"
+    assert stored["metrics"]["views"]["value"] == 9_000_000
 
 
 def test_manual_content_fallback_marks_cached_item_source() -> None:

@@ -423,6 +423,22 @@ def _prepare_video(video: dict[str, Any]) -> dict[str, Any]:
     ctr = safe_ratio(video.get("ctr"), 0.0)
     avd = safe_minutes(video.get("avd_minutes"), 0.0)
     avp = safe_ratio(video.get("avp_percent"), 0.0)
+    availability = video.get("metric_availability") if isinstance(video.get("metric_availability"), dict) else {}
+
+    def metric_available(field: str, value: float) -> bool:
+        if field in availability:
+            return bool(availability[field])
+        raw_value = video.get(field)
+        return raw_value not in (None, "") and value != 0
+
+    ctr_available = metric_available("ctr", ctr)
+    avd_available = metric_available("avd_minutes", avd)
+    avp_available = metric_available("avp_percent", avp)
+    follower_gain_available = (
+        bool(availability.get("follower_gain"))
+        if "follower_gain" in availability
+        else video.get("follower_gain") not in (None, "", 0, 0.0)
+    )
     return {
         "bvid": str(video.get("bvid") or ""),
         "title": title,
@@ -439,13 +455,17 @@ def _prepare_video(video: dict[str, Any]) -> dict[str, Any]:
         "replies": safe_int(video.get("replies"), 0),
         "ctr": ctr,
         "ctr_percent": round(ctr * 100, 2),
-        "ctr_label": _percent_label(ctr, 2),
+        "ctr_label": _percent_label(ctr, 2) if ctr_available else "--",
+        "ctr_available": ctr_available,
         "avd_minutes": round(avd, 2),
-        "avd_label": f"{avd:.1f}",
+        "avd_label": f"{avd:.1f}" if avd_available else "--",
+        "avd_available": avd_available,
         "avp_percent": avp,
         "avp_value": round(avp * 100, 2),
-        "avp_label": _percent_label(avp, 1),
+        "avp_label": _percent_label(avp, 1) if avp_available else "--",
+        "avp_available": avp_available,
         "follower_gain": safe_int(video.get("follower_gain"), 0),
+        "follower_gain_available": follower_gain_available,
         "impressions": safe_int(video.get("impressions"), 0),
     }
 
@@ -463,14 +483,7 @@ def derive_dashboard_context(
     snapshots.sort(key=lambda item: str(item.get("date", "")))
 
     display_snapshots = snapshots
-    live_snapshots = [
-        snapshot
-        for snapshot in snapshots
-        if snapshot.get("source") == "live" and _has_video_data(snapshot)
-    ]
-    if live_snapshots:
-        display_snapshots = live_snapshots
-    elif str(history.get("source") or "") in {"live", "live_partial", "cache"}:
+    if str(history.get("source") or "") in {"live", "live_partial", "cache"}:
         live_like_snapshots = [
             snapshot
             for snapshot in snapshots
@@ -488,19 +501,24 @@ def derive_dashboard_context(
     latest_videos = [_prepare_video(video) for video in _videos(latest)]
     latest_date = _parse_date(latest.get("date"))
 
-    recent_videos = [
-        video
-        for video in latest_videos
-        if (latest_date - _parse_date(video.get("publish_time"))).days <= 30
-    ]
-    minimum_grid_count = min(9, len(latest_videos))
-    if len(recent_videos) < minimum_grid_count:
-        recent_videos = latest_videos
+    recent_videos = []
+    for video in latest_videos:
+        age_days = (latest_date - _parse_date(video.get("publish_time"))).days
+        if 0 <= age_days <= 30:
+            recent_videos.append(video)
     recent_videos.sort(key=lambda item: item["publish_time"], reverse=True)
 
-    ctr_videos = sorted(latest_videos, key=lambda item: item["ctr_percent"], reverse=True)[:30]
+    ctr_videos = sorted(
+        [video for video in latest_videos if video["ctr_available"]],
+        key=lambda item: item["ctr_percent"],
+        reverse=True,
+    )[:30]
     views_videos = sorted(recent_videos, key=lambda item: item["publish_time"])[-18:]
-    avd_videos = views_videos
+    avd_videos = [
+        video
+        for video in views_videos
+        if video["avd_available"] and video["avp_available"]
+    ]
 
     warning_values = (
         display_warnings
@@ -508,6 +526,8 @@ def derive_dashboard_context(
         else [*history.get("warnings", []), *latest.get("warnings", [])]
     )
     warnings = _display_warnings(warning_values)
+    public_listing = latest.get("public_listing") if isinstance(latest.get("public_listing"), dict) else {}
+    program_listing_note = str(public_listing.get("message") or "按上线时间严格筛选近30天节目。")
     feishu_enabled = bool(getattr(config, "feishu_enabled", False))
     source = str(history.get("source") or "fixture")
     if feishu_enabled:
@@ -541,11 +561,16 @@ def derive_dashboard_context(
             "full_titles": [video["title"] for video in ctr_videos],
         },
         "recent_videos": recent_videos[:30],
+        "program_listing_note": program_listing_note,
+        "program_listing_status": str(public_listing.get("status") or "unknown"),
         "views_followers_chart": {
             "labels": [video["axis_title"] for video in views_videos],
             "full_titles": [video["title"] for video in views_videos],
             "views": [video["views"] for video in views_videos],
-            "follower_gain": [video["follower_gain"] for video in views_videos],
+            "follower_gain": [
+                video["follower_gain"] if video["follower_gain_available"] else None
+                for video in views_videos
+            ],
         },
         "avd_avp_chart": {
             "labels": [video["axis_title"] for video in avd_videos],
