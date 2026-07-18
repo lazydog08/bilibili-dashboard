@@ -1582,6 +1582,26 @@
       font-weight: 760;
     }
 
+    .period-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 5px 7px;
+      border-radius: 6px;
+      background: rgba(242, 201, 76, .9);
+      color: #17130b;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .24);
+    }
+
+    .period-badge.is-history {
+      background: rgba(0, 0, 0, .68);
+      color: rgba(255, 255, 255, .78);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+    }
+
     .video-title {
       margin: 0;
       color: var(--text);
@@ -2199,12 +2219,12 @@
 
         <article class="panel">
           <div class="panel-header">
-            <h2 class="panel-title">近三十天上线节目封面总览</h2>
+            <h2 class="panel-title">节目封面总览</h2>
             <span class="panel-note">{{ program_listing_note }}</span>
           </div>
           <div class="thumbnail-grid">
-            {% if recent_videos %}
-            {% for video in recent_videos %}
+            {% if program_videos %}
+            {% for video in program_videos %}
             <article class="video-card">
               <div class="thumb-wrap">
                 <img
@@ -2216,6 +2236,9 @@
                   data-fallback-seed="{{ video.bvid or loop.index }}"
                   onerror="this.onerror=null;this.src='https://picsum.photos/seed/'+encodeURIComponent(this.dataset.fallbackSeed||'bilibili')+'/640/360';"
                 >
+                <div class="period-badge{% if video.program_period == 'history' %} is-history{% endif %}">
+                  {{ video.program_period_label }}
+                </div>
                 <div class="view-badge">
                   <span class="view-badge-label">播放</span>
                   <span>{{ video.views_label }}</span>
@@ -2232,7 +2255,7 @@
             {% endfor %}
             {% else %}
             <div class="empty-state">
-              当前没有可核验的近30天上线节目。页面不会用更早节目补位；请查看上方数据质量提醒。
+              当前没有保存的节目数据；请查看上方数据质量提醒。
             </div>
             {% endif %}
           </div>
@@ -2243,6 +2266,7 @@
         <article class="panel">
           <div class="panel-header">
             <h2 class="panel-title">视频播放量与粉丝增量</h2>
+            <span class="panel-subtle">最近 {{ views_followers_chart.labels|length }} 期</span>
           </div>
           <div id="viewsFollowersChart" class="chart"></div>
         </article>
@@ -2250,6 +2274,7 @@
         <article class="panel">
           <div class="panel-header">
             <h2 class="panel-title">平均播放时长与完播率</h2>
+            <span class="panel-subtle">有真实指标 {{ avd_avp_chart.labels|length }} 期</span>
           </div>
           <div id="avdAvpChart" class="chart"></div>
         </article>
@@ -2766,7 +2791,10 @@
         formatter(params) {
           const index = params[0].dataIndex;
           const title = viewsFollowersChartData.full_titles[index];
-          const lines = params.map(item => `${item.marker}${item.seriesName}：${item.value.toLocaleString()}`);
+          const lines = params.map(item => {
+            const formatted = item.value == null ? '--' : Number(item.value).toLocaleString();
+            return `${item.marker}${item.seriesName}：${formatted}`;
+          });
           return `${title}<br>${lines.join('<br>')}`;
         }
       },

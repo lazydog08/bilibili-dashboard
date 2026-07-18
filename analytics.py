@@ -504,21 +504,28 @@ def derive_dashboard_context(
     recent_videos = []
     for video in latest_videos:
         age_days = (latest_date - _parse_date(video.get("publish_time"))).days
-        if 0 <= age_days <= 30:
+        video["program_period"] = "recent" if 0 <= age_days <= 30 else "history"
+        video["program_period_label"] = "近30天" if video["program_period"] == "recent" else "历史"
+        if video["program_period"] == "recent":
             recent_videos.append(video)
     recent_videos.sort(key=lambda item: item["publish_time"], reverse=True)
+    program_videos = sorted(latest_videos, key=lambda item: item["publish_time"], reverse=True)[:30]
+    historical_videos = [video for video in program_videos if video["program_period"] == "history"]
 
     ctr_videos = sorted(
         [video for video in latest_videos if video["ctr_available"]],
         key=lambda item: item["ctr_percent"],
         reverse=True,
     )[:30]
-    views_videos = sorted(recent_videos, key=lambda item: item["publish_time"])[-18:]
-    avd_videos = [
-        video
-        for video in views_videos
-        if video["avd_available"] and video["avp_available"]
-    ]
+    views_videos = sorted(latest_videos, key=lambda item: item["publish_time"])[-18:]
+    avd_videos = sorted(
+        [
+            video
+            for video in latest_videos
+            if video["avd_available"] and video["avp_available"]
+        ],
+        key=lambda item: item["publish_time"],
+    )[-18:]
 
     warning_values = (
         display_warnings
@@ -527,7 +534,11 @@ def derive_dashboard_context(
     )
     warnings = _display_warnings(warning_values)
     public_listing = latest.get("public_listing") if isinstance(latest.get("public_listing"), dict) else {}
-    program_listing_note = str(public_listing.get("message") or "按上线时间严格筛选近30天节目。")
+    listing_source_note = str(public_listing.get("message") or "近30天节目按上线时间严格筛选。")
+    program_listing_note = (
+        f"近30天 {len(recent_videos)} 条 · 历史 {len(historical_videos)} 条（保留快照）。"
+        f"{listing_source_note}"
+    )
     feishu_enabled = bool(getattr(config, "feishu_enabled", False))
     source = str(history.get("source") or "fixture")
     if feishu_enabled:
@@ -561,6 +572,9 @@ def derive_dashboard_context(
             "full_titles": [video["title"] for video in ctr_videos],
         },
         "recent_videos": recent_videos[:30],
+        "program_videos": program_videos,
+        "recent_video_count": len(recent_videos),
+        "historical_video_count": len(historical_videos),
         "program_listing_note": program_listing_note,
         "program_listing_status": str(public_listing.get("status") or "unknown"),
         "views_followers_chart": {

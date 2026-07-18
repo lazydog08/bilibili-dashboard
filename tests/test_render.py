@@ -22,7 +22,7 @@ REQUIRED_TEXT = [
     "平台数据质量",
     "近 30 日三平台粉丝趋势",
     "CTR（展示点击率）",
-    "近三十天上线节目封面总览",
+    "节目封面总览",
     "视频播放量与粉丝增量",
     "平均播放时长与完播率",
 ]
@@ -41,6 +41,10 @@ def test_render_fixture_creates_dashboard_without_network(tmp_path) -> None:
         assert text in html
     assert "echarts.init" in html
     assert "const ctrChartData =" in html
+    assert "近30天" in html
+    assert "历史" in html
+    assert "period-badge" in html
+    assert "item.value == null ? '--'" in html
     assert "installCodexTrackpadScrollFallback" in html
     assert "local-scroll-controls" in html
     assert "三平台运营参考 · 本地静态看板" not in html

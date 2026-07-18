@@ -256,6 +256,11 @@ def test_recent_program_grid_does_not_backfill_older_videos() -> None:
     context = derive_dashboard_context(history, load_settings())
 
     assert [video["bvid"] for video in context["recent_videos"]] == ["BVnew"]
+    assert [video["bvid"] for video in context["program_videos"]] == ["BVnew", "BVold"]
+    assert [video["program_period_label"] for video in context["program_videos"]] == ["近30天", "历史"]
+    assert context["views_followers_chart"]["full_titles"] == ["31天前节目", "近30天节目"]
+    assert context["recent_video_count"] == 1
+    assert context["historical_video_count"] == 1
 
 
 def test_missing_private_video_metrics_render_as_unavailable_and_leave_charts() -> None:
@@ -295,4 +300,5 @@ def test_missing_private_video_metrics_render_as_unavailable_and_leave_charts() 
     assert context["ctr_chart"]["labels"] == []
     assert context["avd_avp_chart"]["labels"] == []
     assert context["views_followers_chart"]["follower_gain"] == [None]
-    assert context["program_listing_note"] == "近30天节目范围可确认完整。"
+    assert context["program_listing_note"].endswith("近30天节目范围可确认完整。")
+    assert context["program_listing_note"].startswith("近30天 1 条 · 历史 0 条")
