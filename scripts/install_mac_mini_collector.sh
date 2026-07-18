@@ -54,5 +54,5 @@ plutil -lint "$PLIST_TARGET"
 launchctl bootout "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST_TARGET"
 launchctl enable "gui/$(id -u)/$LABEL"
-launchctl kickstart -k "gui/$(id -u)/$LABEL"
+launchctl kickstart "gui/$(id -u)/$LABEL"
 launchctl print "gui/$(id -u)/$LABEL"

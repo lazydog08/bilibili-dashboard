@@ -700,6 +700,8 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert 'cp -p "$source" "$temporary"' not in mac_script
     assert "data_quality_status" in mac_script
     assert "launchctl bootstrap" in installer
+    assert 'launchctl kickstart "gui/$(id -u)/$LABEL"' in installer
+    assert "launchctl kickstart -k" not in installer
     assert "--exclude 'dashboard.env'" in installer
     assert ".source-version" in installer
     assert "com.lazydog.creator-data-dashboard.collector" in plist
