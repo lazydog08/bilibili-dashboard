@@ -28,7 +28,9 @@ def init_review_repo(tmp_path: Path) -> Path:
     repo.mkdir()
     scripts_dir = repo / "scripts"
     scripts_dir.mkdir()
-    shutil.copy2(REPO_ROOT / "scripts" / "review.sh", scripts_dir / "review.sh")
+    review_script = scripts_dir / "review.sh"
+    shutil.copyfile(REPO_ROOT / "scripts" / "review.sh", review_script)
+    review_script.chmod(0o755)
     run_checked([git, "init"], cwd=repo)
     run_checked([git, "config", "user.email", "test@example.com"], cwd=repo)
     run_checked([git, "config", "user.name", "Test Bot"], cwd=repo)
