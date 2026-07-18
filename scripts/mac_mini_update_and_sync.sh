@@ -8,10 +8,10 @@ CONFIG_FILE="${DASHBOARD_ENV_FILE:-$RUNTIME_ROOT/dashboard.env}"
 LOG_DIR="${DASHBOARD_MAC_LOG_DIR:-$HOME/Library/Logs/CreatorDataDashboard}"
 LOG_FILE="$LOG_DIR/collector.log"
 LOCK_DIR="$RUNTIME_ROOT/data/logs/mac-mini-collector.lock"
-PYTHON_BASE="${DASHBOARD_MAC_PYTHON:-/opt/homebrew/bin/python3}"
-[[ -x "$PYTHON_BASE" ]] || PYTHON_BASE="/usr/bin/python3"
-VENV_ROOT="$RUNTIME_ROOT/.venv-mac"
-PYTHON_BIN="$VENV_ROOT/bin/python"
+MAC_PYTHON_BASE="${DASHBOARD_MAC_PYTHON:-/opt/homebrew/bin/python3}"
+[[ -x "$MAC_PYTHON_BASE" ]] || MAC_PYTHON_BASE="/usr/bin/python3"
+MAC_VENV_ROOT="$RUNTIME_ROOT/.venv-mac"
+MAC_PYTHON_BIN="$MAC_VENV_ROOT/bin/python"
 REMOTE_NAME="${DASHBOARD_CLOUD_REMOTE_NAME:-origin}"
 BRANCH="${DASHBOARD_CLOUD_BRANCH:-main}"
 FAILURE_NOTIFIED=0
@@ -51,7 +51,7 @@ send_failure_bark() {
   fi
   FAILURE_NOTIFIED=1
   local sender="python3"
-  [[ -x "$PYTHON_BIN" ]] && sender="$PYTHON_BIN"
+  [[ -x "$MAC_PYTHON_BIN" ]] && sender="$MAC_PYTHON_BIN"
   DASHBOARD_ENV_FILE="$CONFIG_FILE" "$sender" -c \
     'from pathlib import Path; from scripts.noon_watchdog import load_env_files, send_bark; load_env_files(Path.cwd()); import sys; print(send_bark("Codex 项目结论", "【Mac mini】三平台数据采集失败：" + sys.argv[1] + "。上一版 NAS 数据已保留，需要小黑查看告警。", 20))' \
     "$summary" >> "$LOG_FILE" 2>&1 || true
@@ -105,17 +105,17 @@ atomic_copy() {
 }
 
 ensure_python() {
-  if [[ ! -x "$PYTHON_BIN" ]]; then
+  if [[ ! -x "$MAC_PYTHON_BIN" ]]; then
     log "Creating Mac mini Python environment."
-    "$PYTHON_BASE" -m venv "$VENV_ROOT" >> "$LOG_FILE" 2>&1
+    "$MAC_PYTHON_BASE" -m venv "$MAC_VENV_ROOT" >> "$LOG_FILE" 2>&1
   fi
-  local stamp="$VENV_ROOT/.requirements.sha256"
+  local stamp="$MAC_VENV_ROOT/.requirements.sha256"
   local current_hash
   current_hash="$(shasum -a 256 "$RUNTIME_ROOT/requirements.txt" | awk '{print $1}')"
   if [[ ! -f "$stamp" || "$(cat "$stamp" 2>/dev/null || true)" != "$current_hash" ]] || \
-    ! "$PYTHON_BIN" -c 'import dateutil, httpx, jinja2' >/dev/null 2>&1; then
+    ! "$MAC_PYTHON_BIN" -c 'import dateutil, httpx, jinja2' >/dev/null 2>&1; then
     log "Installing collector dependencies."
-    "$PYTHON_BIN" -m pip install -r "$RUNTIME_ROOT/requirements.txt" >> "$LOG_FILE" 2>&1
+    "$MAC_PYTHON_BIN" -m pip install -r "$RUNTIME_ROOT/requirements.txt" >> "$LOG_FILE" 2>&1
     printf '%s' "$current_hash" > "$stamp"
   fi
 }
@@ -165,9 +165,9 @@ main() {
 
   ensure_python
   log "Mac mini platform collection started."
-  if ! "$PYTHON_BIN" "$RUNTIME_ROOT/main.py" --live --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
+  if ! "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/main.py" --live --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
     log "Primary platform render failed; preserving the previous published history and page."
-    "$PYTHON_BIN" "$RUNTIME_ROOT/scripts/write_nas_status.py" --mode live --dashboard-exit-code 1 \
+    "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/scripts/write_nas_status.py" --mode live --dashboard-exit-code 1 \
       --timezone "${DASHBOARD_TIMEZONE:-Asia/Shanghai}" >> "$LOG_FILE" 2>&1 || true
     publish_to_cloud failure || true
     send_failure_bark "主采集或渲染失败"
@@ -177,13 +177,13 @@ main() {
   local comment_fetch_status="skipped"
   local comment_render_status="skipped"
   if [[ "${ENABLE_COMMENT_FETCH:-$ENABLE_COMMENT_INSIGHTS}" == "1" ]]; then
-    if "$PYTHON_BIN" "$RUNTIME_ROOT/scripts/fetch_bilibili_comments.py" >> "$LOG_FILE" 2>&1; then
+    if "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/scripts/fetch_bilibili_comments.py" >> "$LOG_FILE" 2>&1; then
       comment_fetch_status="success"
     else
       comment_fetch_status="failed"
       log "Comment refresh failed; continuing with the previous private comment cache."
     fi
-    if ENABLE_BILIBILI_FETCH=0 "$PYTHON_BIN" "$RUNTIME_ROOT/main.py" --cache --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
+    if ENABLE_BILIBILI_FETCH=0 "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/main.py" --cache --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
       comment_render_status="success"
     else
       comment_render_status="failed"
@@ -191,7 +191,7 @@ main() {
     fi
   fi
 
-  "$PYTHON_BIN" "$RUNTIME_ROOT/scripts/write_nas_status.py" \
+  "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/scripts/write_nas_status.py" \
     --mode live \
     --dashboard-exit-code 0 \
     --timezone "${DASHBOARD_TIMEZONE:-Asia/Shanghai}" \
@@ -199,7 +199,7 @@ main() {
     --comment-render-status "$comment_render_status" >> "$LOG_FILE" 2>&1
 
   local quality
-  quality="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("data_quality_status", "failed"))' "$RUNTIME_ROOT/data/nas_status.json")"
+  quality="$("$MAC_PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("data_quality_status", "failed"))' "$RUNTIME_ROOT/data/nas_status.json")"
   if [[ "$quality" == "failed" ]]; then
     publish_to_cloud failure
     log "Required platform data is stale; previous published history and page were preserved."
