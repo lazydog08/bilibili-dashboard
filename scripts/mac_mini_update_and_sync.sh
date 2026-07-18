@@ -8,7 +8,10 @@ CONFIG_FILE="${DASHBOARD_ENV_FILE:-$RUNTIME_ROOT/dashboard.env}"
 LOG_DIR="${DASHBOARD_MAC_LOG_DIR:-$HOME/Library/Logs/CreatorDataDashboard}"
 LOG_FILE="$LOG_DIR/collector.log"
 LOCK_DIR="$RUNTIME_ROOT/data/logs/mac-mini-collector.lock"
-PYTHON_BIN="$RUNTIME_ROOT/.venv/bin/python"
+PYTHON_BASE="${DASHBOARD_MAC_PYTHON:-/opt/homebrew/bin/python3}"
+[[ -x "$PYTHON_BASE" ]] || PYTHON_BASE="/usr/bin/python3"
+VENV_ROOT="$RUNTIME_ROOT/.venv-mac"
+PYTHON_BIN="$VENV_ROOT/bin/python"
 REMOTE_NAME="${DASHBOARD_CLOUD_REMOTE_NAME:-origin}"
 BRANCH="${DASHBOARD_CLOUD_BRANCH:-main}"
 FAILURE_NOTIFIED=0
@@ -104,12 +107,13 @@ atomic_copy() {
 ensure_python() {
   if [[ ! -x "$PYTHON_BIN" ]]; then
     log "Creating Mac mini Python environment."
-    python3 -m venv "$RUNTIME_ROOT/.venv" >> "$LOG_FILE" 2>&1
+    "$PYTHON_BASE" -m venv "$VENV_ROOT" >> "$LOG_FILE" 2>&1
   fi
-  local stamp="$RUNTIME_ROOT/.venv/.requirements.sha256"
+  local stamp="$VENV_ROOT/.requirements.sha256"
   local current_hash
   current_hash="$(shasum -a 256 "$RUNTIME_ROOT/requirements.txt" | awk '{print $1}')"
-  if [[ ! -f "$stamp" || "$(cat "$stamp" 2>/dev/null || true)" != "$current_hash" ]]; then
+  if [[ ! -f "$stamp" || "$(cat "$stamp" 2>/dev/null || true)" != "$current_hash" ]] || \
+    ! "$PYTHON_BIN" -c 'import dateutil, httpx, jinja2' >/dev/null 2>&1; then
     log "Installing collector dependencies."
     "$PYTHON_BIN" -m pip install -r "$RUNTIME_ROOT/requirements.txt" >> "$LOG_FILE" 2>&1
     printf '%s' "$current_hash" > "$stamp"

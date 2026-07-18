@@ -34,6 +34,7 @@ mkdir -p "$RUNTIME_ROOT" "$HOME/Library/LaunchAgents" "$HOME/Library/Logs/Creato
 rsync -a --delete \
   --exclude '.git/' \
   --exclude '.venv/' \
+  --exclude '.venv-mac/' \
   --exclude '.reviews/' \
   --exclude 'dashboard.env' \
   --exclude 'data/secrets/' \

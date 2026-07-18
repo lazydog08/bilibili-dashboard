@@ -695,6 +695,9 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert owner == "mac-mini"
     assert "Platform collection is delegated to Mac mini" in nas_script
     assert "mac-mini-collector.lock" in mac_script
+    assert '.venv-mac' in mac_script
+    assert '/opt/homebrew/bin/python3' in mac_script
+    assert "import dateutil, httpx, jinja2" in mac_script
     assert "atomic_copy" in mac_script
     assert 'cp -X "$source" "$temporary"' in mac_script
     assert 'cp -p "$source" "$temporary"' not in mac_script
