@@ -60,7 +60,11 @@ git -C "$RUNTIME_ROOT" cat-file -e "$SOURCE_VERSION^{commit}" || {
   printf 'Verified source commit is not available on the public remote.\n' >&2
   exit 6
 }
-git -C "$RUNTIME_ROOT" reset --mixed "$SOURCE_VERSION"
+git -C "$RUNTIME_ROOT" merge-base --is-ancestor "$SOURCE_VERSION" origin/main || {
+  printf 'Public main does not contain the verified source commit.\n' >&2
+  exit 7
+}
+git -C "$RUNTIME_ROOT" reset --mixed origin/main
 git -C "$RUNTIME_ROOT" restore --source="$SOURCE_VERSION" -- data/secrets/.gitkeep data/secrets/dashboard.env.example
 printf '%s\n' "$SOURCE_VERSION" > "$RUNTIME_ROOT/.source-version"
 
