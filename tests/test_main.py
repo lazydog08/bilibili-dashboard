@@ -175,3 +175,20 @@ def test_manual_content_fallback_marks_snapshot_partial_and_counts_sources() -> 
     assert "导入于 2026-05-23" in patched["sourceStatus"]["message"]
     assert patched["raw"]["summary"]["live_content_count"] == 1
     assert patched["raw"]["summary"]["manual_cached_content_count"] == 1
+
+
+def test_manual_content_fallback_uses_the_actual_platform_name() -> None:
+    snapshot = {
+        "platform": "douyin",
+        "sourceStatus": {"status": "success", "source": "authorized_cookie", "message": "抖音授权后台"},
+        "contentItems": [{"title": "实时作品", "publish_time": "2026-07-18 12:00"}],
+    }
+    manual_snapshot = {
+        "sourceStatus": {"importedAt": "2026-05-23T20:11:00+08:00"},
+        "contentItems": [{"title": "缓存作品", "publish_time": "2026-05-20 12:00"}],
+    }
+
+    patched = _with_manual_content_fallback(snapshot, manual_snapshot)
+
+    assert "可能与抖音当前前台/后台不一致" in patched["sourceStatus"]["message"]
+    assert "可能与小红书当前前台/后台不一致" not in patched["sourceStatus"]["message"]

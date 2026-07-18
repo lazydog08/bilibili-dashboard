@@ -276,9 +276,14 @@ def _with_manual_content_fallback(
     import_label = _manual_content_import_label(manual_snapshot)
     if manual_cache_count and str(source_status.get("status") or "") == "success":
         source_status["status"] = "partial"
+    platform_label = {
+        "bilibili": "B站",
+        "douyin": "抖音",
+        "xiaohongshu": "小红书",
+    }.get(str(snapshot.get("platform") or ""), "对应平台")
     suffix = (
         f"当前作品明细：实时作品 {live_count} 条，手动缓存 {manual_cache_count} 条（{import_label}）；"
-        "缓存作品可能与小红书当前前台/后台不一致，汇总指标仍来自当前授权后台。"
+        f"缓存作品可能与{platform_label}当前前台/后台不一致，汇总指标仍来自当前授权后台。"
     )
     source_status["message"] = f"{message} {suffix}".strip()
     patched["sourceStatus"] = source_status
