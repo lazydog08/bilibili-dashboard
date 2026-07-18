@@ -697,13 +697,22 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "mac-mini-collector.lock" in mac_script
     assert '.venv-mac' in mac_script
     assert '/opt/homebrew/bin/python3' in mac_script
-    assert "import dateutil, httpx, jinja2" in mac_script
+    assert "import browser_cookie3, dateutil, httpx, jinja2" in mac_script
     assert 'MAC_PYTHON_BIN="$MAC_VENV_ROOT/bin/python"' in mac_script
     assert '"$PYTHON_BIN"' not in mac_script
     assert "atomic_copy" in mac_script
     assert 'cp -X "$source" "$temporary"' in mac_script
     assert 'cp -p "$source" "$temporary"' not in mac_script
     assert "data_quality_status" in mac_script
+    assert "refresh_bilibili_browser_cookie.py" in mac_script
+    assert "BILIBILI_BROWSER_COOKIE_REFRESH_ENABLED" in mac_script
+    assert "BILIBILI_AUTH_ALERT_STAMP" in mac_script
+    assert "86400" in mac_script
+    assert '[[ "$refresh_exit" == "2" ]]' in mac_script
+    assert "send_bilibili_refresh_error_bark" in mac_script
+    assert mac_script.index("refresh_bilibili_browser_cookie") < mac_script.index(
+        'log "Mac mini platform collection started."'
+    )
     assert "mount_nas" not in mac_script
     assert "unset GIT_EXEC_PATH" in mac_script
     assert 'git push "$REMOTE_NAME" "HEAD:$BRANCH"' in mac_script

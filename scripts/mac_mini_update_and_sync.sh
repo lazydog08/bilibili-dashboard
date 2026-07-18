@@ -8,6 +8,7 @@ CONFIG_FILE="${DASHBOARD_ENV_FILE:-$RUNTIME_ROOT/dashboard.env}"
 LOG_DIR="${DASHBOARD_MAC_LOG_DIR:-$HOME/Library/Logs/CreatorDataDashboard}"
 LOG_FILE="$LOG_DIR/collector.log"
 LOCK_DIR="$RUNTIME_ROOT/data/logs/mac-mini-collector.lock"
+BILIBILI_AUTH_ALERT_STAMP="$RUNTIME_ROOT/data/private/bilibili-auth-alert.stamp"
 MAC_PYTHON_BASE="${DASHBOARD_MAC_PYTHON:-/opt/homebrew/bin/python3}"
 [[ -x "$MAC_PYTHON_BASE" ]] || MAC_PYTHON_BASE="/usr/bin/python3"
 MAC_VENV_ROOT="$RUNTIME_ROOT/.venv-mac"
@@ -55,6 +56,22 @@ send_failure_bark() {
   DASHBOARD_ENV_FILE="$CONFIG_FILE" "$sender" -c \
     'from pathlib import Path; from scripts.noon_watchdog import load_env_files, send_bark; load_env_files(Path.cwd()); import sys; print(send_bark("Codex 项目结论", "【Mac mini】三平台数据采集失败：" + sys.argv[1] + "。上一版 NAS 数据已保留，需要小黑查看告警。", 20))' \
     "$summary" >> "$LOG_FILE" 2>&1 || true
+}
+
+send_bilibili_auth_bark() {
+  local sender="python3"
+  [[ -x "$MAC_PYTHON_BIN" ]] && sender="$MAC_PYTHON_BIN"
+  DASHBOARD_ENV_FILE="$CONFIG_FILE" "$sender" -c \
+    'from pathlib import Path; from scripts.noon_watchdog import load_env_files, send_bark; load_env_files(Path.cwd()); print(send_bark("Codex 项目结论", "【Mac mini】B站创作中心登录已失效，CTR、平均播放时长和完播率暂停刷新；公开数据仍在更新。请在这台 Mac mini 的 Edge 完成一次 B站登录，采集器之后会自动续期。", 20))' \
+    >> "$LOG_FILE" 2>&1 || true
+}
+
+send_bilibili_refresh_error_bark() {
+  local sender="python3"
+  [[ -x "$MAC_PYTHON_BIN" ]] && sender="$MAC_PYTHON_BIN"
+  DASHBOARD_ENV_FILE="$CONFIG_FILE" "$sender" -c \
+    'from pathlib import Path; from scripts.noon_watchdog import load_env_files, send_bark; load_env_files(Path.cwd()); print(send_bark("Codex 项目结论", "【Mac mini】B站自动续期运行异常：Edge Cookie、macOS 钥匙串或本地配置暂不可用；公开数据仍在更新，创作中心指标不会假报。需要小黑查看 Mac mini 采集日志。", 20))' \
+    >> "$LOG_FILE" 2>&1 || true
 }
 
 on_error() {
@@ -113,11 +130,53 @@ ensure_python() {
   local current_hash
   current_hash="$(shasum -a 256 "$RUNTIME_ROOT/requirements.txt" | awk '{print $1}')"
   if [[ ! -f "$stamp" || "$(cat "$stamp" 2>/dev/null || true)" != "$current_hash" ]] || \
-    ! "$MAC_PYTHON_BIN" -c 'import dateutil, httpx, jinja2' >/dev/null 2>&1; then
+    ! "$MAC_PYTHON_BIN" -c 'import browser_cookie3, dateutil, httpx, jinja2' >/dev/null 2>&1; then
     log "Installing collector dependencies."
     "$MAC_PYTHON_BIN" -m pip install -r "$RUNTIME_ROOT/requirements.txt" >> "$LOG_FILE" 2>&1
     printf '%s' "$current_hash" > "$stamp"
   fi
+}
+
+refresh_bilibili_browser_cookie() {
+  if [[ "${BILIBILI_BROWSER_COOKIE_REFRESH_ENABLED:-1}" != "1" ]]; then
+    log "Bilibili Edge credential refresh is disabled."
+    return 0
+  fi
+
+  local command=(
+    "$MAC_PYTHON_BIN"
+    "$RUNTIME_ROOT/scripts/refresh_bilibili_browser_cookie.py"
+    --env-file "$CONFIG_FILE"
+    --account-id "${BILIBILI_ACCOUNT_ID:-516185777}"
+  )
+  if [[ -n "${BILIBILI_BROWSER_COOKIE_FILE:-}" ]]; then
+    command+=(--cookie-file "$BILIBILI_BROWSER_COOKIE_FILE")
+  fi
+
+  local refresh_exit
+  if "${command[@]}" >> "$LOG_FILE" 2>&1; then
+    load_config
+    log "Bilibili Edge credential refreshed after account and creator-center validation."
+    return 0
+  else
+    refresh_exit=$?
+  fi
+
+  log "Bilibili Edge credential refresh returned $refresh_exit; continuing with public-data fallback."
+  mkdir -p "$(dirname -- "$BILIBILI_AUTH_ALERT_STAMP")"
+  local now modified age
+  now="$(date +%s)"
+  modified="$(lock_mtime "$BILIBILI_AUTH_ALERT_STAMP" 2>/dev/null || echo 0)"
+  age=$((now - modified))
+  if [[ ! -f "$BILIBILI_AUTH_ALERT_STAMP" || "$age" -ge 86400 ]]; then
+    if [[ "$refresh_exit" == "2" ]]; then
+      send_bilibili_auth_bark
+    else
+      send_bilibili_refresh_error_bark
+    fi
+    touch "$BILIBILI_AUTH_ALERT_STAMP"
+  fi
+  return 0
 }
 
 publish_to_cloud() {
@@ -164,6 +223,7 @@ main() {
   fi
 
   ensure_python
+  refresh_bilibili_browser_cookie
   log "Mac mini platform collection started."
   if ! "$MAC_PYTHON_BIN" "$RUNTIME_ROOT/main.py" --live --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
     log "Primary platform render failed; preserving the previous published history and page."
