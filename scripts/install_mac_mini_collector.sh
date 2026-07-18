@@ -11,6 +11,8 @@ NAS_CONFIG_FILE="${DASHBOARD_NAS_CONFIG_FILE:-$NAS_MOUNT_PATH/.config/bilibili-d
 PLIST_SOURCE="$SOURCE_DIR/launchd/com.lazydog.creator-data-dashboard.collector.plist"
 PLIST_TARGET="$HOME/Library/LaunchAgents/com.lazydog.creator-data-dashboard.collector.plist"
 LABEL="com.lazydog.creator-data-dashboard.collector"
+REMOTE_URL="${DASHBOARD_MAC_REMOTE_URL:-https://github.com/lazydog08/bilibili-dashboard.git}"
+GH_BIN="$(command -v gh || true)"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   printf 'This installer only supports macOS.\n' >&2
@@ -39,7 +41,26 @@ rsync -a --delete \
   --exclude 'data/logs/' \
   "$SOURCE_DIR/" "$RUNTIME_ROOT/"
 
-git -C "$SOURCE_DIR" rev-parse HEAD > "$RUNTIME_ROOT/.source-version"
+SOURCE_VERSION="$(git -C "$SOURCE_DIR" rev-parse HEAD)"
+[[ -n "$GH_BIN" ]] || { printf 'GitHub CLI is required for non-interactive publishing.\n' >&2; exit 5; }
+if [[ ! -d "$RUNTIME_ROOT/.git" ]]; then
+  git -C "$RUNTIME_ROOT" init -b main
+fi
+git -C "$RUNTIME_ROOT" config user.email "mac-mini-dashboard@local"
+git -C "$RUNTIME_ROOT" config user.name "Mac mini Dashboard Bot"
+git -C "$RUNTIME_ROOT" config credential.helper "!$GH_BIN auth git-credential"
+if git -C "$RUNTIME_ROOT" remote get-url origin >/dev/null 2>&1; then
+  git -C "$RUNTIME_ROOT" remote set-url origin "$REMOTE_URL"
+else
+  git -C "$RUNTIME_ROOT" remote add origin "$REMOTE_URL"
+fi
+git -C "$RUNTIME_ROOT" fetch origin main
+git -C "$RUNTIME_ROOT" cat-file -e "$SOURCE_VERSION^{commit}" || {
+  printf 'Verified source commit is not available on the public remote.\n' >&2
+  exit 6
+}
+git -C "$RUNTIME_ROOT" reset --mixed "$SOURCE_VERSION"
+printf '%s\n' "$SOURCE_VERSION" > "$RUNTIME_ROOT/.source-version"
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
   [[ -f "$NAS_CONFIG_FILE" ]] || { printf 'NAS collector config is missing.\n' >&2; exit 4; }

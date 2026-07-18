@@ -6,6 +6,8 @@ __pycache__/
 .env
 .env.*
 !.env.example
+dashboard.env
+.source-version
 *.key
 *.pem
 *.token

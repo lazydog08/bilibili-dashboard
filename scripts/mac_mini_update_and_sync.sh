@@ -5,13 +5,12 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="${DASHBOARD_REPO_DIR:-$(cd -- "$SCRIPT_DIR/.." && pwd)}"
 RUNTIME_ROOT="${DASHBOARD_MAC_RUNTIME_ROOT:-$REPO_DIR}"
 CONFIG_FILE="${DASHBOARD_ENV_FILE:-$RUNTIME_ROOT/dashboard.env}"
-NAS_MOUNT_PATH="${DASHBOARD_NAS_MOUNT_PATH:-/Volumes/personal_folder}"
-NAS_MOUNT_URL="${DASHBOARD_NAS_MOUNT_URL:-smb://192.168.31.67/personal_folder}"
-NAS_REPO_DIR="${DASHBOARD_NAS_REPO_DIR:-$NAS_MOUNT_PATH/bilibili-dashboard}"
 LOG_DIR="${DASHBOARD_MAC_LOG_DIR:-$HOME/Library/Logs/CreatorDataDashboard}"
 LOG_FILE="$LOG_DIR/collector.log"
 LOCK_DIR="$RUNTIME_ROOT/data/logs/mac-mini-collector.lock"
 PYTHON_BIN="$RUNTIME_ROOT/.venv/bin/python"
+REMOTE_NAME="${DASHBOARD_CLOUD_REMOTE_NAME:-origin}"
+BRANCH="${DASHBOARD_CLOUD_BRANCH:-main}"
 FAILURE_NOTIFIED=0
 
 mkdir -p "$LOG_DIR" "$RUNTIME_ROOT/data/logs"
@@ -90,15 +89,6 @@ acquire_lock() {
   exit 0
 }
 
-mount_nas() {
-  if mount | grep -Fq " on $NAS_MOUNT_PATH "; then
-    return 0
-  fi
-  log "NAS home share is not mounted; attempting automatic mount."
-  osascript -e "mount volume \"$NAS_MOUNT_URL\"" >> "$LOG_FILE" 2>&1
-  mount | grep -Fq " on $NAS_MOUNT_PATH "
-}
-
 atomic_copy() {
   local source="$1"
   local destination="$2"
@@ -107,12 +97,6 @@ atomic_copy() {
   local temporary="${destination}.tmp.$$"
   cp -X "$source" "$temporary"
   mv -f "$temporary" "$destination"
-}
-
-stage_from_nas() {
-  atomic_copy "$NAS_REPO_DIR/data/history.json" "$RUNTIME_ROOT/data/history.json"
-  atomic_copy "$NAS_REPO_DIR/data/manual_platform_metrics.json" "$RUNTIME_ROOT/data/manual_platform_metrics.json"
-  atomic_copy "$NAS_REPO_DIR/data/private/comments.json" "$RUNTIME_ROOT/data/private/comments.json"
 }
 
 ensure_python() {
@@ -130,18 +114,35 @@ ensure_python() {
   fi
 }
 
-publish_failure_status() {
-  atomic_copy "$RUNTIME_ROOT/data/nas_status.json" "$NAS_REPO_DIR/data/nas_status.json"
-  atomic_copy "$RUNTIME_ROOT/data/nas_status.json" "$NAS_REPO_DIR/dashboard/output/nas_status.json"
-}
+publish_to_cloud() {
+  local mode="$1"
+  atomic_copy "$RUNTIME_ROOT/data/nas_status.json" "$RUNTIME_ROOT/dashboard/output/nas_status.json"
+  git add data/nas_status.json dashboard/output/nas_status.json
+  if [[ "$mode" == "success" ]]; then
+    git add data/history.json dashboard/output/index.html
+  fi
 
-publish_success() {
-  atomic_copy "$RUNTIME_ROOT/data/history.json" "$NAS_REPO_DIR/data/history.json"
-  atomic_copy "$RUNTIME_ROOT/dashboard/output/index.html" "$NAS_REPO_DIR/dashboard/output/index.html"
-  atomic_copy "$RUNTIME_ROOT/data/nas_status.json" "$NAS_REPO_DIR/data/nas_status.json"
-  atomic_copy "$RUNTIME_ROOT/data/nas_status.json" "$NAS_REPO_DIR/dashboard/output/nas_status.json"
-  atomic_copy "$RUNTIME_ROOT/data/private/comments.json" "$NAS_REPO_DIR/data/private/comments.json"
-  atomic_copy "$LOG_FILE" "$NAS_REPO_DIR/data/logs/mac-mini-collector.log"
+  local path
+  while IFS= read -r path; do
+    case "$path" in
+      data/history.json|data/nas_status.json|dashboard/output/index.html|dashboard/output/nas_status.json) ;;
+      *) log "Refusing to publish unexpected staged path: $path"; return 4 ;;
+    esac
+  done < <(git diff --cached --name-only)
+
+  if git diff --cached --quiet; then
+    log "No public dashboard changes to publish."
+    return 0
+  fi
+  local commit_time
+  commit_time="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M')"
+  git commit -m "chore: update dashboard from Mac mini $commit_time" >> "$LOG_FILE" 2>&1
+  if ! git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1; then
+    log "Cloud push was rejected; rebasing once onto the latest public branch."
+    git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1
+    git rebase "$REMOTE_NAME/$BRANCH" >> "$LOG_FILE" 2>&1
+    git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1
+  fi
 }
 
 main() {
@@ -149,19 +150,20 @@ main() {
   load_config
   acquire_lock
   trap 'rm -rf "$LOCK_DIR"' EXIT
-  mount_nas
-  [[ -d "$NAS_REPO_DIR/.git" ]] || { log "NAS repository is unavailable: $NAS_REPO_DIR"; return 2; }
+  [[ -d "$RUNTIME_ROOT/.git" ]] || { log "Local runtime Git repository is missing."; return 2; }
 
   if [[ "${DASHBOARD_MAC_DRY_RUN:-0}" == "1" ]]; then
-    log "Dry run: Mac mini collector configuration and NAS mount are ready."
+    log "Dry run: Mac mini collector configuration and GitHub publishing are ready."
     return 0
   fi
 
-  stage_from_nas
   ensure_python
   log "Mac mini platform collection started."
   if ! "$PYTHON_BIN" "$RUNTIME_ROOT/main.py" --live --no-feishu --no-bark >> "$LOG_FILE" 2>&1; then
-    log "Primary platform render failed; preserving previous NAS data."
+    log "Primary platform render failed; preserving the previous published history and page."
+    "$PYTHON_BIN" "$RUNTIME_ROOT/scripts/write_nas_status.py" --mode live --dashboard-exit-code 1 \
+      --timezone "${DASHBOARD_TIMEZONE:-Asia/Shanghai}" >> "$LOG_FILE" 2>&1 || true
+    publish_to_cloud failure || true
     send_failure_bark "主采集或渲染失败"
     return 1
   fi
@@ -193,14 +195,14 @@ main() {
   local quality
   quality="$("$PYTHON_BIN" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("data_quality_status", "failed"))' "$RUNTIME_ROOT/data/nas_status.json")"
   if [[ "$quality" == "failed" ]]; then
-    publish_failure_status
-    log "Required platform data is stale; previous NAS history and page were preserved."
+    publish_to_cloud failure
+    log "Required platform data is stale; previous published history and page were preserved."
     send_failure_bark "必需平台数据仍过期"
     return 3
   fi
 
-  publish_success
-  log "Mac mini collection finished and synced to NAS; data quality: $quality."
+  publish_to_cloud success
+  log "Mac mini collection finished and published; NAS will pull it on its existing schedule. Data quality: $quality."
 }
 
 main "$@"
