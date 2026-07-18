@@ -720,6 +720,7 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "launchctl bootstrap" in installer
     assert 'launchctl kickstart "gui/$(id -u)/$LABEL"' in installer
     assert "launchctl kickstart -k" not in installer
+    assert "--exclude '.git'" in installer
     assert "--exclude 'dashboard.env'" in installer
     assert ".source-version" in installer
     assert "auth git-credential" in installer

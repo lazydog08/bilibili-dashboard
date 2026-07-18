@@ -32,6 +32,7 @@ fi
 
 mkdir -p "$RUNTIME_ROOT" "$HOME/Library/LaunchAgents" "$HOME/Library/Logs/CreatorDataDashboard"
 rsync -a --delete \
+  --exclude '.git' \
   --exclude '.git/' \
   --exclude '.venv/' \
   --exclude '.venv-mac/' \
