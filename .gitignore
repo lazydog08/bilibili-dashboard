@@ -12,6 +12,8 @@ dashboard.env
 *.pem
 *.token
 .DS_Store
+._*
+**/._*
 data/logs/
 data/private/
 data/secrets/*

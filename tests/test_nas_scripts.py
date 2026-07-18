@@ -700,6 +700,7 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert 'cp -p "$source" "$temporary"' not in mac_script
     assert "data_quality_status" in mac_script
     assert "mount_nas" not in mac_script
+    assert "unset GIT_EXEC_PATH" in mac_script
     assert 'git push "$REMOTE_NAME" "HEAD:$BRANCH"' in mac_script
     assert "Refusing to publish unexpected staged path" in mac_script
     assert "launchctl bootstrap" in installer
@@ -708,6 +709,7 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "--exclude 'dashboard.env'" in installer
     assert ".source-version" in installer
     assert "auth git-credential" in installer
+    assert "core.filemode false" in installer
     assert "com.lazydog.creator-data-dashboard.collector" in plist
     assert "<integer>1800</integer>" in plist
     assert "BILIBILI_COOKIE" not in plist

@@ -37,6 +37,8 @@ load_config() {
   export ENABLE_BILIBILI_FETCH="${ENABLE_BILIBILI_FETCH:-1}"
   export ENABLE_COMMENT_INSIGHTS="${ENABLE_COMMENT_INSIGHTS:-1}"
   export DISABLE_BARK=1
+  unset GIT_EXEC_PATH GIT_TEMPLATE_DIR GIT_SSH GIT_SSH_COMMAND
+  export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 }
 
 send_failure_bark() {
@@ -132,11 +134,11 @@ publish_to_cloud() {
 
   if git diff --cached --quiet; then
     log "No public dashboard changes to publish."
-    return 0
+  else
+    local commit_time
+    commit_time="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M')"
+    git commit -m "chore: update dashboard from Mac mini $commit_time" >> "$LOG_FILE" 2>&1
   fi
-  local commit_time
-  commit_time="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M')"
-  git commit -m "chore: update dashboard from Mac mini $commit_time" >> "$LOG_FILE" 2>&1
   if ! git push "$REMOTE_NAME" "HEAD:$BRANCH" >> "$LOG_FILE" 2>&1; then
     log "Cloud push was rejected; rebasing once onto the latest public branch."
     git fetch "$REMOTE_NAME" "$BRANCH" >> "$LOG_FILE" 2>&1

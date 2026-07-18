@@ -48,6 +48,7 @@ if [[ ! -d "$RUNTIME_ROOT/.git" ]]; then
 fi
 git -C "$RUNTIME_ROOT" config user.email "mac-mini-dashboard@local"
 git -C "$RUNTIME_ROOT" config user.name "Mac mini Dashboard Bot"
+git -C "$RUNTIME_ROOT" config core.filemode false
 git -C "$RUNTIME_ROOT" config credential.helper "!$GH_BIN auth git-credential"
 if git -C "$RUNTIME_ROOT" remote get-url origin >/dev/null 2>&1; then
   git -C "$RUNTIME_ROOT" remote set-url origin "$REMOTE_URL"
@@ -60,6 +61,7 @@ git -C "$RUNTIME_ROOT" cat-file -e "$SOURCE_VERSION^{commit}" || {
   exit 6
 }
 git -C "$RUNTIME_ROOT" reset --mixed "$SOURCE_VERSION"
+git -C "$RUNTIME_ROOT" restore --source="$SOURCE_VERSION" -- data/secrets/.gitkeep data/secrets/dashboard.env.example
 printf '%s\n' "$SOURCE_VERSION" > "$RUNTIME_ROOT/.source-version"
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
