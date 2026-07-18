@@ -134,7 +134,16 @@ def _merge_public_bilibili_snapshot(
     """Merge verified public fields without overwriting creator-only metrics."""
     base = deepcopy(base_snapshot) if isinstance(base_snapshot, dict) else {}
     public = deepcopy(public_snapshot)
-    creator_cached_at = str(base.get("updated_at") or base.get("date") or "")
+    creator_cached_at = str(
+        base.get("updated_at")
+        if creator_live
+        else (
+            base.get("creator_center_cached_at")
+            or base.get("updated_at")
+            or base.get("date")
+            or ""
+        )
+    )
     base_channel = base.get("channel") if isinstance(base.get("channel"), dict) else {}
     public_channel = public.get("channel") if isinstance(public.get("channel"), dict) else {}
     follower = public_channel.get("total_followers")
@@ -185,6 +194,19 @@ def _merge_public_bilibili_snapshot(
         }
     )
     return base
+
+
+def _latest_creator_center_success_at(history: dict[str, Any]) -> str:
+    snapshots = history.get("snapshots") if isinstance(history, dict) else None
+    if not isinstance(snapshots, list):
+        return ""
+    for snapshot in reversed(snapshots):
+        if not isinstance(snapshot, dict) or snapshot.get("source") != "live":
+            continue
+        captured_at = str(snapshot.get("updated_at") or snapshot.get("date") or "")
+        if captured_at:
+            return captured_at
+    return ""
 
 
 async def _try_public_bilibili_snapshot(settings: Settings) -> tuple[dict[str, Any] | None, list[str]]:
@@ -640,6 +662,10 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
             history, _ = _load_cache_or_fixture(settings, warnings)
             cached_snapshot = _latest_snapshot(history)
             if public_snapshot and cached_snapshot and history.get("source") != "fixture":
+                cached_snapshot = deepcopy(cached_snapshot)
+                last_creator_success = _latest_creator_center_success_at(history)
+                if last_creator_success:
+                    cached_snapshot["creator_center_cached_at"] = last_creator_success
                 fallback_snapshot = _merge_public_bilibili_snapshot(
                     cached_snapshot,
                     public_snapshot,

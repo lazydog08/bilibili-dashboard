@@ -9,6 +9,7 @@ from config import PROJECT_ROOT, load_settings
 from main import (
     _collect_platform_snapshots,
     _fetch_with_retries,
+    _latest_creator_center_success_at,
     _latest_network_platform_capture,
     _merge_public_bilibili_snapshot,
     _with_manual_content_fallback,
@@ -159,6 +160,49 @@ def test_public_bilibili_merge_adds_new_upload_without_overwriting_private_metri
     assert existing["ctr"] == 0.051
     assert existing["avd_minutes"] == 2.3
     assert merged["creator_center_cached_at"] == "2026-07-01T15:00:00+08:00"
+
+
+def test_repeated_public_fallback_does_not_advance_creator_success_time() -> None:
+    cached = {
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T16:30:00+08:00",
+        "source": "public_partial",
+        "creator_center_cached_at": "2026-07-01T15:00:00+08:00",
+        "channel": {"total_followers": 188_000},
+        "videos": [],
+    }
+    public = {
+        "date": "2026-07-18",
+        "updated_at": "2026-07-18T17:00:00+08:00",
+        "channel": {"total_followers": 188_999},
+        "videos": [],
+        "warnings": [],
+    }
+
+    merged = _merge_public_bilibili_snapshot(
+        cached,
+        public,
+        creator_live=False,
+        creator_warnings=["创作中心失败"],
+    )
+
+    assert merged["updated_at"] == "2026-07-18T17:00:00+08:00"
+    assert merged["creator_center_cached_at"] == "2026-07-01T15:00:00+08:00"
+
+
+def test_last_creator_success_ignores_newer_public_partial_marker() -> None:
+    history = {
+        "snapshots": [
+            {"source": "live", "updated_at": "2026-07-01T15:00:14+08:00"},
+            {
+                "source": "public_partial",
+                "updated_at": "2026-07-18T16:44:35+08:00",
+                "creator_center_cached_at": "2026-07-18T16:32:04+08:00",
+            },
+        ]
+    }
+
+    assert _latest_creator_center_success_at(history) == "2026-07-01T15:00:14+08:00"
 
 
 def test_public_partial_snapshot_keeps_platform_card_in_public_fallback_mode(tmp_path) -> None:
