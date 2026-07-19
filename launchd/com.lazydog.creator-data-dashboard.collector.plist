@@ -14,7 +14,7 @@
   <key>RunAtLoad</key>
   <true/>
   <key>StartInterval</key>
-  <integer>1800</integer>
+  <integer>3600</integer>
   <key>ThrottleInterval</key>
   <integer>60</integer>
   <key>ProcessType</key>
