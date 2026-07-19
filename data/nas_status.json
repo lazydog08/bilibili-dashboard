@@ -2,8 +2,8 @@
   "schema_version": 1,
   "runner_id": "mac-mini",
   "source_version": "179e8765fa91761b2d430f44593a8c73755e4884",
-  "last_run_at": "2026-07-19T05:51:18+00:00",
-  "last_run_local": "2026-07-19T13:51:18+08:00",
+  "last_run_at": "2026-07-19T06:09:25+00:00",
+  "last_run_local": "2026-07-19T14:09:25+08:00",
   "timezone": "Asia/Shanghai",
   "mode": "live",
   "dashboard_status": "degraded",
@@ -17,9 +17,9 @@
       "fresh": true,
       "stale_after_minutes": 90,
       "age_minutes": 0,
-      "captured_at": "2026-07-19T13:50:57+08:00",
+      "captured_at": "2026-07-19T14:09:04+08:00",
       "status": "partial",
-      "source": "bilibili_public_fallback"
+      "source": "bilibili_live"
     },
     "douyin": {
       "enabled": true,
@@ -27,7 +27,7 @@
       "fresh": true,
       "stale_after_minutes": 90,
       "age_minutes": 0,
-      "captured_at": "2026-07-19T13:51:01+08:00",
+      "captured_at": "2026-07-19T14:09:10+08:00",
       "status": "partial",
       "source": "authorized_cookie"
     },
@@ -36,7 +36,7 @@
       "required": false,
       "fresh": false,
       "stale_after_minutes": 90,
-      "age_minutes": 38180,
+      "age_minutes": 38198,
       "captured_at": "2026-06-23T01:30:51+08:00",
       "status": "partial",
       "source": "authorized_cookie"
@@ -48,9 +48,9 @@
   "tests_status": "skipped",
   "publish_status": "skipped",
   "git_branch": "main",
-  "git_head": "ad6a0f31",
-  "history_mtime": "2026-07-19T05:51:17+00:00",
-  "output_mtime": "2026-07-19T05:51:18+00:00",
+  "git_head": "0ce8b493",
+  "history_mtime": "2026-07-19T06:09:24+00:00",
+  "output_mtime": "2026-07-19T06:09:25+00:00",
   "history_path": "data/history.json",
   "output_path": "dashboard/output/index.html",
   "status_path": "data/nas_status.json",
