@@ -13,8 +13,11 @@
   <string>/Users/lazydog/Library/Application Support/CreatorDataDashboard</string>
   <key>RunAtLoad</key>
   <true/>
-  <key>StartInterval</key>
-  <integer>3600</integer>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
   <key>ThrottleInterval</key>
   <integer>60</integer>
   <key>ProcessType</key>

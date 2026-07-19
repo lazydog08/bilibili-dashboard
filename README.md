@@ -185,7 +185,7 @@ Edge 完成一次正常登录，后续轮次会自动续用新会话。本项目
 验证码。
 
 Mac mini 的正式采集由 `com.lazydog.creator-data-dashboard.collector`
-LaunchAgent 每 60 分钟运行一次。运行配置使用
+LaunchAgent 每个整点运行一次。运行配置使用
 `DASHBOARD_UPDATE_INTERVAL_MINUTES=60` 和
 `DASHBOARD_PAGE_REFRESH_SECONDS=3600`，让真实调度、页面“下次更新”和浏览器
 自动刷新保持一致。正常更新保持静默；只有采集、登录或发布失败且需要处理时

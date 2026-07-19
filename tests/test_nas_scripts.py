@@ -726,7 +726,10 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "auth git-credential" in installer
     assert "core.filemode false" in installer
     assert "com.lazydog.creator-data-dashboard.collector" in plist
-    assert "<integer>3600</integer>" in plist
+    assert "<key>StartCalendarInterval</key>" in plist
+    assert "<key>Minute</key>" in plist
+    assert "<integer>0</integer>" in plist
+    assert "<key>StartInterval</key>" not in plist
     assert "BILIBILI_COOKIE" not in plist
     assert "BARK" not in plist
 
