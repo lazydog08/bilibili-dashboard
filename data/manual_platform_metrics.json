@@ -205,22 +205,24 @@
     "xiaohongshu": {
       "source": "manual_import",
       "accountId": "409476273",
-      "fans": 39501,
+      "capturedAt": "2026-07-19T00:00:00+08:00",
+      "importedAt": "2026-07-19T14:25:39+08:00",
+      "fans": 39592,
       "metricColumns": {
         "current": "近7日",
         "previous": "前7日"
       },
       "growth": {
         "cycle": null,
-        "7d": -2,
-        "30d": null
+        "7d": 113,
+        "30d": 111
       },
       "today": {
-        "views": 2099,
-        "likes": 47,
-        "favorites": 19,
-        "comments": 0,
-        "shares": 22
+        "views": 28000,
+        "likes": 850,
+        "favorites": 224,
+        "comments": 56,
+        "shares": 93
       },
       "yesterday": {
         "views": null,
@@ -230,8 +232,11 @@
         "shares": null
       },
       "customToday": {
-        "note_impressions": 5765,
-        "search_entries": null
+        "note_impressions": 125000,
+        "search_entries": null,
+        "cover_click_rate": 7.8,
+        "completion_rate": 2.3,
+        "profile_visits": 609
       },
       "customYesterday": {
         "note_impressions": null,
@@ -240,9 +245,25 @@
       "sourceStatus": {
         "status": "manual",
         "source": "manual_import",
-        "message": "小红书后台可见汇总和笔记管理首页明细。"
+        "message": "来自小红书本人账号创作中心可见页面；近7日汇总中的万单位按页面显示换算，最新笔记明细为后台精确值。"
       },
       "contentItems": [
+        {
+          "id": "6a5a0dab0000000014004823",
+          "note_id": "6a5a0dab0000000014004823",
+          "title": "5000多买17 Pro Max的秘密，我找到了",
+          "publish_time": "2026-07-17 19:10",
+          "thumbnail": "https://ci.xiaohongshu.com/spectrum/1040g34o322ni3gq4ms105no933g08br2nh0ctu0?imageView2/2/w/1080/format/jpg",
+          "views": 19342,
+          "likes": 812,
+          "favorites": 192,
+          "comments": 46,
+          "shares": 65,
+          "ctr": "13.3%",
+          "avd": "104秒",
+          "data_source": "小红书创作中心可见页面",
+          "metric_scope": "后台截至 2026-07-19 00:00"
+        },
         {
           "title": "500天，我让这台小米手机走遍了中国！",
           "publish_time": "2025年03月01日 13:34",
