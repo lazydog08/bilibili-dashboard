@@ -37,6 +37,11 @@ from platforms import (
     unavailable_platform_snapshot,
     write_update_log,
 )
+from scripts.history_integrity_guard import (
+    HistoryIntegrityError,
+    build_manifest,
+    verify_history_payload,
+)
 
 
 def render_dashboard(context: dict[str, Any], settings: Settings) -> Path:
@@ -591,6 +596,12 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
     live_snapshot: dict[str, Any] | None = None
     bilibili_only = bool(getattr(args, "bilibili_only", False))
     platform_fetch_timeout = getattr(args, "platform_fetch_timeout", None) or settings.platform_fetch_timeout_seconds
+    history_guard_manifest: dict[str, Any] | None = None
+    if not args.fixture and not args.cache and settings.history_path.exists():
+        try:
+            history_guard_manifest = build_manifest(settings.history_path)
+        except HistoryIntegrityError as exc:
+            raise RuntimeError(f"Existing history failed integrity preflight: {exc}") from exc
 
     if args.fixture:
         history = load_fixture_history(settings.fixture_path)
@@ -714,6 +725,10 @@ async def build_dashboard(args: argparse.Namespace, settings: Settings) -> dict[
         history["last_updated"] = latest_network_capture
     elif live_snapshot or not history.get("last_updated"):
         history["last_updated"] = datetime.now(ZoneInfo(settings.timezone)).isoformat(timespec="seconds")
+    if history_guard_manifest is not None:
+        integrity_errors = verify_history_payload(history_guard_manifest, history)
+        if integrity_errors:
+            raise RuntimeError("History integrity guard rejected generated data: " + "; ".join(integrity_errors))
     save_history(history, settings.history_path)
     context = derive_dashboard_context(history, settings, display_warnings=display_warnings)
     output_path = render_dashboard(context, settings)

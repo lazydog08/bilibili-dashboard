@@ -102,6 +102,58 @@ def test_cache_render_preserves_existing_data_timestamp(tmp_path) -> None:
     assert result["context"]["last_updated_iso"] == old_timestamp
 
 
+def test_live_build_rejects_collapsed_history_before_save(tmp_path, monkeypatch) -> None:
+    history_path = tmp_path / "history.json"
+    output_path = tmp_path / "index.html"
+    baseline = {
+        "schema_version": 1,
+        "source": "live",
+        "last_updated": "2026-06-29T23:00:00+08:00",
+        "warnings": [],
+        "snapshots": [
+            {
+                "date": f"2026-05-{day:02d}" if day <= 31 else f"2026-06-{day - 31:02d}",
+                "videos": [{"title": f"retained-title-{day}"}],
+            }
+            for day in range(1, 61)
+        ],
+        "platform_snapshots": [
+            {"platform": "bilibili", "capturedAt": f"2026-06-{(index % 30) + 1:02d}T00:00:00+08:00"}
+            for index in range(1200)
+        ],
+        "fetch_logs": [
+            {"platform": "bilibili", "capturedAt": f"2026-06-{(index % 30) + 1:02d}T00:00:00+08:00"}
+            for index in range(900)
+        ],
+    }
+    original_text = json.dumps(baseline, ensure_ascii=False, indent=2) + "\n"
+    history_path.write_text(original_text, encoding="utf-8")
+    settings = load_settings()
+    object.__setattr__(settings, "history_path", history_path)
+    object.__setattr__(settings, "fixture_path", PROJECT_ROOT / "data" / "fixtures" / "sample_history.json")
+    object.__setattr__(settings, "output_path", output_path)
+
+    async def no_creator_data(*args, **kwargs):
+        return None, []
+
+    async def collapse_history(*args, **kwargs):
+        return {
+            "snapshots": [{"date": "2026-06-30", "videos": []}],
+            "platform_snapshots": [],
+            "fetch_logs": [],
+        }
+
+    monkeypatch.setattr("main._try_live_snapshot", no_creator_data)
+    monkeypatch.setattr("main._try_public_bilibili_snapshot", no_creator_data)
+    monkeypatch.setattr("main._collect_platform_snapshots", collapse_history)
+
+    with pytest.raises(RuntimeError, match="History integrity guard rejected generated data"):
+        asyncio.run(build_dashboard(parse_args(["--live", "--no-feishu", "--no-bark"]), settings))
+
+    assert history_path.read_text(encoding="utf-8") == original_text
+    assert not output_path.exists()
+
+
 def test_public_bilibili_merge_adds_new_upload_without_overwriting_private_metrics() -> None:
     cached = {
         "date": "2026-07-01",

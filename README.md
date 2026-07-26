@@ -498,6 +498,19 @@ python -m pytest
 
 ## 故障排查
 
+收到“三平台看板运行失败”并不等于三个账号同时掉线。先看
+`~/Library/Logs/CreatorDataDashboard/collector.log` 中的明确原因。Mac mini
+每轮采集前会拒绝未完成的 rebase/merge/cherry-pick、detached HEAD、错误分支、
+异常工作树和本地分叉；推送冲突时不会自动 rebase，而会保留完整云端数据并写入
+`data/private/mac-mini-collector.pause`，让后续整点轮次静默跳过。恢复时应先为
+当前 HEAD 和原分支建立备份，再以已核验的完整 `origin/main` 为基线；不要 force
+push，也不要直接删除 `.git/rebase-*`。
+
+Mac mini 发布脚本和 `main.py` 的实时保存路径都会运行
+`scripts/history_integrity_guard.py`；现有 GitHub Actions 兜底调用实时保存路径，
+因此也受同一守卫保护。守卫会核验 JSON、文件体积、历史日期、记录规模和旧标题；
+如果历史从数十个快照、数千条平台记录突然缩成个位数，会恢复上一版页面并阻止发布。
+
 Cookie 过期或触发风控：Mac mini 会先尝试从已登录的 Edge 会话安全续期。若页面提示创作中心登录失效，请在 Mac mini 的 Edge 正常完成一次登录；验证码必须由账号本人完成。续期验证未通过时程序会继续公开数据降级，并保留旧的创作中心指标及其真实时间，不会假报更新。
 
 API 结构变化：看板会尽量用兼容字段回退；如果关键字段缺失，会显示警告并以 0 作为安全默认值。

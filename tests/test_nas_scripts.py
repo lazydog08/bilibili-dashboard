@@ -710,7 +710,19 @@ def test_mac_mini_collector_has_owner_lock_atomic_sync_and_secret_free_plist() -
     assert "86400" in mac_script
     assert '[[ "$refresh_exit" == "2" ]]' in mac_script
     assert "send_bilibili_refresh_error_bark" in mac_script
+    assert "history_integrity_guard.py" in mac_script
+    assert "history_integrity_guard_failed" in mac_script
+    assert "mac-mini-collector.pause" in mac_script
+    assert 'if [[ ! -f "$PAUSE_STAMP" ]]' in mac_script
+    assert "repository_operation_in_progress" in mac_script
+    assert "git symbolic-ref --quiet --short HEAD" in mac_script
+    assert 'git merge --ff-only "$remote_ref"' in mac_script
+    assert "git rebase" not in mac_script
+    assert "Cloud push was rejected; no automatic rebase will be attempted." in mac_script
     assert mac_script.index("refresh_bilibili_browser_cookie") < mac_script.index(
+        'log "Mac mini platform collection started."'
+    )
+    assert mac_script.index("preflight_repository") < mac_script.index(
         'log "Mac mini platform collection started."'
     )
     assert "mount_nas" not in mac_script
